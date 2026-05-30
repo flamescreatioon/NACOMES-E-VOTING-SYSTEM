@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin Dashboard - ABSU Election</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#9333ea", // Purple to denote Super Admin
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .sidebar-active {
+            background-color: #9333ea;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-primary/10 bg-white dark:bg-slate-900 h-screen sticky top-0 flex flex-col justify-between py-6 px-4">
+<div class="flex flex-col gap-8">
+<!-- Brand -->
+<div class="flex items-center gap-3 px-2">
+<img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+<div>
+<h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
+<p class="text-slate-500 text-xs font-medium">Super Admin</p>
+</div>
+</div>
+<!-- Nav Links -->
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg sidebar-active transition-all group" href="#">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="admin-candidates.html">
+<span class="material-symbols-outlined text-[22px]">group</span>
+<span class="text-sm font-medium">Candidates</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="admin-results.html">
+<span class="material-symbols-outlined text-[22px]">bar_chart</span>
+<span class="text-sm font-medium">Results</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all">
+<span class="material-symbols-outlined text-[22px]">home</span>
+<span class="text-sm font-medium">Back to Site</span>
+</a>
+<button id="logout-btn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all">
+<span class="material-symbols-outlined text-[22px]">logout</span>
+<span class="text-sm font-medium">Logout</span>
+</button>
+<div class="p-3 bg-primary/5 rounded-xl flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+</div>
+<div class="flex-1">
+<p id="admin-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Super Admin</p>
+<p id="admin-role" class="text-[10px] text-slate-500 font-medium">Chief Electoral Officer</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-y-auto">
+<!-- Header -->
+<header class="h-16 border-b border-primary/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-bold tracking-tight">Super Admin Dashboard</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3 border-l border-slate-200 pl-6">
+<button id="reset-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-green-500/20 transition-all">
+<span class="material-symbols-outlined text-lg">how_to_vote</span>
+                        Manual Vote
+                    </button>
+<button id="bulk-vote-btn" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+                        Bulk Vote (+100)
+                    </button>
+<button id="export-btn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+                        Export Results
+                    </button>
+</div>
+</div>
+</header>
+<!-- Dashboard Body -->
+<div class="p-8 flex flex-col gap-8 max-w-7xl mx-auto w-full">
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-2 bg-blue-50 text-blue-600 rounded-lg">how_to_reg</span>
+<span id="students-trend" class="text-xs font-bold text-green-600 flex items-center">+2.1%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium mt-2">Registered Students</p>
+<h3 id="total-students" class="text-3xl font-bold text-slate-900 dark:text-white">15,400</h3>
+<p class="text-[11px] text-slate-400">Target enrollment: 16,000</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-2 bg-purple-50 text-purple-600 rounded-lg">ballot</span>
+<span id="votes-new" class="text-xs font-bold text-green-600 flex items-center">+120 new</span>
+</div>
+<p class="text-slate-500 text-sm font-medium mt-2">Total Votes Cast</p>
+<h3 id="total-votes" class="text-3xl font-bold text-slate-900 dark:text-white">8,250</h3>
+<p id="last-vote-time" class="text-[11px] text-slate-400">Last vote: 2 mins ago</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-2 bg-amber-50 text-amber-600 rounded-lg">trending_up</span>
+<span id="turnout-trend" class="text-xs font-bold text-green-600 flex items-center">+5.2%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium mt-2">Voter Turnout</p>
+<h3 id="turnout-percentage" class="text-3xl font-bold text-slate-900 dark:text-white">53.5%</h3>
+<div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1">
+<div id="turnout-bar" class="bg-amber-500 h-full w-[53.5%] rounded-full transition-all duration-500"></div>
+</div>
+</div>
+</div>
+<!-- Registered Candidates List -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm mb-6">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold">Registered Candidates</h3>
+<span id="candidate-count-badge" class="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">0 candidates</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead>
+<tr class="border-b border-slate-100">
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">Name</th>
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">Position</th>
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">College</th>
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">Department</th>
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">Votes</th>
+</tr>
+</thead>
+<tbody id="candidates-table">
+<!-- Candidates will be dynamically populated -->
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- Voter List -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold">Recent Voters</h3>
+<span id="voter-count" class="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">0 voters</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead>
+<tr class="border-b border-slate-100">
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">Name</th>
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">Matric No</th>
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">Voted At</th>
+<th class="text-left text-[10px] font-bold text-slate-500 uppercase pb-3">Status</th>
+</tr>
+</thead>
+<tbody id="voters-table">
+<!-- Voters will be dynamically populated -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+
+<!-- Manual Vote Modal -->
+<div id="manual-vote-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center">
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+<!-- Modal Header -->
+<div class="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-2xl">how_to_vote</span>
+<h2 class="text-xl font-bold">Manual Vote Entry</h2>
+</div>
+<button id="close-modal" class="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-all">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+
+<!-- Modal Body -->
+<div class="p-6">
+<form id="manual-vote-form" class="space-y-6">
+<!-- Voter Information -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+<h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">person</span>
+Voter Information
+</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-semibold text-slate-600 mb-1">Voter Name *</label>
+<input type="text" id="mv-name" required class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Enter voter name">
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-600 mb-1">Matric Number *</label>
+<input type="text" id="mv-matric" required class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="e.g. U2024/1234567">
+</div>
+</div>
+</div>
+
+<!-- Vote Selection -->
+<div class="space-y-4">
+<h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">ballot</span>
+Select Candidates
+</h3>
+
+<!-- President -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">President</label>
+<select id="mv-president" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Vice President -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Vice President</label>
+<select id="mv-vp" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- General Secretary -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">General Secretary</label>
+<select id="mv-secretary" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Financial Secretary -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Financial Secretary</label>
+<select id="mv-financial" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- PRO -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Public Relations Officer</label>
+<select id="mv-pro" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+</div>
+
+<!-- Submit Button -->
+<div class="flex items-center gap-4 pt-4">
+<button type="submit" class="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">send</span>
+Submit Manual Vote
+</button>
+<button type="button" id="cancel-vote" class="px-6 py-3 border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-all">
+Cancel
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+<!-- Bulk Vote Modal -->
+<div id="bulk-vote-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center">
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+<!-- Modal Header -->
+<div class="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-amber-500 text-2xl">add_circle</span>
+<h2 class="text-xl font-bold">Bulk Vote Entry</h2>
+</div>
+<button id="close-bulk-modal" class="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-all">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+
+<!-- Modal Body -->
+<div class="p-6">
+
+<form id="bulk-vote-form" class="space-y-6">
+<!-- Select Candidates -->
+<div class="space-y-4">
+<h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">ballot</span>
+Select Candidates for the Ballot
+</h3>
+
+<!-- President -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">President</label>
+<select id="bv-president" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Vice President -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Vice President</label>
+<select id="bv-vp" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- General Secretary -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">General Secretary</label>
+<select id="bv-secretary" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Financial Secretary -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Financial Secretary</label>
+<select id="bv-financial" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- PRO -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Public Relations Officer (PRO)</label>
+<select id="bv-pro" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+</div>
+
+<!-- Vote Count -->
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Number of Votes</label>
+<div class="flex items-center gap-3">
+<input type="number" id="bv-count" value="100" min="1" max="1000" class="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-center text-lg font-bold">
+<div class="flex flex-col gap-1">
+<button type="button" onclick="document.getElementById('bv-count').value = 100" class="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all">+100</button>
+<button type="button" onclick="document.getElementById('bv-count').value = 50" class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-all">+50</button>
+</div>
+</div>
+</div>
+
+<!-- Submit -->
+<div class="flex items-center gap-4 pt-4">
+<button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+Add Bulk Votes
+</button>
+<button type="button" id="cancel-bulk" class="px-6 py-3 border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-all">
+Cancel
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+<script>
+// Check admin login
+function checkAdminAuth() {
+    const isLoggedIn = sessionStorage.getItem('superAdminLoggedIn');
+    
+    if (!isLoggedIn) {
+        window.location.href = 'super-admin-login.html';
+        return false;
+    }
+    
+    // Display admin info
+    const adminUser = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
+    if (adminUser.name) {
+        document.getElementById('admin-name').textContent = adminUser.name;
+    }
+    if (adminUser.role) {
+        document.getElementById('admin-role').textContent = adminUser.role;
+    }
+    return true;
+}
+
+// Base API URL
+const API_URL = 'http://localhost:5005/api';
+
+// Fetch all votes for export
+async function getAllVotes() {
+    try {
+        const res = await fetch(`${API_URL}/stats/all-voters`);
+        if (!res.ok) return [];
+        return await res.json();
+    } catch (e) {
+        return [];
+    }
+}
+
+// Update stats with real data
+async function updateDashboardData() {
+    try {
+        const res = await fetch(`${API_URL}/stats`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        const totalVoters = data.totalVoters || 0;
+        const totalStudents = data.totalStudents || 15000;
+        const recentVoters = data.recentVoters || [];
+
+        // Update registered students card
+        document.getElementById('total-students').textContent = totalStudents.toLocaleString();
+        const turnoutPercentage = totalStudents > 0 ? ((totalVoters / totalStudents) * 100).toFixed(1) : 0;
+        document.getElementById('students-trend').textContent = `${turnoutPercentage}% turnout`;
+
+        // Update total votes
+        if (totalVoters > 0) {
+            document.getElementById('total-votes').textContent = (totalVoters * 5).toLocaleString();
+            document.getElementById('votes-new').textContent = `+${totalVoters} total`;
+            
+            if (recentVoters.length > 0) {
+                const lastVote = recentVoters[0];
+                const lastVoteTime = new Date(lastVote.votedAt);
+                const timeDiff = Math.floor((Date.now() - lastVoteTime) / 60000);
+                document.getElementById('last-vote-time').textContent = timeDiff < 1 ? 'Last vote: Just now' : `Last vote: ${timeDiff}m ago`;
+            }
+        }
+
+        // Voter count
+        document.getElementById('voter-count').textContent = totalVoters + ' voters';
+        
+        // Render Voters Table
+        const tbody = document.getElementById('voters-table');
+        if (recentVoters.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-sm text-slate-500">No voters yet - demo data shown above</td></tr>';
+            return;
+        }
+
+        let html = '';
+        recentVoters.forEach(voter => {
+            const votedAt = new Date(voter.votedAt);
+            const timeStr = votedAt.toLocaleString('en-NG', { 
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+
+            html += `
+                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
+                    <td class="py-3 text-sm font-medium">${voter.name}</td>
+                    <td class="py-3 text-sm text-slate-600">${voter.matricNo}</td>
+                    <td class="py-3 text-xs text-slate-500">${timeStr}</td>
+                    <td class="py-3">
+                        <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Verified</span>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        
+        // Render Candidates Table
+        await updateCandidatesTable();
+        
+    } catch(e) {
+        console.error("Dashboard update failed:", e);
+    }
+}
+
+// Fetch and render candidates table
+async function updateCandidatesTable() {
+    try {
+        const res = await fetch(`${API_URL}/candidates`);
+        if (!res.ok) return;
+        const candidates = await res.json();
+        
+        document.getElementById('candidate-count-badge').textContent = `${candidates.length} candidates`;
+        
+        const tbody = document.getElementById('candidates-table');
+        if (candidates.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-sm text-slate-500">No candidates registered yet</td></tr>';
+            return;
+        }
+
+        let html = '';
+        candidates.forEach(candidate => {
+            html += `
+                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
+                    <td class="py-3 text-sm font-medium flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                            ${candidate.name.charAt(0)}
+                        </div>
+                        ${candidate.name}
+                    </td>
+                    <td class="py-3 text-xs text-slate-600 font-semibold uppercase">${candidate.position.replace('-', ' ')}</td>
+                    <td class="py-3 text-xs text-slate-500">${candidate.college || 'SUG'}</td>
+                    <td class="py-3 text-xs text-slate-500">${candidate.dept || 'N/A'}</td>
+                    <td class="py-3 text-sm font-bold text-slate-800">${candidate.votes}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    } catch(e) {
+        console.error("Failed to load candidates table:", e);
+    }
+}
+
+// Export results
+document.getElementById('export-btn').addEventListener('click', async function() {
+    const allVotes = await getAllVotes();
+    
+    let exportData = "ABSU 2026 SUG Election Results\n";
+    exportData += "Generated: " + new Date().toLocaleString() + "\n";
+    exportData += "=".repeat(50) + "\n\n";
+    exportData += "Total Voters: " + allVotes.length + "\n";
+    exportData += "Total Votes Cast: " + (allVotes.length * 5) + "\n\n";
+    
+    if (allVotes.length > 0) {
+        exportData += "VOTER LIST:\n";
+        exportData += "-".repeat(30) + "\n";
+        allVotes.forEach((voter, i) => {
+            exportData += `${i + 1}. ${voter.name} (${voter.matricNo}) - ${new Date(voter.votedAt).toLocaleString()}\n`;
+        });
+    }
+
+    const blob = new Blob([exportData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ABSU_Election_Results_2026.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+// Manual Vote Modal
+const modal = document.getElementById('manual-vote-modal');
+const closeModalBtn = document.getElementById('close-modal');
+const cancelVoteBtn = document.getElementById('cancel-vote');
+
+// Open manual vote modal
+document.getElementById('reset-btn').addEventListener('click', function() {
+    loadCandidatesIntoSelects();
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+});
+
+// Close modal
+function closeModal() {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.getElementById('manual-vote-form').reset();
+}
+
+closeModalBtn.addEventListener('click', closeModal);
+cancelVoteBtn.addEventListener('click', closeModal);
+
+// Close on backdrop click
+modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+        closeModal();
+    }
+});
+
+// Load candidates into select dropdowns
+async function loadCandidatesIntoSelects() {
+    let candidates = [];
+    try {
+        const res = await fetch(`${API_URL}/candidates`);
+        if (res.ok) candidates = await res.json();
+    } catch(e) {}
+    
+    const positions = {
+        'president': 'mv-president',
+        'vice-president': 'mv-vp',
+        'general-secretary': 'mv-secretary',
+        'financial-secretary': 'mv-financial',
+        'pro': 'mv-pro'
+    };
+
+    // Default candidates if none registered
+    const defaultCandidates = {
+        'president': ['Adebayo Okonkwo', 'Chinedu Eze', 'Fatima Abubakar'],
+        'vice-president': ['Sarah Johnson', 'Michael Obi', 'Amina Yusuf'],
+        'general-secretary': ['David Nduka', 'Grace Okoli', 'Ibrahim Musa'],
+        'financial-secretary': ['Jennifer Ade', 'Emeka Nwankwo', 'Hauwa Bello'],
+        'pro': ['Samuel Peters', 'Ngozi Chukwu', 'Yusuf Abdullahi']
+    };
+
+    Object.keys(positions).forEach(position => {
+        const select = document.getElementById(positions[position]);
+        select.innerHTML = '<option value="">-- Select candidate --</option>';
+
+        // Get candidates for this position
+        const positionCandidates = candidates.filter(c => c.position === position && c.status !== 'disqualified');
+
+        if (positionCandidates.length > 0) {
+            positionCandidates.forEach(c => {
+                select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+            });
+        } else {
+            // Use default candidates
+            defaultCandidates[position].forEach(name => {
+                select.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+        }
+    });
+}
+
+// Submit manual vote
+document.getElementById('manual-vote-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const voterName = document.getElementById('mv-name').value.trim();
+    const matricNo = document.getElementById('mv-matric').value.trim();
+
+    // Get selected candidates
+    const votes = {
+        president: document.getElementById('mv-president').value,
+        vicePresident: document.getElementById('mv-vp').value,
+        generalSecretary: document.getElementById('mv-secretary').value,
+        financialSecretary: document.getElementById('mv-financial').value,
+        pro: document.getElementById('mv-pro').value
+    };
+
+    const adminName = JSON.parse(sessionStorage.getItem('adminUser') || '{}').name || 'Super Admin';
+
+    const payload = {
+        name: voterName,
+        matricNo: matricNo,
+        votes: votes,
+        manualEntry: true,
+        enteredBy: adminName
+    };
+
+    try {
+        const res = await fetch(`${API_URL}/vote/manual`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            alert(`Vote recorded successfully for ${voterName} (${matricNo})`);
+            closeModal();
+            updateDashboardData();
+        } else {
+            const err = await res.json();
+            alert(`Error recording vote: ${err.error}`);
+        }
+    } catch(e) {
+        alert('Network error recording manual vote.');
+        console.error(e);
+    }
+});
+
+// ========== BULK VOTE MODAL ==========
+const bulkModal = document.getElementById('bulk-vote-modal');
+const closeBulkModalBtn = document.getElementById('close-bulk-modal');
+const cancelBulkBtn = document.getElementById('cancel-bulk');
+
+// Open bulk vote modal
+document.getElementById('bulk-vote-btn').addEventListener('click', function() {
+    loadCandidatesIntoBulkSelects();
+    bulkModal.classList.remove('hidden');
+    bulkModal.classList.add('flex');
+});
+
+// Close bulk modal
+function closeBulkModal() {
+    bulkModal.classList.add('hidden');
+    bulkModal.classList.remove('flex');
+    document.getElementById('bulk-vote-form').reset();
+}
+
+closeBulkModalBtn.addEventListener('click', closeBulkModal);
+cancelBulkBtn.addEventListener('click', closeBulkModal);
+
+// Close on backdrop click
+bulkModal.addEventListener('click', function(e) {
+    if (e.target === bulkModal) {
+        closeBulkModal();
+    }
+});
+
+// Load candidates into bulk select dropdowns
+async function loadCandidatesIntoBulkSelects() {
+    let candidates = [];
+    try {
+        const res = await fetch(`${API_URL}/candidates`);
+        if (res.ok) candidates = await res.json();
+    } catch(e) {}
+    
+    const positions = {
+        'president': 'bv-president',
+        'vice-president': 'bv-vp',
+        'general-secretary': 'bv-secretary',
+        'financial-secretary': 'bv-financial',
+        'pro': 'bv-pro'
+    };
+
+    // Default candidates if none registered
+    const defaultCandidates = {
+        'president': ['Adebayo Okonkwo', 'Chinedu Eze', 'Fatima Abubakar'],
+        'vice-president': ['Sarah Johnson', 'Michael Obi', 'Amina Yusuf'],
+        'general-secretary': ['David Nduka', 'Grace Okoli', 'Ibrahim Musa'],
+        'financial-secretary': ['Jennifer Ade', 'Emeka Nwankwo', 'Hauwa Bello'],
+        'pro': ['Samuel Peters', 'Ngozi Chukwu', 'Yusuf Abdullahi']
+    };
+
+    Object.keys(positions).forEach(position => {
+        const select = document.getElementById(positions[position]);
+        select.innerHTML = '<option value="">-- Select candidate --</option>';
+
+        // Get candidates for this position
+        const positionCandidates = candidates.filter(c => c.position === position && c.status !== 'disqualified');
+
+        if (positionCandidates.length > 0) {
+            positionCandidates.forEach(c => {
+                select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+            });
+        } else {
+            // Use default candidates
+            defaultCandidates[position].forEach(name => {
+                select.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+        }
+    });
+}
+
+// Submit bulk votes
+document.getElementById('bulk-vote-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const votes = {
+        president: document.getElementById('bv-president').value,
+        vicePresident: document.getElementById('bv-vp').value,
+        generalSecretary: document.getElementById('bv-secretary').value,
+        financialSecretary: document.getElementById('bv-financial').value,
+        pro: document.getElementById('bv-pro').value
+    };
+
+    // Check if at least one candidate is selected
+    const hasAnyVote = Object.values(votes).some(v => v !== "");
+    if (!hasAnyVote) {
+        alert('Please select at least one candidate.');
+        return;
+    }
+
+    const voteCount = parseInt(document.getElementById('bv-count').value) || 100;
+    const adminName = JSON.parse(sessionStorage.getItem('adminUser') || '{}').name || 'Super Admin';
+
+    const payload = {
+        votes: votes,
+        voteCount: voteCount,
+        addedBy: adminName
+    };
+
+    try {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = 'Processing...';
+        submitBtn.disabled = true;
+
+        const res = await fetch(`${API_URL}/vote/bulk`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+
+        if (res.ok) {
+            alert(`Successfully cast ${voteCount} bulk votes across the ballot!`);
+            closeBulkModal();
+            updateDashboardData();
+        } else {
+            const err = await res.json();
+            alert(`Error adding bulk votes: ${err.error}`);
+        }
+    } catch(e) {
+        alert('Network error submitting bulk vote.');
+        console.error(e);
+    }
+});
+
+// Logout
+document.getElementById('logout-btn').addEventListener('click', function() {
+    sessionStorage.removeItem('superAdminLoggedIn');
+    sessionStorage.removeItem('adminUser');
+    window.location.href = 'super-admin-login.html';
+});
+
+// Initialize dashboard
+function initDashboard() {
+    if (!checkAdminAuth()) return;
+    
+    updateDashboardData();
+}
+
+// Run on load
+document.addEventListener('DOMContentLoaded', initDashboard);
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    updateDashboardData();
+}, 30000);
+</script>
+</body>
+</html>

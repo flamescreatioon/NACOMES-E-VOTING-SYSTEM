@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Election Results | University Election</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { font-family: 'Lexend', sans-serif; }
+        .podium-1 { background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #ffd700 100%); }
+        .podium-2 { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #c0c0c0 100%); }
+        .podium-3 { background: linear-gradient(135deg, #cd7f32 0%, #daa06d 50%, #cd7f32 100%); }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ABSU <span class="text-primary">2026</span></h1>
+                </a>
+                <nav class="hidden md:flex space-x-8">
+                    <a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium" href="dashboard.html">Dashboard</a>
+                    <a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium" href="candidates.html">Candidates</a>
+                    <a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium" href="how-it-works.html">How it Works</a>
+                    <a class="text-primary font-semibold text-sm" href="results.html">Results</a>
+                </nav>
+                <div class="flex items-center gap-4">
+                    <button id="dark-mode-toggle" class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title="Toggle Dark Mode">
+                      <span class="material-symbols-outlined dark:hidden">dark_mode</span>
+                      <span class="material-symbols-outlined hidden dark:block text-yellow-400">light_mode</span>
+                    </button>
+                    <a href="login.html" class="text-sm font-semibold text-primary hover:bg-primary/10 px-4 py-2 rounded-lg transition-all">Login</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                <span class="material-symbols-outlined text-lg">leaderboard</span>
+                Live Results
+            </div>
+            <h2 class="text-4xl font-extrabold text-slate-900 dark:text-white mb-3">Election Results 2026</h2>
+            <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-8">
+                Real-time results for both SUG General and College level elections.
+            </p>
+            
+            <!-- Filter Bar -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-center gap-4 shadow-sm">
+                <span class="text-sm font-bold text-slate-500 uppercase tracking-wider">Filter Results:</span>
+                <select id="college-filter" class="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold px-4 py-2 focus:ring-primary focus:border-primary min-w-[250px]">
+                    <option value="SUG">All SUG General Results</option>
+                    <!-- Colleges will be added here -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 text-center">
+                <span class="material-symbols-outlined text-4xl text-primary mb-2">groups</span>
+                <p id="total-voters" class="text-3xl font-bold text-slate-900 dark:text-white">0</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Total Voters</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 text-center">
+                <span class="material-symbols-outlined text-4xl text-emerald-500 mb-2">how_to_vote</span>
+                <p id="total-votes" class="text-3xl font-bold text-slate-900 dark:text-white">0</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Total Votes Cast</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 text-center">
+                <span class="material-symbols-outlined text-4xl text-amber-500 mb-2">person_raised_hand</span>
+                <p id="total-candidates" class="text-3xl font-bold text-slate-900 dark:text-white">0</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Candidates</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 text-center">
+                <span class="material-symbols-outlined text-4xl text-purple-500 mb-2">category</span>
+                <p id="total-positions" class="text-3xl font-bold text-slate-900 dark:text-white">0</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Positions</p>
+            </div>
+        </div>
+
+        <!-- Split Results & Analysis Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left 2/3: Live Candidate Results -->
+            <div class="lg:col-span-2 space-y-12" id="results-container"></div>
+
+            <!-- Right 1/3: College Voter Turnout Analysis -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-6 self-start">
+                <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <span class="material-symbols-outlined text-primary text-2xl">analytics</span>
+                    <div>
+                        <h3 class="font-black text-lg">College Turnout Desk</h3>
+                        <p class="text-xs text-slate-400">Ratio of colleges with the highest votes</p>
+                    </div>
+                </div>
+
+                <!-- Leader Badge for Highest Voter Turnout College -->
+                <div id="highest-turnout-banner" class="bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-xl p-4 flex items-center gap-3 shadow-md">
+                    <span class="material-symbols-outlined text-3xl animate-bounce">workspace_premium</span>
+                    <div>
+                        <p class="text-[10px] uppercase font-bold tracking-widest text-amber-100">Highest Voter Turnout</p>
+                        <h4 id="highest-turnout-college" class="font-bold text-sm truncate">Loading college analytics...</h4>
+                    </div>
+                </div>
+
+                <!-- College Turnout List -->
+                <div class="space-y-4" id="college-ratio-list">
+                    <!-- Loaded dynamically via fetch /api/stats/college-distribution -->
+                </div>
+            </div>
+        </div>
+
+        <!-- No Votes Message -->
+        <div id="no-votes-message" class="hidden text-center py-16">
+            <span class="material-symbols-outlined text-8xl text-slate-300 dark:text-slate-700 mb-4">ballot</span>
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">No Votes Yet</h3>
+            <p class="text-slate-600 dark:text-slate-400 mb-6">Voting is still in progress. Results will appear here once votes are cast.</p>
+        </div>
+    </main>
+
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-6 text-center text-slate-500 text-sm">
+            &copy; 2026 UniVote Election System. All results are verified by the Audit Committee.
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+    <script>
+        const filterEl = document.getElementById('college-filter');
+        const container = document.getElementById('results-container');
+        const noVotesMsg = document.getElementById('no-votes-message');
+
+        // Initialize Filter
+        CONFIG.colleges.forEach(college => {
+            const opt = document.createElement('option');
+            opt.value = college;
+            opt.textContent = college + ' Results';
+            filterEl.appendChild(opt);
+        });
+
+        async function calculateResults(level, college = null) {
+            const positions = level === 'SUG' ? ELECTION_DATA.positions.SUG : ELECTION_DATA.positions.COLLEGE;
+            const results = {};
+
+            const allCandidates = await Data.getAllCandidates();
+
+            positions.forEach(pos => {
+                results[pos.id] = { title: pos.title, candidates: {} };
+                
+                const candidates = allCandidates.filter(c => {
+                    const levelMatch = c.level === level;
+                    const posMatch = c.position === pos.id;
+                    const collegeMatch = level === 'SUG' || c.college === college;
+                    return levelMatch && posMatch && collegeMatch;
+                });
+
+                candidates.forEach(c => {
+                    results[pos.id].candidates[c.id] = c;
+                });
+            });
+
+            return results;
+        }
+
+        async function renderResults() {
+            const selection = filterEl.value;
+            const level = selection === 'SUG' ? 'SUG' : 'COLLEGE';
+            const college = selection === 'SUG' ? null : selection;
+            
+            const results = await calculateResults(level, college);
+            
+            let totalVoters = 0;
+            try {
+                const statRes = await fetch(API_URL + '/stats');
+                if (statRes.ok) {
+                    const statData = await statRes.json();
+                    totalVoters = statData.totalVoters || 0;
+                }
+            } catch(e) {}
+            
+            // Update Stats
+            document.getElementById('total-voters').textContent = totalVoters;
+            document.getElementById('total-votes').textContent = totalVoters * (level === 'SUG' ? 5 : 2);
+            document.getElementById('total-positions').textContent = Object.keys(results).length;
+            
+            let html = '';
+            let hasAnyResult = false;
+
+            Object.keys(results).forEach(posId => {
+                const posData = results[posId];
+                const sorted = Object.values(posData.candidates).sort((a, b) => b.votes - a.votes);
+                if (sorted.length === 0) return;
+                
+                hasAnyResult = true;
+                const totalPosVotes = sorted.reduce((s, c) => s + c.votes, 0);
+
+                html += `
+                    <section>
+                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
+                            <div>
+                                <h3 class="text-2xl font-bold text-slate-900 dark:text-white">${posData.title}</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${totalPosVotes} total votes cast</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            ${sorted.map((c, i) => renderCandidateResult(c, i + 1, totalPosVotes)).join('')}
+                        </div>
+                    </section>
+                `;
+            });
+
+            container.innerHTML = html;
+            noVotesMsg.classList.toggle('hidden', hasAnyResult || totalVoters === 0);
+        }
+
+        function renderCandidateResult(c, rank, total) {
+            const perc = total > 0 ? ((c.votes / total) * 100).toFixed(1) : 0;
+            const isWinner = rank === 1 && c.votes > 0;
+            const rankSuffix = ['st', 'nd', 'rd'][rank-1] || 'th';
+            const podiumClass = ['podium-1', 'podium-2', 'podium-3'][rank-1] || 'bg-slate-100 dark:bg-slate-800';
+
+            return `
+                <div class="bg-white dark:bg-slate-900 rounded-xl border-2 ${isWinner ? 'border-primary shadow-lg' : 'border-slate-100 dark:border-slate-800'} p-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full ${podiumClass} flex items-center justify-center font-bold text-sm ${rank <= 3 ? 'text-white' : 'text-slate-400'}">
+                            ${rank}${rankSuffix}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-slate-900 dark:text-white">${c.name}</h4>
+                                ${isWinner ? '<span class="material-symbols-outlined text-amber-500 text-sm">workspace_premium</span>' : ''}
+                            </div>
+                            <p class="text-xs text-slate-500">${c.dept}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-slate-900 dark:text-white">${c.votes}</p>
+                            <p class="text-[10px] text-slate-400">VOTES</p>
+                        </div>
+                        <div class="w-24 hidden sm:block">
+                            <div class="flex justify-between text-[10px] mb-1 font-bold">
+                                <span>${perc}%</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary" style="width: ${perc}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function renderCollegeTurnout() {
+            try {
+                const res = await fetch(API_URL + '/stats/college-distribution');
+                if (!res.ok) return;
+                const distributions = await res.json();
+                
+                const ratioList = document.getElementById('college-ratio-list');
+                const highestBanner = document.getElementById('highest-turnout-banner');
+                const highestCollegeEl = document.getElementById('highest-turnout-college');
+                
+                if (distributions.length === 0) {
+                    ratioList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No turnout data yet.</p>`;
+                    highestBanner.classList.add('hidden');
+                    return;
+                }
+                
+                highestBanner.classList.remove('hidden');
+                
+                // The first item is always the highest turnout because of SQL ORDER BY DESC
+                highestCollegeEl.textContent = `${distributions[0].college} (${distributions[0].voteCount} votes)`;
+                
+                // Calculate grand total votes to get percentages
+                const totalVotes = distributions.reduce((sum, item) => sum + item.voteCount, 0);
+                
+                let html = '';
+                distributions.forEach((item, index) => {
+                    const percentage = totalVotes > 0 ? ((item.voteCount / totalVotes) * 100).toFixed(1) : 0;
+                    
+                    // Style first place beautifully
+                    const barColor = index === 0 ? 'bg-primary' : 'bg-purple-500';
+                    
+                    html += `
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span class="truncate max-w-[180px] text-slate-700 dark:text-slate-300" title="${item.college}">${item.college}</span>
+                                <span class="text-slate-400 font-bold">${percentage}% (${item.voteCount})</span>
+                            </div>
+                            <div class="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full ${barColor} transition-all duration-500" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                ratioList.innerHTML = html;
+            } catch(e) {
+                console.error("Failed to load college distribution stats:", e);
+            }
+        }
+
+        filterEl.addEventListener('change', renderResults);
+        
+        // Initial execution
+        renderResults();
+        renderCollegeTurnout();
+        
+        // Auto-refresh every 10 seconds
+        setInterval(() => {
+            renderResults();
+            renderCollegeTurnout();
+        }, 10000);
+    </script>
+</body>
+</html>

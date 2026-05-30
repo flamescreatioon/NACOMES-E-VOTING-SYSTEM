@@ -1,0 +1,191 @@
+/* 
+ * UniVote Election Portal - Custom Styles
+ * These styles complement Tailwind CSS
+ */
+
+/* ===== CSS Variables ===== */
+:root {
+    --color-primary: #135bec;
+    --color-primary-light: rgba(19, 91, 236, 0.1);
+    --color-primary-dark: #0d4abf;
+    --color-background-light: #f6f6f8;
+    --color-background-dark: #101622;
+    --font-family: 'Lexend', sans-serif;
+}
+
+/* ===== Base Styles ===== */
+body {
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Candidate Card Selection ===== */
+.candidate-card:has(input:checked) {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+}
+
+.candidate-card:has(input:checked) .check-icon {
+    opacity: 1;
+}
+
+.candidate-card:has(input:checked) .radio-outer {
+    border-color: var(--color-primary);
+}
+
+.candidate-card:has(input:checked) .radio-inner {
+    opacity: 1;
+}
+
+/* ===== Podium Gradients for Results ===== */
+.podium-1 {
+    background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #ffd700 100%);
+}
+
+.podium-2 {
+    background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #c0c0c0 100%);
+}
+
+.podium-3 {
+    background: linear-gradient(135deg, #cd7f32 0%, #daa06d 50%, #cd7f32 100%);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+}
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* ===== Focus States ===== */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* ===== Print Styles ===== */
+@media print {
+    header,
+    footer,
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .candidate-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* ===== Utility Classes ===== */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ===== Loading Spinner ===== */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--color-primary-light);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

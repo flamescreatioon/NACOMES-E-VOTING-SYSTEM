@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Database Management | University Election Admin</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              "display": ["Lexend", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 lg:px-12 py-3">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 bg-primary/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">how_to_vote</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">UniVote Admin</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Dashboard</a>
+<a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1" href="#">Students</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Elections</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary w-64 transition-all" placeholder="Global search..." type="text"/>
+</div>
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:border-slate-700 mx-1"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-bold text-slate-900 dark:text-white leading-none">Admin User</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Super Admin</p>
+</div>
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/10 overflow-hidden">
+<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="Stylized avatar icon of an administrator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmRSxwCYghDQ5EUDUzxw8sJ2uhVIqFswBTSjo9PnamN7aTVpkVjI6PSinszvZVUQyvTCrCe12tzxI55WTT9ICO8_kk60e7Q-BdFV9-U3ikgd2xshzFLS4we-82c0yXglN5aRmMzQUIPAo4_PqROl00TaZWbQr1HHr7xiLj7-aaWKaR8CL8VJ2TL-lPrnjIFFUbCW9qD3kyTctFuaoGHKQt2EnWh-y7xwrL0VCx8jree3Xx5YozLNlBA3ydu4B45FxH7R3Mvo920JQ"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 lg:px-12 py-8">
+<!-- Breadcrumbs & Header -->
+<div class="mb-8">
+<nav class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-2">
+<a class="hover:text-primary transition-colors" href="#">Admin</a>
+<span class="material-symbols-outlined text-xs leading-none">chevron_right</span>
+<span class="text-slate-900 dark:text-white font-medium">Student Database</span>
+</nav>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Student Database Management</h1>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Manage, verify, and audit the registry of eligible student voters.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+<span>Template</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform active:scale-95">
+<span class="material-symbols-outlined text-lg">person_add</span>
+<span>Add Student</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Students</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-2xl font-black text-slate-900 dark:text-white">2,450</h3>
+<span class="text-emerald-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_upward</span> 12%</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Verified Voters</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-2xl font-black text-slate-900 dark:text-white">2,100</h3>
+<span class="text-emerald-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_upward</span> 5%</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Pending Action</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-2xl font-black text-slate-900 dark:text-white">350</h3>
+<span class="text-amber-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">remove</span> 0%</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-primary/20 bg-primary/5">
+<p class="text-primary text-xs font-bold uppercase tracking-wider mb-1">Registry Security</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-2xl font-black text-primary">High</h3>
+<span class="material-symbols-outlined text-primary text-sm">verified_user</span>
+</div>
+</div>
+</div>
+<!-- CSV Bulk Import Area -->
+<section class="mb-12">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">upload_file</span>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white">Bulk Import Student Data</h2>
+</div>
+<div class="relative group">
+<div class="w-full h-48 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center bg-white dark:bg-slate-900 hover:border-primary dark:hover:border-primary transition-all cursor-pointer">
+<div class="size-14 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+</div>
+<p class="text-slate-900 dark:text-white font-bold">Drag and drop CSV file here</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">or <span class="text-primary font-semibold underline underline-offset-4">browse files</span> from your computer</p>
+<p class="text-slate-400 dark:text-slate-600 text-xs mt-4">Maximum file size: 10MB (CSV only)</p>
+</div>
+</div>
+</section>
+<!-- Student List Table -->
+<section>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+<div class="flex items-center gap-2">
+<h2 class="text-xl font-bold text-slate-900 dark:text-white">Eligible Students Registry</h2>
+<span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-full">2,450 Entries</span>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<div class="relative min-w-[300px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Search by Matric No or Name..." type="text"/>
+</div>
+<select class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-4 py-2 text-slate-600 dark:text-slate-400 focus:ring-2 focus:ring-primary">
+<option>Status: All</option>
+<option>Verified</option>
+<option>Not Verified</option>
+</select>
+<button class="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Matric Number</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Full Name</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Faculty/Dept</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Date Added</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2021/CS/1024</td>
+<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Alexandria Mitchell</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Engineering / CS</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                        Verified
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 24, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2021/LAW/0852</td>
+<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Benjamin Okafor</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Law / Jurisprudence</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                                        Not Verified
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 25, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2021/MED/1190</td>
+<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Catherine Silva</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Medicine / Surgery</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                        Verified
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 25, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2022/ARTS/0441</td>
+<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">David Zhang</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Arts / Philosophy</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                        Verified
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 26, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2021/SOC/2209</td>
+<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Elena Rodriquez</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Social Sci / Economics</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                                        Not Verified
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 26, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+<p class="text-sm text-slate-500 dark:text-slate-400">Showing <span class="font-bold text-slate-900 dark:text-white">1</span> to <span class="font-bold text-slate-900 dark:text-white">10</span> of <span class="font-bold text-slate-900 dark:text-white">2,450</span> results</p>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-400 cursor-not-allowed">Previous</button>
+<button class="px-3 py-1 bg-primary text-white border border-primary rounded-lg text-sm font-bold">1</button>
+<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">2</button>
+<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">3</button>
+<span class="text-slate-400 text-sm">...</span>
+<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">245</button>
+<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">Next</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="mt-auto py-8 px-12 border-t border-slate-200 dark:border-slate-800 text-center">
+<div class="flex items-center justify-center gap-2 text-slate-400 dark:text-slate-500 text-sm">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<p>Secure Election Environment © 2023 University Election Commission. All connections are encrypted.</p>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,45 @@
+{
+  "name": "absu-election-portal",
+  "version": "1.0.0",
+  "description": "ABSU Student Union Government Election Portal 2026",
+  "main": "index.html",
+  "scripts": {
+    "server": "node backend/index.js",
+    "client": "browser-sync start --server public --files public --port 3000 --no-open",
+    "dev": "node dev.js",
+    "start": "node backend/index.js",
+    "build": "npm run clean && npm run copy-assets",
+    "copy-assets": "shx cp -r public dist",
+    "clean": "shx rm -rf dist",
+    "logo:remove-bg": "node scripts/remove-logo-background.js",
+    "lint": "echo 'No linting configured'",
+    "test": "echo 'No tests configured' && exit 0"
+  },
+  "keywords": [
+    "election",
+    "voting",
+    "university",
+    "student-union",
+    "portal"
+  ],
+  "author": "University Election Commission",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.0",
+    "concurrently": "^8.2.2",
+    "sharp": "^0.34.5",
+    "shx": "^0.3.4"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>How it Works | ABSU Election Portal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { font-family: 'Lexend', sans-serif; }
+        .glass-effect { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .dark .glass-effect { background: rgba(16, 22, 34, 0.8); }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-12 w-auto"/>
+                    <div class="flex flex-col">
+                        <span class="text-slate-900 dark:text-slate-100 font-bold text-lg leading-none">SUG Elections</span>
+                        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Official Voting Portal</span>
+                    </div>
+                </a>
+                <nav class="hidden md:flex items-center gap-8">
+                    <a class="text-sm font-semibold hover:text-primary transition-colors" href="index.html">Home</a>
+                    <a class="text-sm font-semibold hover:text-primary transition-colors" href="candidates.html">Candidates</a>
+                    <a class="text-primary font-bold text-sm" href="how-it-works.html">How it Works</a>
+                    <a class="text-sm font-semibold hover:text-primary transition-colors" href="results.html">Results</a>
+                </nav>
+                <div class="flex items-center gap-4">
+                    <button id="dark-mode-toggle" class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                        <span class="material-symbols-outlined dark:hidden">dark_mode</span>
+                        <span class="material-symbols-outlined hidden dark:block text-yellow-400">light_mode</span>
+                    </button>
+                    <a href="login.html" class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-primary/90 transition-all">
+                        Login to Vote
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow py-16 md:py-24">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6">Voting Process Explained</h1>
+                <p class="text-lg text-slate-600 dark:text-slate-400">
+                    Learn everything you need to know about the 2026 ABSU Student Union Government Elections, from authentication to result verification.
+                </p>
+            </div>
+
+            <div class="space-y-12">
+                <!-- Step 1 Detail -->
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-12 border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <span class="material-symbols-outlined text-[120px]">fingerprint</span>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-4xl">fingerprint</span>
+                        </div>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">1. Secure Authentication</h2>
+                        <div class="prose prose-slate dark:prose-invert max-w-none space-y-4 text-slate-600 dark:text-slate-400">
+                            <p>To ensure only eligible students can participate, we use a robust authentication system linked to the University Registry.</p>
+                            <ul class="list-disc pl-5 space-y-2">
+                                <li><strong>Matriculation Number:</strong> You must use your official matric number in the format <code class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">U[Year]/[7-Digits]</code>.</li>
+                                <li><strong>Secure Password:</strong> Use your portal password. If you haven't changed it, use the default provided by your department.</li>
+                                <li><strong>Identity Protection:</strong> Your login session is encrypted. Once logged in, your identity is detached from your actual ballot to ensure 100% anonymity.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 Detail -->
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-12 border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <span class="material-symbols-outlined text-[120px]">how_to_vote</span>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="size-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-4xl">how_to_vote</span>
+                        </div>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">2. Casting Your Ballot</h2>
+                        <div class="prose prose-slate dark:prose-invert max-w-none space-y-4 text-slate-600 dark:text-slate-400">
+                            <p>Our voting dashboard is designed to be intuitive and transparent.</p>
+                            <ul class="list-disc pl-5 space-y-2">
+                                <li><strong>Executive Positions:</strong> You will vote for five key positions: President, Vice President, General Secretary, Financial Secretary, and PRO.</li>
+                                <li><strong>Manifesto Review:</strong> Click on any candidate to read their official manifesto and vision statement before selecting.</li>
+                                <li><strong>One Vote Rule:</strong> You can only submit your ballot once. The system will block any multi-vote attempts using advanced session tracking.</li>
+                                <li><strong>Review Before Submission:</strong> You'll have a chance to review all your selections before final submission.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 Detail -->
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-12 border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <span class="material-symbols-outlined text-[120px]">task_alt</span>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="size-16 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-4xl">task_alt</span>
+                        </div>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">3. Receipt & Verification</h2>
+                        <div class="prose prose-slate dark:prose-invert max-w-none space-y-4 text-slate-600 dark:text-slate-400">
+                            <p>After voting, you receive confirmation that your voice has been recorded.</p>
+                            <ul class="list-disc pl-5 space-y-2">
+                                <li><strong>Digital Receipt:</strong> An encrypted transaction ID is generated for your vote. This allows the Commission to verify the total count without knowing who voted for whom.</li>
+                                <li><strong>Tamper-Proof Ledger:</strong> All votes are recorded on a secure ledger that prevents any alteration after the ballot is cast.</li>
+                                <li><strong>Real-time Results:</strong> You can view live voter turnout and aggregated results as they come in on the official Results page.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support CTA -->
+            <div class="mt-16 bg-primary rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl">
+                <h3 class="text-3xl font-bold mb-4">Still have questions?</h3>
+                <p class="text-blue-100 mb-8 max-w-xl mx-auto">
+                    The University Election Committee is here to help. Reach out to our 24/7 technical helpdesk or visit the Student Union building.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="mailto:support@university.edu.ng" class="bg-white text-primary px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">mail</span>
+                        Email Support
+                    </a>
+                    <a href="index.html" class="bg-primary-dark text-white px-8 py-4 rounded-xl font-bold border border-white/20 hover:bg-primary-dark/80 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">home</span>
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-slate-500 text-sm">© 2026 SUG General Elections Commission. Authorized by the University Board of Trustees.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

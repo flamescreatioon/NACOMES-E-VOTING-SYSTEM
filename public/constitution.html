@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SUG Constitution | ABSU Election Portal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { font-family: 'Lexend', sans-serif; }
+        .glass-effect { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .dark .glass-effect { background: rgba(16, 22, 34, 0.8); }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-12 w-auto"/>
+                    <div class="flex flex-col">
+                        <span class="text-slate-900 dark:text-slate-100 font-bold text-lg leading-none">SUG Elections</span>
+                        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Official Voting Portal</span>
+                    </div>
+                </a>
+                <nav class="hidden md:flex items-center gap-8">
+                    <a class="text-sm font-semibold hover:text-primary transition-colors" href="index.html">Home</a>
+                    <a class="text-sm font-semibold hover:text-primary transition-colors" href="candidates.html">Candidates</a>
+                    <a class="text-sm font-semibold hover:text-primary transition-colors" href="how-it-works.html">How it Works</a>
+                    <a class="text-sm font-semibold hover:text-primary transition-colors" href="results.html">Results</a>
+                </nav>
+                <div class="flex items-center gap-4">
+                    <button id="dark-mode-toggle" class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                        <span class="material-symbols-outlined dark:hidden">dark_mode</span>
+                        <span class="material-symbols-outlined hidden dark:block text-yellow-400">light_mode</span>
+                    </button>
+                    <a href="login.html" class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-primary/90 transition-all">
+                        Login to Vote
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow py-16 md:py-24">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="mb-12 text-center md:text-left">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 w-fit mb-4">
+                    <span class="material-symbols-outlined text-sm">menu_book</span>
+                    <span class="text-xs font-bold uppercase tracking-widest">Official Document</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">Student Union Constitution</h1>
+                <p class="text-lg text-slate-600 dark:text-slate-400">
+                    The supreme law guiding the activities, governance, and rights of students within the Student Union Government.
+                </p>
+            </div>
+
+            <!-- Content Area using Tailwind Typography (prose) for easy formatting -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 md:p-12 border border-slate-200 dark:border-slate-800 shadow-xl">
+                <article class="prose prose-slate dark:prose-invert prose-lg max-w-none">
+                    <h2 class="text-primary border-b border-slate-200 dark:border-slate-700 pb-2">PREAMBLE</h2>
+                    <p>We, the students of the University, firmly and solemnly resolved to live in unity and harmony as one indivisible entity dedicated to the pursuit of academic excellence, defense of students' rights, and the general welfare of the student body, do hereby make, enact, and give to ourselves this Constitution.</p>
+
+                    <h2 class="text-primary border-b border-slate-200 dark:border-slate-700 pb-2 mt-10">ARTICLE 1: NAME AND SUPREMACY</h2>
+                    <h3>Section 1: Name</h3>
+                    <p>The union shall be known and addressed as the Student Union Government (SUG), hereinafter referred to as "The Union".</p>
+                    
+                    <h3>Section 2: Supremacy of the Constitution</h3>
+                    <p>This Constitution is supreme and its provisions shall have binding force on all authorities and persons throughout the Student Union Government. If any other union law, directive, or regulation is inconsistent with the provisions of this Constitution, this Constitution shall prevail, and that other law shall, to the extent of the inconsistency, be void.</p>
+
+                    <h2 class="text-primary border-b border-slate-200 dark:border-slate-700 pb-2 mt-10">ARTICLE 2: AIMS AND OBJECTIVES</h2>
+                    <ul>
+                        <li>To protect and defend the rights and interests of all students of the University.</li>
+                        <li>To foster unity, peace, and mutual understanding among students.</li>
+                        <li>To serve as the recognized representative body of the students in all matters affecting them within and outside the University.</li>
+                        <li>To promote the intellectual, social, and cultural welfare of the students.</li>
+                    </ul>
+
+                    <h2 class="text-primary border-b border-slate-200 dark:border-slate-700 pb-2 mt-10">ARTICLE 3: THE EXECUTIVE COUNCIL</h2>
+                    <p>The Executive powers of the Union shall be vested in the Executive Council which shall comprise:</p>
+                    <ol>
+                        <li><strong>The President:</strong> Chief Executive Officer of the Union, presides over all Executive Council meetings, and represents the Union in all University Senate and Management meetings.</li>
+                        <li><strong>The Vice President:</strong> Assists the President and coordinates the activities of all standing committees.</li>
+                        <li><strong>The General Secretary:</strong> Chief administrative officer, responsible for correspondence, record-keeping, and taking minutes at all Executive meetings.</li>
+                        <li><strong>The Financial Secretary:</strong> Responsible for receiving and recording all monies, and managing the financial records of the Union.</li>
+                        <li><strong>The Public Relations Officer (PRO):</strong> Responsible for disseminating information, managing the image of the Union, and handling press releases.</li>
+                    </ol>
+
+                    <h2 class="text-primary border-b border-slate-200 dark:border-slate-700 pb-2 mt-10">ARTICLE 4: ELECTIONS AND TENURE</h2>
+                    <h3>Section 1: Electoral Process</h3>
+                    <p>All Executive Council members shall be elected democratically by the general student body via a secret ballot system (or an approved electronic voting portal). The Electoral Commission shall be an independent body appointed by the University Management and the outgoing Legislative Council.</p>
+                    
+                    <h3>Section 2: Tenure of Office</h3>
+                    <p>The tenure of all elected Executive Council members shall be for one academic session. No student shall hold the same executive office for more than one tenure.</p>
+                </article>
+                
+                <!-- Download Action -->
+                <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 text-center">
+                    <p class="text-slate-500 mb-6">Need an offline copy? Download the full PDF version of the Constitution.</p>
+                    <button class="inline-flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-lg font-bold shadow-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-all">
+                        <span class="material-symbols-outlined">download</span>
+                        Download PDF Version
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-slate-500 text-sm">© SUG General Elections Commission. Authorized by the University Board of Trustees.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
