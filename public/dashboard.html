@@ -80,7 +80,7 @@
                 <div>
                     <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">Voting Dashboard</h2>
                     <p id="welcome-text" class="text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-                        Welcome, <span id="user-display-name" class="font-bold text-slate-900 dark:text-white">Student</span>. You are eligible to vote in the <span class="text-primary font-bold">SUG General Election</span> and the <span id="user-college-name" class="font-bold text-primary">College</span> election.
+                        Welcome, <span id="user-display-name" class="font-bold text-slate-900 dark:text-white">Student</span>. You are eligible to vote in the <span class="text-primary font-bold">SUG General Election</span>, the <span id="user-college-name" class="font-bold text-primary">College</span> election, and the <span id="user-dept-name" class="font-bold text-primary">Department</span> election.
                     </p>
                 </div>
                 <div class="flex flex-col items-end">
@@ -93,6 +93,7 @@
             </div>
         </div>
 
+        <div id="voting-ballot-area">
         <!-- SUG Section -->
         <div id="sug-container">
             <div class="flex items-center gap-4 mb-8">
@@ -111,6 +112,17 @@
                 <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
             </div>
             <div id="college-positions" class="space-y-12"></div>
+        </div>
+
+        <!-- Department Section -->
+        <div id="department-container" class="mt-20">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
+                <h3 id="dept-section-title" class="text-sm font-black uppercase tracking-[0.2em] text-primary">Department Level Elections</h3>
+                <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
+            </div>
+            <div id="department-positions" class="space-y-12"></div>
+        </div>
         </div>
     </main>
 
@@ -145,25 +157,59 @@
         if (user) {
             document.getElementById('user-display-name').textContent = user.name;
             document.getElementById('user-college-name').textContent = user.college;
+            document.getElementById('user-dept-name').textContent = user.dept || 'Department';
             document.getElementById('college-section-title').textContent = `${user.college} Level Elections`;
+            document.getElementById('dept-section-title').textContent = `${user.dept || 'Department'} Level Elections`;
         }
+
+        let activeSettings = {};
 
         // Render Election Sections
         async function renderElectionSections() {
-            const sugPositions = ELECTION_DATA.positions.SUG;
-            const collegePositions = ELECTION_DATA.positions.COLLEGE;
-            
             const sugRoot = document.getElementById('sug-positions');
             const collegeRoot = document.getElementById('college-positions');
+            const deptRoot = document.getElementById('department-positions');
             
-            const sugHtmlPromises = sugPositions.map(pos => renderPosition(pos, 'SUG'));
-            const collegeHtmlPromises = collegePositions.map(pos => renderPosition(pos, 'COLLEGE'));
+            sugRoot.innerHTML = '';
+            collegeRoot.innerHTML = '';
+            deptRoot.innerHTML = '';
             
-            const sugHtmls = await Promise.all(sugHtmlPromises);
-            const collegeHtmls = await Promise.all(collegeHtmlPromises);
-
-            sugRoot.innerHTML = sugHtmls.join('');
-            collegeRoot.innerHTML = collegeHtmls.join('');
+            const promises = [];
+            
+            if (activeSettings.voting_active_sug !== false) {
+                const sugHtmlPromises = ELECTION_DATA.positions.SUG.map(pos => renderPosition(pos, 'SUG'));
+                promises.push(Promise.all(sugHtmlPromises).then(htmls => {
+                    sugRoot.innerHTML = htmls.join('');
+                }));
+            } else {
+                document.getElementById('sug-container').classList.add('hidden');
+            }
+            
+            const specificCollegeKey = 'voting_active_college_' + user.college;
+            const isCollegeActive = activeSettings.voting_active_college !== false && activeSettings[specificCollegeKey] !== false;
+            
+            if (isCollegeActive) {
+                const collegeHtmlPromises = ELECTION_DATA.positions.COLLEGE.map(pos => renderPosition(pos, 'COLLEGE'));
+                promises.push(Promise.all(collegeHtmlPromises).then(htmls => {
+                    collegeRoot.innerHTML = htmls.join('');
+                }));
+            } else {
+                document.getElementById('college-container').classList.add('hidden');
+            }
+            
+            const specificDeptKey = 'voting_active_dept_' + user.dept;
+            const isDeptActive = activeSettings.voting_active_department !== false && activeSettings[specificDeptKey] !== false;
+            
+            if (isDeptActive) {
+                const deptHtmlPromises = ELECTION_DATA.positions.DEPARTMENT.map(pos => renderPosition(pos, 'DEPARTMENT'));
+                promises.push(Promise.all(deptHtmlPromises).then(htmls => {
+                    deptRoot.innerHTML = htmls.join('');
+                }));
+            } else {
+                document.getElementById('department-container').classList.add('hidden');
+            }
+            
+            await Promise.all(promises);
             
             // Add listeners
             document.querySelectorAll('input[type="radio"]').forEach(radio => {
@@ -174,15 +220,19 @@
         }
 
         async function renderPosition(pos, level) {
-            const candidates = await Data.getCandidates(level, pos.id, user.college);
-            if (candidates.length === 0) return ''; // Skip if no candidates for this college/level
+            const candidates = await Data.getCandidates(level, pos.id, user.college, user.dept);
+            if (candidates.length === 0) return ''; // Skip if no candidates for this college/department/level
+
+            let subtitle = 'General University Level';
+            if (level === 'COLLEGE') subtitle = `${user.college} Level`;
+            if (level === 'DEPARTMENT') subtitle = `${user.dept} Department Level`;
 
             return `
                 <section class="mb-12">
                     <div class="flex items-end justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
                         <div>
                             <h3 class="text-2xl font-bold text-slate-900 dark:text-white">${pos.title}</h3>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${level === 'SUG' ? 'General University Level' : user.college + ' Level'}</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${subtitle}</p>
                         </div>
                         <span class="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded">1 Vote Required</span>
                     </div>
@@ -259,8 +309,48 @@
             }
         });
 
+        // Check if voting system is active
+        async function checkVotingActive() {
+            try {
+                const res = await fetch(`${API_URL}/settings`);
+                if (res.ok) {
+                    activeSettings = await res.json();
+                    
+                    const anyActive = activeSettings.voting_active_sug !== false || 
+                                      (activeSettings.voting_active_college !== false && activeSettings['voting_active_college_' + user.college] !== false) || 
+                                      (activeSettings.voting_active_department !== false && activeSettings['voting_active_dept_' + user.dept] !== false);
+                                      
+                    if (!anyActive) {
+                        // Hide ballot area and display locked notice
+                        document.getElementById('voting-ballot-area').innerHTML = `
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center flex flex-col items-center justify-center gap-6 shadow-sm">
+                                <span class="material-symbols-outlined text-6xl text-rose-500 bg-rose-50 dark:bg-rose-950/20 p-4 rounded-full">lock</span>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-2">Voting System Closed</h3>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                                        The voting portal is currently locked or has not been opened yet by the Chief Electoral Officer. Please check the official timeline or contact administration if you think this is a mistake.
+                                    </p>
+                                </div>
+                                <a href="index.html" class="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-all">Back to Homepage</a>
+                            </div>
+                        `;
+                        // Hide sticky footer progress
+                        const footer = document.querySelector('footer');
+                        if (footer) footer.style.display = 'none';
+                    } else {
+                        renderElectionSections();
+                    }
+                } else {
+                    renderElectionSections();
+                }
+            } catch(e) {
+                console.error("Failed to check voting state:", e);
+                renderElectionSections();
+            }
+        }
+
         // Initialize
-        renderElectionSections();
+        checkVotingActive();
     </script>
 </body>
 </html>

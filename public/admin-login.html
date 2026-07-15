@@ -233,7 +233,7 @@
         });
 
         // Form submission
-        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+        document.getElementById('admin-login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             console.log('Form submitted');
             
@@ -241,48 +241,50 @@
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
+            const form = document.getElementById('admin-login-form');
 
-            console.log('Checking credentials for:', username);
+            console.log('Sending credentials check to server for:', username);
             
-            // Find matching admin
-            const admin = ADMIN_ACCOUNTS.find(a => 
-                a.username.toLowerCase() === username && a.password === password
-            );
-            
-            console.log('Admin found:', admin ? 'Yes' : 'No');
+            try {
+                const res = await fetch('http://localhost:5005/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
 
-            if (admin) {
-                // Store admin session
-                try {
-                    if (admin.role === 'Super Admin') {
-                        sessionStorage.setItem('superAdminLoggedIn', 'true');
-                    } else {
-                        sessionStorage.setItem('adminLoggedIn', 'true');
-                    }
-                    sessionStorage.setItem('adminUser', JSON.stringify({
-                        username: admin.username,
-                        name: admin.name,
-                        role: admin.role,
-                        loginTime: new Date().toISOString()
-                    }));
-                    console.log('Login successful');
-                } catch (e) {
-                    console.error('Failed to store session:', e);
-                    alert('Login failed: Unable to save session. Please enable cookies/storage.');
+                if (!res.ok) {
+                    errorText.textContent = data.error || 'Invalid username or password. Please try again.';
+                    errorDiv.classList.remove('hidden');
+                    form.classList.add('animate-shake');
+                    setTimeout(() => form.classList.remove('animate-shake'), 500);
                     return;
                 }
 
-                // Redirect to respective dashboard
-                window.location.href = admin.route;
-            } else {
-                // Show error
-                errorText.textContent = 'Invalid username or password. Please try again.';
-                errorDiv.classList.remove('hidden');
+                // Store admin session and token
+                sessionStorage.setItem('authToken', data.token);
+                if (data.admin.role === 'Super Admin') {
+                    sessionStorage.setItem('superAdminLoggedIn', 'true');
+                } else {
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                }
+                sessionStorage.setItem('adminUser', JSON.stringify({
+                    username: data.admin.username,
+                    name: data.admin.name,
+                    role: data.admin.role,
+                    loginTime: new Date().toISOString()
+                }));
                 
-                // Shake animation
-                const form = document.getElementById('admin-login-form');
-                form.classList.add('animate-shake');
-                setTimeout(() => form.classList.remove('animate-shake'), 500);
+                console.log('Login successful');
+                
+                // Redirect to respective dashboard
+                const route = data.admin.role === 'Super Admin' ? 'super-admin.html' : 'admin.html';
+                window.location.href = route;
+
+            } catch (err) {
+                console.error('Error during admin login:', err);
+                errorText.textContent = "Network error: Could not reach the server.";
+                errorDiv.classList.remove('hidden');
             }
         });
 

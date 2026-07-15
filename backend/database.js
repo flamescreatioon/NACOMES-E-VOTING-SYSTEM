@@ -1,6 +1,11 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+
+function hashPassword(password, salt) {
+    return crypto.createHmac('sha256', salt.toUpperCase()).update(password).digest('hex');
+}
 
 // Ensure the data directory exists
 const dataDir = path.join(__dirname, 'data');
@@ -13,7 +18,27 @@ const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error connecting to the database:', err.message);
     } else {
-        console.log('Connected to the SQLite database.');
+        console.log('Connected to SQLite database.');
+
+        // ── Performance & Concurrency PRAGMAs ──────────────────────────────
+        // WAL mode: allows concurrent reads while a write is in progress.
+        // Without this, every write exclusively locks the file and readers block.
+        db.run("PRAGMA journal_mode=WAL");
+
+        // Increase in-memory cache to 64 MB (default is ~2 MB).
+        // Hot pages (students, votes, candidates) stay in RAM between requests.
+        db.run("PRAGMA cache_size=-65536");
+
+        // NORMAL sync is safe with WAL and far faster than FULL (the default).
+        // Data is safe on OS crash; only a power-cut mid-write risks the last tx.
+        db.run("PRAGMA synchronous=NORMAL");
+
+        // Keep temp tables in memory instead of writing to disk.
+        db.run("PRAGMA temp_store=MEMORY");
+
+        // Allow up to 5 seconds of retry on SQLITE_BUSY before failing.
+        db.configure("busyTimeout", 5000);
+
         initializeDatabase();
     }
 });
@@ -30,13 +55,22 @@ function initializeDatabase() {
                 college TEXT,
                 dept TEXT,
                 votes INTEGER DEFAULT 0,
-                status TEXT DEFAULT 'active'
+                status TEXT DEFAULT 'active',
+                matricNo TEXT,
+                email TEXT,
+                phone TEXT,
+                slogan TEXT,
+                manifesto TEXT,
+                experience TEXT
             )
         `, (err) => {
             if (!err) {
-                // Safely try to alter the table for existing databases that don't have the status column yet
-                db.run("ALTER TABLE candidates ADD COLUMN status TEXT DEFAULT 'active'", (alterErr) => {
-                    // It will error if the column already exists, which is expected on subsequent runs
+                // Safely alter table to add columns if they don't exist
+                const columns = ['status', 'matricNo', 'email', 'phone', 'slogan', 'manifesto', 'experience'];
+                columns.forEach(col => {
+                    db.run(`ALTER TABLE candidates ADD COLUMN ${col} TEXT DEFAULT NULL`, (alterErr) => {
+                        // Suppress error if column already exists
+                    });
                 });
             }
         });
@@ -85,73 +119,140 @@ function initializeDatabase() {
             )
         `);
 
-        // Recreate students table to support updated voter registration format
-        db.run("DROP TABLE IF EXISTS students", () => {
-            db.run(`
-                CREATE TABLE students (
-                    matricNo TEXT PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    level TEXT NOT NULL,
-                    dept TEXT NOT NULL,
-                    contactInfo TEXT NOT NULL,
-                    college TEXT NOT NULL,
-                    password TEXT NOT NULL,
-                    registeredAt DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            `, (err) => {
-                if (!err) {
-                    console.log("Seeding 15,000 registered student accounts...");
-                    db.serialize(() => {
-                        db.run("BEGIN TRANSACTION");
-                        
-                        const fakeFirstNames = ["John", "Jane", "Michael", "Sarah", "David", "Grace", "Samuel", "Ngozi", "Emeka", "Amina", "Chinedu", "Fatima", "Yusuf", "Jennifer", "Ibrahim", "Daniel", "Joy", "Victor", "Blessing", "Emmanuel", "Patience", "Chidi", "Chioma", "Kelechi", "Ugochi", "Tunde", "Olumide", "Yetunde", "Bose", "Kunle"];
-                        const fakeLastNames = ["Okonkwo", "Eze", "Johnson", "Obi", "Nduka", "Okoli", "Ade", "Nwankwo", "Bello", "Peters", "Chukwu", "Abdullahi", "Olu", "Kalu", "Ojo", "Idris", "Anyanwu", "Ihejirika", "Opara", "Nwachukwu", "Okafor", "Okeke", "Uzoh"];
-                        
-                        const absuColleges = [
-                            { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
-                            { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
-                            { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
-                            { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
-                            { name: "Humanities", depts: ["History", "English", "Linguistics"] },
-                            { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
-                            { name: "Clinical Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
-                        ];
-                        
-                        const levels = ["100L", "200L", "300L", "400L", "500L"];
-                        
-                        const stmt = db.prepare("INSERT INTO students (matricNo, name, level, dept, contactInfo, college, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                        
-                        // Generate 15,000 students
-                        for (let i = 0; i < 15000; i++) {
-                            const firstName = fakeFirstNames[Math.floor(Math.random() * fakeFirstNames.length)];
-                            const lastName = fakeLastNames[Math.floor(Math.random() * fakeLastNames.length)];
-                            const year = 2021 + Math.floor(Math.random() * 4);
-                            const idNum = 100000 + i; // Guaranteed unique matric suffix
-                            const matric = `U${year}/${idNum}`;
+        // Create students table if not exists
+        db.run(`
+            CREATE TABLE IF NOT EXISTS students (
+                matricNo TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                level TEXT NOT NULL,
+                dept TEXT NOT NULL,
+                contactInfo TEXT NOT NULL,
+                college TEXT NOT NULL,
+                password TEXT NOT NULL,
+                registeredAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => {
+            if (!err) {
+                // Seed students only if empty
+                db.get("SELECT COUNT(*) as count FROM students", (countErr, row) => {
+                    if (!countErr && row && row.count === 0) {
+                        console.log("Seeding 15,000 registered student accounts...");
+                        db.serialize(() => {
+                            db.run("BEGIN TRANSACTION");
                             
-                            const collegeObj = absuColleges[Math.floor(Math.random() * absuColleges.length)];
-                            const dept = collegeObj.depts[Math.floor(Math.random() * collegeObj.depts.length)];
-                            const level = levels[Math.floor(Math.random() * levels.length)];
-                            const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@absu.edu.ng`;
+                            const fakeFirstNames = ["John", "Jane", "Michael", "Sarah", "David", "Grace", "Samuel", "Ngozi", "Emeka", "Amina", "Chinedu", "Fatima", "Yusuf", "Jennifer", "Ibrahim", "Daniel", "Joy", "Victor", "Blessing", "Emmanuel", "Patience", "Chidi", "Chioma", "Kelechi", "Ugochi", "Tunde", "Olumide", "Yetunde", "Bose", "Kunle"];
+                            const fakeLastNames = ["Okonkwo", "Eze", "Johnson", "Obi", "Nduka", "Okoli", "Ade", "Nwankwo", "Bello", "Peters", "Chukwu", "Abdullahi", "Olu", "Kalu", "Ojo", "Idris", "Anyanwu", "Ihejirika", "Opara", "Nwachukwu", "Okafor", "Okeke", "Uzoh"];
                             
-                            stmt.run(matric, `${firstName} ${lastName}`, level, dept, email, collegeObj.name, "student2026");
-                        }
-                        
-                        stmt.finalize(() => {
-                            db.run("COMMIT", (commitErr) => {
-                                if (commitErr) {
-                                    console.error("Error committing students seed:", commitErr.message);
-                                } else {
-                                    console.log("Successfully seeded 15,000 registered student accounts.");
-                                }
+                            const absuColleges = [
+                                { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
+                                { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
+                                { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
+                                { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
+                                { name: "Humanities", depts: ["History", "English", "Linguistics"] },
+                                { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
+                                { name: "Clinical Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
+                            ];
+                            
+                            const levels = ["100L", "200L", "300L", "400L", "500L"];
+                            
+                            const stmt = db.prepare("INSERT INTO students (matricNo, name, level, dept, contactInfo, college, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                            
+                            // Seed specific test accounts from README.md
+                            stmt.run("U2024/1234567", "John Doe", "400L", "Computer Science", "john.doe@absu.edu.ng", "Biological & Physical Sciences", hashPassword("test123", "U2024/1234567"));
+                            stmt.run("U2023/7654321", "Jane Smith", "300L", "Public Law", "jane.smith@absu.edu.ng", "Law", hashPassword("student", "U2023/7654321"));
+
+                            // Seed candidate student accounts for matching candidate profiles
+                            stmt.run("U2022/100001", "John Adebayo", "400L", "Computer Science", "john.adebayo@absu.edu.ng", "Biological & Physical Sciences", hashPassword("student2026", "U2022/100001"));
+                            stmt.run("U2022/100002", "Amina Ibrahim", "400L", "Public Law", "amina.ibrahim@absu.edu.ng", "Law", hashPassword("student2026", "U2022/100002"));
+                            stmt.run("U2022/100003", "Chukwuemeka Obi", "400L", "Mechanical Engineering", "emeka.obi@absu.edu.ng", "Engineering & Environmental Studies", hashPassword("student2026", "U2022/100003"));
+                            stmt.run("U2022/100004", "Sarah Johnson", "300L", "Accounting", "sarah.johnson@absu.edu.ng", "Business Administration", hashPassword("student2026", "U2022/100004"));
+                            stmt.run("U2022/100005", "Michael Oku", "400L", "History", "michael.oku@absu.edu.ng", "Humanities", hashPassword("student2026", "U2022/100005"));
+                            stmt.run("U2022/100006", "David Nduka", "400L", "Educational Management", "david.nduka@absu.edu.ng", "Education", hashPassword("student2026", "U2022/100006"));
+                            stmt.run("U2022/100007", "Grace Okoli", "300L", "Medicine & Surgery", "grace.okoli@absu.edu.ng", "Clinical Sciences", hashPassword("student2026", "U2022/100007"));
+
+                            // Generate 15,000 students
+                            for (let i = 0; i < 15000; i++) {
+                                const firstName = fakeFirstNames[Math.floor(Math.random() * fakeFirstNames.length)];
+                                const lastName = fakeLastNames[Math.floor(Math.random() * fakeLastNames.length)];
+                                const year = 2021 + Math.floor(Math.random() * 4);
+                                const idNum = 100000 + i; // Guaranteed unique matric suffix
+                                const matric = `U${year}/${idNum}`;
+                                
+                                const collegeObj = absuColleges[Math.floor(Math.random() * absuColleges.length)];
+                                const dept = collegeObj.depts[Math.floor(Math.random() * collegeObj.depts.length)];
+                                const level = levels[Math.floor(Math.random() * levels.length)];
+                                const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@absu.edu.ng`;
+                                
+                                stmt.run(matric, `${firstName} ${lastName}`, level, dept, email, collegeObj.name, hashPassword("student2026", matric));
+                            }
+                            
+                            stmt.finalize(() => {
+                                db.run("COMMIT", (commitErr) => {
+                                    if (commitErr) {
+                                        console.error("Error committing students seed:", commitErr.message);
+                                    } else {
+                                        console.log("Successfully seeded 15,000 registered student accounts.");
+                                    }
+                                });
                             });
                         });
-                    });
-                }
-            });
+                    }
+                });
+            }
         });
 
         console.log('Database schema initialized.');
+        
+        // ── Query Indexes ─────────────────────────────────────────────────
+        // These turn O(n) full-table scans into O(log n) lookups.
+        // MUST exist for the system to survive election-day load.
+        db.run("CREATE INDEX IF NOT EXISTS idx_votes_matricNo    ON votes(matricNo)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_votes_votedAt     ON votes(votedAt DESC)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_votes_college     ON votes(college)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_students_matricNo ON students(matricNo)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_students_college  ON students(college)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_students_dept     ON students(dept)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_students_name     ON students(name)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_candidates_level  ON candidates(level)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_candidates_pos    ON candidates(position)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_votedetails_vote  ON vote_details(voteId)");
+
+        
+        // Safely ensure candidate student profiles exist (self-healing migration)
+        const candidateStudents = [
+            ["U2022/100001", "John Adebayo", "400L", "Computer Science", "john.adebayo@absu.edu.ng", "Biological & Physical Sciences", "student2026"],
+            ["U2022/100002", "Amina Ibrahim", "400L", "Public Law", "amina.ibrahim@absu.edu.ng", "Law", "student2026"],
+            ["U2022/100003", "Chukwuemeka Obi", "400L", "Mechanical Engineering", "emeka.obi@absu.edu.ng", "Engineering & Environmental Studies", "student2026"],
+            ["U2022/100004", "Sarah Johnson", "300L", "Accounting", "sarah.johnson@absu.edu.ng", "Business Administration", "student2026"],
+            ["U2022/100005", "Michael Oku", "400L", "History", "michael.oku@absu.edu.ng", "Humanities", "student2026"],
+            ["U2022/100006", "David Nduka", "400L", "Educational Management", "david.nduka@absu.edu.ng", "Education", "student2026"],
+            ["U2022/100007", "Grace Okoli", "300L", "Medicine & Surgery", "grace.okoli@absu.edu.ng", "Clinical Sciences", "student2026"]
+        ];
+        candidateStudents.forEach(s => {
+            const hashedPass = hashPassword(s[6], s[0]);
+            db.run("INSERT OR IGNORE INTO students (matricNo, name, level, dept, contactInfo, college, password) VALUES (?, ?, ?, ?, ?, ?, ?)", [s[0], s[1], s[2], s[3], s[4], s[5], hashedPass]);
+        });
+
+        // Create system settings table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS system_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        `, (err) => {
+            if (!err) {
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('registration_active_sug', 'true')");
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('voting_active_sug', 'true')");
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('registration_active_college', 'true')");
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('voting_active_college', 'true')");
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('registration_active_department', 'true')");
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('voting_active_department', 'true')");
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('election_deadline', '2026-10-31T23:59:59')");
+                // Keep legacy flags for backward compatibility
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('registration_active', 'true')");
+                db.run("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('voting_active', 'true')");
+            }
+        });
     });
 }
 

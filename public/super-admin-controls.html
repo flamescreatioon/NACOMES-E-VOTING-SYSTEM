@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Electoral Controls - ABSU Election Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#9333ea", // Purple to denote Super Admin
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .sidebar-active {
+            background-color: #9333ea;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+    <!-- Background Canvas Motion -->
+    <canvas id="motion-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-20"></canvas>
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 border-r border-primary/10 bg-white dark:bg-slate-900 h-screen sticky top-0 flex flex-col justify-between py-6 px-4 z-10">
+        <div class="flex flex-col gap-8">
+            <!-- Brand -->
+            <div class="flex items-center gap-3 px-2">
+                <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+                <div>
+                    <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
+                    <p class="text-slate-500 text-xs font-medium">Super Admin</p>
+                </div>
+            </div>
+            <!-- Nav Links -->
+            <nav class="flex flex-col gap-1">
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="super-admin.html">
+                    <span class="material-symbols-outlined text-[22px]">dashboard</span>
+                    <span class="text-sm font-medium">Dashboard</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="admin-candidates.html">
+                    <span class="material-symbols-outlined text-[22px]">group</span>
+                    <span class="text-sm font-medium">Candidates</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="student-db.html">
+                    <span class="material-symbols-outlined text-[22px]">database</span>
+                    <span class="text-sm font-medium">Student DB</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="admin-results.html">
+                    <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+                    <span class="text-sm font-medium">Results</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg sidebar-active transition-all group" href="super-admin-controls.html">
+                    <span class="material-symbols-outlined text-[22px]">toggle_on</span>
+                    <span class="text-sm font-medium">System Controls</span>
+                </a>
+            </nav>
+        </div>
+        <div class="flex flex-col gap-4">
+            <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all">
+                <span class="material-symbols-outlined text-[22px]">home</span>
+                <span class="text-sm font-medium">Back to Site</span>
+            </a>
+            <button id="logout-btn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all w-full text-left">
+                <span class="material-symbols-outlined text-[22px]">logout</span>
+                <span class="text-sm font-medium">Logout</span>
+            </button>
+            <div class="p-3 bg-primary/5 rounded-xl flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary">verified_user</span>
+                </div>
+                <div class="flex-1">
+                    <p id="admin-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Super Admin</p>
+                    <p class="text-[10px] text-slate-500 font-medium">Chief Electoral Officer</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-y-auto z-10">
+        <!-- Header -->
+        <header class="h-16 border-b border-primary/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-bold tracking-tight">Electoral Controls</h2>
+            </div>
+        </header>
+
+        <!-- Body -->
+        <div class="p-8 flex flex-col gap-8 max-w-4xl mx-auto w-full">
+            <!-- Tier Toggles -->
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-primary/5 shadow-lg flex flex-col gap-8">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Multi-Tier Electoral Settings</h3>
+                    <p class="text-sm text-slate-500 mt-1">Activating or locking toggles independently per election tier impacts registration and voting rules in real-time.</p>
+                </div>
+
+                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
+
+                <!-- SUG General Election Controls -->
+                <div class="flex flex-col gap-4">
+                    <h4 class="text-md font-bold text-purple-600 flex items-center gap-2">
+                        <span class="material-symbols-outlined">layers</span>
+                        SUG General Elections (University-Wide)
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg text-2xl">person_add</span>
+                                <div>
+                                    <p class="text-sm font-bold">SUG Candidate Registration</p>
+                                    <p id="reg-status-label-sug" class="text-xs text-slate-400">Loading state...</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="toggle-registration-sug" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined p-2 bg-purple-50 text-purple-600 dark:bg-purple-950/20 dark:text-purple-400 rounded-lg text-2xl">how_to_vote</span>
+                                <div>
+                                    <p class="text-sm font-bold">SUG Voter Balloting</p>
+                                    <p id="vote-status-label-sug" class="text-xs text-slate-400">Loading state...</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="toggle-voting-sug" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
+
+                <!-- College Level Election Controls -->
+                <div class="flex flex-col gap-4">
+                    <h4 class="text-md font-bold text-purple-600 flex items-center gap-2">
+                        <span class="material-symbols-outlined">account_balance</span>
+                        College Level Elections (Colleges/Faculties Global Toggles)
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg text-2xl">person_add</span>
+                                <div>
+                                    <p class="text-sm font-bold">College Candidate Registration</p>
+                                    <p id="reg-status-label-college" class="text-xs text-slate-400">Loading state...</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="toggle-registration-college" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined p-2 bg-purple-50 text-purple-600 dark:bg-purple-950/20 dark:text-purple-400 rounded-lg text-2xl">how_to_vote</span>
+                                <div>
+                                    <p class="text-sm font-bold">College Voter Balloting</p>
+                                    <p id="vote-status-label-college" class="text-xs text-slate-400">Loading state...</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="toggle-voting-college" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
+
+                <!-- Departmental Level Election Controls -->
+                <div class="flex flex-col gap-4">
+                    <h4 class="text-md font-bold text-purple-600 flex items-center gap-2">
+                        <span class="material-symbols-outlined">domain</span>
+                        Departmental Level Elections (Departments Global Toggles)
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg text-2xl">person_add</span>
+                                <div>
+                                    <p class="text-sm font-bold">Dept Candidate Registration</p>
+                                    <p id="reg-status-label-department" class="text-xs text-slate-400">Loading state...</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="toggle-registration-department" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined p-2 bg-purple-50 text-purple-600 dark:bg-purple-950/20 dark:text-purple-400 rounded-lg text-2xl">how_to_vote</span>
+                                <div>
+                                    <p class="text-sm font-bold">Dept Voter Balloting</p>
+                                    <p id="vote-status-label-department" class="text-xs text-slate-400">Loading state...</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="toggle-voting-department" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Election Countdown Deadline Control -->
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-primary/5 shadow-lg flex flex-col gap-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Election Countdown Control</h3>
+                    <p class="text-xs text-slate-500 mt-1">Set the deadline when voting officially closes. This updates the countdown timer on the homepage in real-time.</p>
+                </div>
+                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-slate-50 dark:bg-slate-800/30 p-6 rounded-xl border border-slate-150 dark:border-slate-800">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2">Close Date & Time</label>
+                        <input type="datetime-local" id="election-deadline-input" class="w-full py-2.5 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="save-deadline-btn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-all shadow-sm">
+                            Update Deadline
+                        </button>
+                        <button id="quick-1hr-btn" class="border border-purple-600/20 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/20 font-semibold py-2.5 px-3 rounded-lg text-xs transition-all">
+                            +1 Hour
+                        </button>
+                        <button id="quick-24hr-btn" class="border border-purple-600/20 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/20 font-semibold py-2.5 px-3 rounded-lg text-xs transition-all">
+                            +24 Hours
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- College-Specific Controls -->
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-primary/5 shadow-lg flex flex-col gap-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">College-Specific Controls</h3>
+                    <p class="text-xs text-slate-500 mt-1">Enable or lock voter functions for individual colleges dynamically.</p>
+                </div>
+                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end bg-slate-50 dark:bg-slate-800/30 p-6 rounded-xl border border-slate-150 dark:border-slate-800">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2">Select College</label>
+                        <select id="college-select" class="w-full py-2.5 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between border-r border-slate-200 dark:border-slate-700 pr-4">
+                        <div>
+                            <p class="text-xs font-bold">Registration</p>
+                            <p id="college-reg-status" class="text-[10px] text-slate-400">ACTIVE</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="college-specific-registration" class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between pl-2">
+                        <div>
+                            <p class="text-xs font-bold">Voter Balloting</p>
+                            <p id="college-vote-status" class="text-[10px] text-slate-400">ACTIVE</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="college-specific-voting" class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Table of College Statuses -->
+                <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-medium">
+                            <tr>
+                                <th class="p-4 text-xs font-bold uppercase">College Name</th>
+                                <th class="p-4 text-xs font-bold uppercase text-center">Registration</th>
+                                <th class="p-4 text-xs font-bold uppercase text-center">Voter Balloting</th>
+                            </tr>
+                        </thead>
+                        <tbody id="colleges-status-table">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Department-Specific Controls -->
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-primary/5 shadow-lg flex flex-col gap-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Department-Specific Controls</h3>
+                    <p class="text-xs text-slate-500 mt-1">Enable or lock voter functions for individual departments dynamically.</p>
+                </div>
+                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end bg-slate-50 dark:bg-slate-800/30 p-6 rounded-xl border border-slate-150 dark:border-slate-800">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2">Select Department</label>
+                        <select id="dept-select" class="w-full py-2.5 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between border-r border-slate-200 dark:border-slate-700 pr-4">
+                        <div>
+                            <p class="text-xs font-bold">Registration</p>
+                            <p id="dept-reg-status" class="text-[10px] text-slate-400">ACTIVE</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="dept-specific-registration" class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between pl-2">
+                        <div>
+                            <p class="text-xs font-bold">Voter Balloting</p>
+                            <p id="dept-vote-status" class="text-[10px] text-slate-400">ACTIVE</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="dept-specific-voting" class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Table of Department Statuses -->
+                <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl max-h-[300px] overflow-y-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-medium sticky top-0">
+                            <tr>
+                                <th class="p-4 text-xs font-bold uppercase">Department Name</th>
+                                <th class="p-4 text-xs font-bold uppercase text-center">Registration</th>
+                                <th class="p-4 text-xs font-bold uppercase text-center">Voter Balloting</th>
+                            </tr>
+                        </thead>
+                        <tbody id="depts-status-table">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/main.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5005/api';
+
+        // Colleges and Departments Seed Mapping
+        const COLLEGES_MAP = [
+            { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
+            { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
+            { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
+            { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
+            { name: "Humanities & Social Sciences", depts: ["History", "English", "Linguistics"] },
+            { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
+            { name: "Medicine & Health Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
+        ];
+
+        let globalSettings = {};
+
+        // Check if admin is authorized
+        function checkAdminAuth() {
+            if (sessionStorage.getItem('superAdminLoggedIn') !== 'true') {
+                window.location.href = 'super-admin-login.html';
+                return false;
+            }
+            const adminUser = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
+            if (adminUser.name) {
+                document.getElementById('admin-name').textContent = adminUser.name;
+            }
+            return true;
+        }
+
+        // Initialize selectors
+        function initSelectors() {
+            const collegeSelect = document.getElementById('college-select');
+            const deptSelect = document.getElementById('dept-select');
+            
+            // Populate College Select
+            collegeSelect.innerHTML = '';
+            COLLEGES_MAP.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = c.name;
+                collegeSelect.appendChild(opt);
+            });
+            
+            // Populate Dept Select
+            deptSelect.innerHTML = '';
+            COLLEGES_MAP.forEach(c => {
+                c.depts.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.textContent = `${d} (${c.name})`;
+                    deptSelect.appendChild(opt);
+                });
+            });
+
+            // Bind change listeners to load current states into detail toggles
+            collegeSelect.addEventListener('change', () => syncCollegeDetailToggles());
+            deptSelect.addEventListener('change', () => syncDeptDetailToggles());
+        }
+
+        // Sync local selectors details
+        function syncCollegeDetailToggles() {
+            const selectedCollege = document.getElementById('college-select').value;
+            const regToggle = document.getElementById('college-specific-registration');
+            const voteToggle = document.getElementById('college-specific-voting');
+            
+            const regKey = 'registration_active_college_' + selectedCollege;
+            const voteKey = 'voting_active_college_' + selectedCollege;
+            
+            const isRegActive = globalSettings[regKey] !== false;
+            const isVoteActive = globalSettings[voteKey] !== false;
+            
+            regToggle.checked = isRegActive;
+            voteToggle.checked = isVoteActive;
+            
+            document.getElementById('college-reg-status').textContent = isRegActive ? 'ACTIVE' : 'LOCKED';
+            document.getElementById('college-reg-status').className = `text-[10px] font-bold ${isRegActive ? 'text-emerald-500' : 'text-rose-500'}`;
+            
+            document.getElementById('college-vote-status').textContent = isVoteActive ? 'ACTIVE' : 'LOCKED';
+            document.getElementById('college-vote-status').className = `text-[10px] font-bold ${isVoteActive ? 'text-emerald-500' : 'text-rose-500'}`;
+        }
+
+        function syncDeptDetailToggles() {
+            const selectedDept = document.getElementById('dept-select').value;
+            const regToggle = document.getElementById('dept-specific-registration');
+            const voteToggle = document.getElementById('dept-specific-voting');
+            
+            const regKey = 'registration_active_dept_' + selectedDept;
+            const voteKey = 'voting_active_dept_' + selectedDept;
+            
+            const isRegActive = globalSettings[regKey] !== false;
+            const isVoteActive = globalSettings[voteKey] !== false;
+            
+            regToggle.checked = isRegActive;
+            voteToggle.checked = isVoteActive;
+            
+            document.getElementById('dept-reg-status').textContent = isRegActive ? 'ACTIVE' : 'LOCKED';
+            document.getElementById('dept-reg-status').className = `text-[10px] font-bold ${isRegActive ? 'text-emerald-500' : 'text-rose-500'}`;
+            
+            document.getElementById('dept-vote-status').textContent = isVoteActive ? 'ACTIVE' : 'LOCKED';
+            document.getElementById('dept-vote-status').className = `text-[10px] font-bold ${isVoteActive ? 'text-emerald-500' : 'text-rose-500'}`;
+        }
+
+        // Fetch settings from API
+        async function loadSystemSettings() {
+            try {
+                const res = await fetch(`${API_URL}/settings`);
+                if (!res.ok) throw new Error("Could not load system settings");
+                globalSettings = await res.json();
+
+                // SUG Global Toggles
+                updateToggleUI('toggle-registration-sug', 'reg-status-label-sug', globalSettings.registration_active_sug, "Form open", "Form closed");
+                updateToggleUI('toggle-voting-sug', 'vote-status-label-sug', globalSettings.voting_active_sug, "Elections ongoing", "Ballots closed");
+
+                // College Global Toggles
+                updateToggleUI('toggle-registration-college', 'reg-status-label-college', globalSettings.registration_active_college, "Form open", "Form closed");
+                updateToggleUI('toggle-voting-college', 'vote-status-label-college', globalSettings.voting_active_college, "Elections ongoing", "Ballots closed");
+
+                // Department Global Toggles
+                updateToggleUI('toggle-registration-department', 'reg-status-label-department', globalSettings.registration_active_department, "Form open", "Form closed");
+                updateToggleUI('toggle-voting-department', 'vote-status-label-department', globalSettings.voting_active_department, "Elections ongoing", "Ballots closed");
+
+                // Sync Specific Selects and Tables
+                syncCollegeDetailToggles();
+                syncDeptDetailToggles();
+                renderStatusTables();
+
+                // Update election deadline input from settings
+                if (globalSettings.election_deadline) {
+                    document.getElementById('election-deadline-input').value = globalSettings.election_deadline.slice(0, 16);
+                }
+
+            } catch (e) {
+                console.error("Settings load error:", e);
+            }
+        }
+
+        function updateToggleUI(toggleId, labelId, isActive, activeText, lockedText) {
+            const toggle = document.getElementById(toggleId);
+            const label = document.getElementById(labelId);
+            toggle.checked = isActive !== false; // defaults to true
+            label.textContent = (isActive !== false) ? `ACTIVE (${activeText})` : `LOCKED (${lockedText})`;
+            label.className = `text-xs font-bold mt-1 ${(isActive !== false) ? "text-emerald-500" : "text-rose-500"}`;
+        }
+
+        // Render Status list tables
+        function renderStatusTables() {
+            // Render Colleges Table
+            const collegeTable = document.getElementById('colleges-status-table');
+            collegeTable.innerHTML = '';
+            
+            COLLEGES_MAP.forEach(c => {
+                const regKey = 'registration_active_college_' + c.name;
+                const voteKey = 'voting_active_college_' + c.name;
+                const isRegActive = globalSettings[regKey] !== false;
+                const isVoteActive = globalSettings[voteKey] !== false;
+                
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/20';
+                tr.innerHTML = `
+                    <td class="p-4 font-semibold text-slate-800 dark:text-slate-200">${c.name}</td>
+                    <td class="p-4 text-center">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isRegActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400'}">
+                            <span class="size-1.5 rounded-full ${isRegActive ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${isRegActive ? 'Open' : 'Closed'}
+                        </span>
+                        <button onclick="inlineToggle('college', '${c.name}', 'registration', ${!isRegActive})" class="ml-3 text-xs text-primary font-bold hover:underline">Toggle</button>
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isVoteActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400'}">
+                            <span class="size-1.5 rounded-full ${isVoteActive ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${isVoteActive ? 'Open' : 'Closed'}
+                        </span>
+                        <button onclick="inlineToggle('college', '${c.name}', 'voting', ${!isVoteActive})" class="ml-3 text-xs text-primary font-bold hover:underline">Toggle</button>
+                    </td>
+                `;
+                collegeTable.appendChild(tr);
+            });
+
+            // Render Departments Table
+            const deptTable = document.getElementById('depts-status-table');
+            deptTable.innerHTML = '';
+            
+            COLLEGES_MAP.forEach(c => {
+                c.depts.forEach(d => {
+                    const regKey = 'registration_active_dept_' + d;
+                    const voteKey = 'voting_active_dept_' + d;
+                    const isRegActive = globalSettings[regKey] !== false;
+                    const isVoteActive = globalSettings[voteKey] !== false;
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/20';
+                    tr.innerHTML = `
+                        <td class="p-4 text-slate-800 dark:text-slate-200">
+                            <span class="font-semibold">${d}</span>
+                            <span class="block text-[10px] text-slate-400">${c.name}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isRegActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400'}">
+                                <span class="size-1.5 rounded-full ${isRegActive ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                                ${isRegActive ? 'Open' : 'Closed'}
+                            </span>
+                            <button onclick="inlineToggle('dept', '${d}', 'registration', ${!isRegActive})" class="ml-3 text-xs text-primary font-bold hover:underline">Toggle</button>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isVoteActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400'}">
+                                <span class="size-1.5 rounded-full ${isVoteActive ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                                ${isVoteActive ? 'Open' : 'Closed'}
+                            </span>
+                            <button onclick="inlineToggle('dept', '${d}', 'voting', ${!isVoteActive})" class="ml-3 text-xs text-primary font-bold hover:underline">Toggle</button>
+                        </td>
+                    `;
+                    deptTable.appendChild(tr);
+                });
+            });
+        }
+
+        // Inline Toggle Actions
+        window.inlineToggle = function(type, name, action, newValue) {
+            const key = `${action}_active_${type}_${name}`;
+            updateSystemSetting(key, newValue);
+        };
+
+        // Sync settings change to backend
+        async function updateSystemSetting(key, value) {
+            try {
+                const res = await fetch(`${API_URL}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key, value })
+                });
+                if (!res.ok) throw new Error("Failed to sync setting to server");
+                
+                await loadSystemSettings();
+            } catch (e) {
+                alert(e.message);
+                loadSystemSettings();
+            }
+        }
+
+        // Event Listeners for SUG Global
+        document.getElementById('toggle-registration-sug').addEventListener('change', function() {
+            updateSystemSetting('registration_active_sug', this.checked);
+        });
+        document.getElementById('toggle-voting-sug').addEventListener('change', function() {
+            updateSystemSetting('voting_active_sug', this.checked);
+        });
+
+        // Event Listeners for College Global
+        document.getElementById('toggle-registration-college').addEventListener('change', function() {
+            updateSystemSetting('registration_active_college', this.checked);
+        });
+        document.getElementById('toggle-voting-college').addEventListener('change', function() {
+            updateSystemSetting('voting_active_college', this.checked);
+        });
+
+        // Event Listeners for Department Global
+        document.getElementById('toggle-registration-department').addEventListener('change', function() {
+            updateSystemSetting('registration_active_department', this.checked);
+        });
+        document.getElementById('toggle-voting-department').addEventListener('change', function() {
+            updateSystemSetting('voting_active_department', this.checked);
+        });
+
+        // Event Listeners for Specific College Control selects
+        document.getElementById('college-specific-registration').addEventListener('change', function() {
+            const selectedCollege = document.getElementById('college-select').value;
+            updateSystemSetting('registration_active_college_' + selectedCollege, this.checked);
+        });
+        document.getElementById('college-specific-voting').addEventListener('change', function() {
+            const selectedCollege = document.getElementById('college-select').value;
+            updateSystemSetting('voting_active_college_' + selectedCollege, this.checked);
+        });
+
+        // Event Listeners for Specific Department Control selects
+        document.getElementById('dept-specific-registration').addEventListener('change', function() {
+            const selectedDept = document.getElementById('dept-select').value;
+            updateSystemSetting('registration_active_dept_' + selectedDept, this.checked);
+        });
+        document.getElementById('dept-specific-voting').addEventListener('change', function() {
+            const selectedDept = document.getElementById('dept-select').value;
+            updateSystemSetting('voting_active_dept_' + selectedDept, this.checked);
+        });
+
+        // Event Listeners for Election Countdown Control
+        document.getElementById('save-deadline-btn').addEventListener('click', function() {
+            const deadlineVal = document.getElementById('election-deadline-input').value;
+            if (!deadlineVal) {
+                alert("Please select a valid date and time.");
+                return;
+            }
+            updateSystemSetting('election_deadline', deadlineVal);
+        });
+
+        document.getElementById('quick-1hr-btn').addEventListener('click', function() {
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            const tzoffset = now.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(now.getTime() - tzoffset)).toISOString().slice(0, 16);
+            document.getElementById('election-deadline-input').value = localISOTime;
+            updateSystemSetting('election_deadline', localISOTime);
+        });
+
+        document.getElementById('quick-24hr-btn').addEventListener('click', function() {
+            const now = new Date();
+            now.setDate(now.getDate() + 1);
+            const tzoffset = now.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(now.getTime() - tzoffset)).toISOString().slice(0, 16);
+            document.getElementById('election-deadline-input').value = localISOTime;
+            updateSystemSetting('election_deadline', localISOTime);
+        });
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            sessionStorage.removeItem('superAdminLoggedIn');
+            sessionStorage.removeItem('adminUser');
+            window.location.href = 'super-admin-login.html';
+        });
+
+        // Initialize page
+        if (checkAdminAuth()) {
+            initSelectors();
+            loadSystemSettings();
+        }
+    </script>
+</body>
+</html>

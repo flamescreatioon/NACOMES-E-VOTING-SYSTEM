@@ -8,12 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
+        const isSuperAdmin = sessionStorage.getItem('superAdminLoggedIn') === 'true';
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#9333ea", // Purple to denote Super Admin
+                        "primary": isSuperAdmin ? "#9333ea" : "#135bec",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -30,7 +31,7 @@
             font-family: 'Lexend', sans-serif;
         }
         .sidebar-active {
-            background-color: #9333ea;
+            background-color: var(--color-primary, #9333ea);
             color: white;
         }
     </style>
@@ -44,12 +45,12 @@
                 <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
                 <div>
                     <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
-                    <p class="text-slate-500 text-xs font-medium">Super Admin</p>
+                    <p id="admin-role-text" class="text-slate-500 text-xs font-medium">Super Admin</p>
                 </div>
             </div>
             <!-- Nav Links -->
             <nav class="flex flex-col gap-1">
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="super-admin.html">
+                <a id="nav-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="super-admin.html">
                     <span class="material-symbols-outlined text-[22px]">dashboard</span>
                     <span class="text-sm font-medium">Dashboard</span>
                 </a>
@@ -57,9 +58,17 @@
                     <span class="material-symbols-outlined text-[22px]">group</span>
                     <span class="text-sm font-medium">Candidates</span>
                 </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="student-db.html">
+                    <span class="material-symbols-outlined text-[22px]">database</span>
+                    <span class="text-sm font-medium">Student DB</span>
+                </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="admin-results.html">
                     <span class="material-symbols-outlined text-[22px]">bar_chart</span>
                     <span class="text-sm font-medium">Results</span>
+                </a>
+                <a id="nav-controls" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group hidden" href="super-admin-controls.html">
+                    <span class="material-symbols-outlined text-[22px]">toggle_on</span>
+                    <span class="text-sm font-medium">System Controls</span>
                 </a>
             </nav>
         </div>
@@ -194,16 +203,37 @@
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
 
+    <script src="assets/js/main.js"></script>
     <script>
         const API_URL = 'http://localhost:5005/api';
 
         // Check auth
         function checkAuth() {
-            if (!sessionStorage.getItem('superAdminLoggedIn')) {
-                window.location.href = 'super-admin-login.html';
+            const isSuper = sessionStorage.getItem('superAdminLoggedIn') === 'true';
+            const isAdmin = sessionStorage.getItem('adminLoggedIn') === 'true';
+            
+            if (!isSuper && !isAdmin) {
+                window.location.href = 'admin-login.html';
                 return false;
             }
             
+            // Adjust theme color and sidebar targets dynamically
+            document.documentElement.style.setProperty('--color-primary', isSuper ? '#9333ea' : '#135bec');
+            const roleText = document.getElementById('admin-role-text');
+            if (roleText) {
+                roleText.textContent = isSuper ? 'Super Admin' : 'Admin Console';
+            }
+            
+            const dashboardLink = document.getElementById('nav-dashboard');
+            if (dashboardLink) {
+                dashboardLink.href = isSuper ? 'super-admin.html' : 'admin.html';
+            }
+
+            const controlsLink = document.getElementById('nav-controls');
+            if (controlsLink && isSuper) {
+                controlsLink.classList.remove('hidden');
+            }
+
             // Display admin info
             const adminUser = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
             if (adminUser.name) {
@@ -302,10 +332,12 @@
                 html += `
                     <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all">
                         <td class="py-4 text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-xs">
-                                ${c.name.charAt(0)}
-                            </div>
-                            ${c.name}
+                            <a href="admin-candidate-details.html?id=${c.id}" class="flex items-center gap-3 hover:text-primary transition-all group/name">
+                                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-xs group-hover/name:bg-primary group-hover/name:text-white transition-all">
+                                    ${c.name.charAt(0)}
+                                </div>
+                                <span>${c.name}</span>
+                            </a>
                         </td>
                         <td class="py-4 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                             ${c.position.replace('-', ' ')}
@@ -316,8 +348,11 @@
                         <td class="py-4 text-xs">${statusBadge}</td>
                         <td class="py-4 text-right">
                             <div class="flex items-center justify-end gap-2">
+                                <a href="admin-candidate-details.html?id=${c.id}" class="p-1.5 text-slate-400 hover:text-primary rounded-lg hover:bg-primary/10 transition-all" title="View Details">
+                                    <span class="material-symbols-outlined text-lg">visibility</span>
+                                </a>
                                 ${actionButton}
-                                <button onclick="deleteCandidate('${c.id}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all">
+                                <button onclick="deleteCandidate('${c.id}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all" title="Delete Candidate">
                                     <span class="material-symbols-outlined text-lg">delete</span>
                                 </button>
                             </div>

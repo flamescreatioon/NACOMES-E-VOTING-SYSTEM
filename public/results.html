@@ -152,16 +152,42 @@
         const container = document.getElementById('results-container');
         const noVotesMsg = document.getElementById('no-votes-message');
 
-        // Initialize Filter
-        CONFIG.colleges.forEach(college => {
-            const opt = document.createElement('option');
-            opt.value = college;
-            opt.textContent = college + ' Results';
-            filterEl.appendChild(opt);
-        });
+        // Seed mapping matching database
+        const COLLEGES_MAP = [
+            { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
+            { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
+            { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
+            { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
+            { name: "Humanities & Social Sciences", depts: ["History", "English", "Linguistics"] },
+            { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
+            { name: "Medicine & Health Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
+        ];
 
-        async function calculateResults(level, college = null) {
-            const positions = level === 'SUG' ? ELECTION_DATA.positions.SUG : ELECTION_DATA.positions.COLLEGE;
+        // Initialize Filter Dropdown dynamically with colleges and departments
+        const collegesOptGroup = document.createElement('optgroup');
+        collegesOptGroup.label = "Colleges / Faculties";
+        COLLEGES_MAP.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = `COLLEGE|${c.name}`;
+            opt.textContent = c.name;
+            collegesOptGroup.appendChild(opt);
+        });
+        filterEl.appendChild(collegesOptGroup);
+
+        const deptsOptGroup = document.createElement('optgroup');
+        deptsOptGroup.label = "Departments";
+        COLLEGES_MAP.forEach(c => {
+            c.depts.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = `DEPARTMENT|${d}`;
+                opt.textContent = `${d} (${c.name})`;
+                deptsOptGroup.appendChild(opt);
+            });
+        });
+        filterEl.appendChild(deptsOptGroup);
+
+        async function calculateResults(level, college = null, dept = null) {
+            const positions = ELECTION_DATA.positions[level];
             const results = {};
 
             const allCandidates = await Data.getAllCandidates();
@@ -172,8 +198,9 @@
                 const candidates = allCandidates.filter(c => {
                     const levelMatch = c.level === level;
                     const posMatch = c.position === pos.id;
-                    const collegeMatch = level === 'SUG' || c.college === college;
-                    return levelMatch && posMatch && collegeMatch;
+                    const collegeMatch = level !== 'COLLEGE' || c.college === college;
+                    const deptMatch = level !== 'DEPARTMENT' || c.dept === dept;
+                    return levelMatch && posMatch && collegeMatch && deptMatch;
                 });
 
                 candidates.forEach(c => {
@@ -186,10 +213,19 @@
 
         async function renderResults() {
             const selection = filterEl.value;
-            const level = selection === 'SUG' ? 'SUG' : 'COLLEGE';
-            const college = selection === 'SUG' ? null : selection;
+            let level = 'SUG';
+            let college = null;
+            let dept = null;
+
+            if (selection.startsWith('COLLEGE|')) {
+                level = 'COLLEGE';
+                college = selection.split('|')[1];
+            } else if (selection.startsWith('DEPARTMENT|')) {
+                level = 'DEPARTMENT';
+                dept = selection.split('|')[1];
+            }
             
-            const results = await calculateResults(level, college);
+            const results = await calculateResults(level, college, dept);
             
             let totalVoters = 0;
             try {

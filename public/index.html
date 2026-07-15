@@ -3,7 +3,8 @@
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>ABSU SUG General Elections | University Voting Portal</title>
+<title>ABSU E-Voting Portal | Student Elections</title>
+<meta name="description" content="Cast your vote for the Abia State University Student Union Government, College, and Departmental elections — from anywhere on campus."/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -54,8 +55,8 @@
 <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
 <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-12 w-auto"/>
 <div class="flex flex-col">
-<span class="text-slate-900 dark:text-slate-100 font-bold text-lg leading-none">SUG Elections</span>
-<span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Official Voting Portal</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold text-lg leading-none">ABSU Elections</span>
+<span class="text-xs text-slate-500 font-medium uppercase tracking-wider">E-Voting Portal</span>
 </div>
 </a>
 <nav class="hidden md:flex items-center gap-8">
@@ -84,11 +85,12 @@
 <div class="flex flex-col gap-8">
 
 <h1 class="text-4xl md:text-6xl font-black text-slate-900 dark:text-white leading-[1.1] tracking-tight">
-                            Shaping Our Future: <span class="text-primary">SUG</span> General Elections
-                        </h1>
+    Vote for your leaders.<br/>
+    <span class="text-primary">All elections. One portal.</span>
+</h1>
 <p class="text-lg text-slate-600 dark:text-slate-400 max-w-xl">
-                            Your voice matters. Securely cast your vote and participate in the democratic process of our university. End-to-end encrypted and fully anonymous.
-                        </p>
+    The ABSU E-Voting Portal covers SUG, College, and Departmental elections. Log in with your matric number and cast your ballot from anywhere — no queuing required.
+</p>
 <!-- Election Countdown -->
 <div class="flex flex-col gap-4">
 <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Voting Closes In</h3>
@@ -141,15 +143,15 @@
 </div>
 <div class="p-8">
 <div class="flex items-center justify-between mb-4">
-<h4 class="font-bold text-slate-900 dark:text-white">Live Voter Turnout</h4>
-<span class="text-primary font-bold">42.8%</span>
+    <h4 class="font-bold text-slate-900 dark:text-white">Voter Turnout</h4>
+    <span id="turnout-pct" class="text-primary font-bold">—%</span>
 </div>
 <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
-<div class="bg-primary h-full w-[42.8%] rounded-full shadow-[0_0_12px_rgba(19,91,236,0.5)]"></div>
+    <div id="turnout-bar" class="bg-primary h-full rounded-full shadow-[0_0_12px_rgba(19,91,236,0.5)] transition-all duration-700" style="width:0%"></div>
 </div>
 <div class="flex justify-between mt-3 text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-<span>12,450 Registered</span>
-<span>5,328 Votes Cast</span>
+    <span id="stat-registered">— registered</span>
+    <span id="stat-voted">— voted</span>
 </div>
 </div>
 </div>
@@ -168,13 +170,13 @@
 <!-- Step 1 -->
 <a href="how-it-works.html" class="p-8 rounded-2xl border border-slate-100 dark:border-slate-800 bg-background-light dark:bg-slate-800/50 hover:border-primary/30 transition-all group block shadow-sm hover:shadow-xl">
 <div class="size-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-3xl">fingerprint</span>
+<span class="material-symbols-outlined text-3xl">badge</span>
 </div>
 <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-  1. Secure Login
+  1. Log in with your matric number
   <span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
 </h3>
-<p class="text-slate-600 dark:text-slate-400">Log in using your official university portal credentials. Multi-factor authentication ensures only you can access your ballot.</p>
+<p class="text-slate-600 dark:text-slate-400">Use the same credentials you use on the university portal. Your account and ballot are tied to your matric number.</p>
 </a>
 <!-- Step 2 -->
 <a href="how-it-works.html" class="p-8 rounded-2xl border border-slate-100 dark:border-slate-800 bg-background-light dark:bg-slate-800/50 hover:border-primary/30 transition-all group block shadow-sm hover:shadow-xl">
@@ -182,10 +184,10 @@
 <span class="material-symbols-outlined text-3xl">how_to_vote</span>
 </div>
 <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-  2. Cast Your Vote
+  2. Pick your candidates
   <span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
 </h3>
-<p class="text-slate-600 dark:text-slate-400">Browse through candidates and select your preferred leaders for each executive position. You can review before final submission.</p>
+<p class="text-slate-600 dark:text-slate-400">Your ballot shows only the positions relevant to your college and department. Select one per position and review before submitting.</p>
 </a>
 <!-- Step 3 -->
 <a href="how-it-works.html" class="p-8 rounded-2xl border border-slate-100 dark:border-slate-800 bg-background-light dark:bg-slate-800/50 hover:border-primary/30 transition-all group block shadow-sm hover:shadow-xl">
@@ -193,15 +195,163 @@
 <span class="material-symbols-outlined text-3xl">task_alt</span>
 </div>
 <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-  3. Instant Receipt
+  3. Submit — you're done
   <span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
 </h3>
-<p class="text-slate-600 dark:text-slate-400">Receive a digital confirmation receipt that verifies your vote was counted while maintaining your ballot's complete anonymity.</p>
+<p class="text-slate-600 dark:text-slate-400">Once submitted, your vote is recorded and your matric number is marked as voted. You cannot vote again with the same account.</p>
 </a>
 </div>
 </div>
 </section>
+
+<!-- Vision & Mission Section -->
+<section class="py-24 relative overflow-hidden">
+    <!-- Decorative background blobs -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-black text-slate-900 dark:text-white mb-4">Our Vision & Mission</h2>
+            <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">What the ABSU Electoral Commission stands for — in plain language.</p>
+        </div>
+
+        <!-- Vision & Mission Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+            <!-- Vision Card -->
+            <div class="relative group">
+                <div class="absolute -inset-0.5 bg-gradient-to-br from-primary to-blue-500 rounded-3xl blur opacity-0 group-hover:opacity-20 transition duration-700"></div>
+                <div class="relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-10 h-full flex flex-col gap-6 shadow-lg hover:shadow-2xl transition-all duration-500">
+                    <!-- Icon Badge -->
+                    <div class="flex items-center gap-4">
+                        <div class="size-16 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-lg shadow-primary/30 flex-shrink-0">
+                            <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1">visibility</span>
+                        </div>
+                        <div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-primary mb-1">Vision</p>
+                    <h3 class="text-2xl font-black text-slate-900 dark:text-white">A student electoral system that actually works.</h3>
+                        </div>
+                    </div>
+
+                    <div class="h-px bg-gradient-to-r from-primary/20 to-transparent"></div>
+                    <p class="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
+                        Too many university elections are delayed, disputed, or confusing. Our goal is a portal where any ABSU student — from any college or department — can run for office, vote, and see the results without the usual headaches.
+                    </p>
+
+                    <!-- Vision Pillars -->
+                    <div class="grid grid-cols-2 gap-3 mt-auto">
+                        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1">balance</span>
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Fairness</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1">diversity_3</span>
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Inclusivity</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1">verified_user</span>
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Integrity</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1">bolt</span>
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Innovation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mission Card -->
+            <div class="relative group">
+                <div class="absolute -inset-0.5 bg-gradient-to-br from-blue-500 to-primary rounded-3xl blur opacity-0 group-hover:opacity-20 transition duration-700"></div>
+                <div class="relative bg-gradient-to-br from-primary to-blue-600 rounded-3xl p-10 h-full flex flex-col gap-6 shadow-lg shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-500 text-white">
+                    <!-- Decorative icon in background -->
+                    <div class="absolute top-6 right-6 opacity-10">
+                        <span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1">flag</span>
+                    </div>
+
+                    <!-- Icon Badge -->
+                    <div class="flex items-center gap-4">
+                        <div class="size-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1">flag</span>
+                        </div>
+                        <div>
+                        <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Mission</p>
+                        <h3 class="text-2xl font-black">Run clean elections at every level.</h3>
+                        </div>
+                    </div>
+
+                    <div class="h-px bg-white/20"></div>
+
+                    <p class="text-blue-100 text-base leading-relaxed">
+                        To run credible elections across every tier of ABSU student government — and make sure every student actually knows how to participate. We handle the tech so the Commission can focus on governance.
+                    </p>
+
+                    <!-- Mission Points -->
+                    <div class="flex flex-col gap-3 mt-auto">
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-blue-300 text-xl mt-0.5 flex-shrink-0" style="font-variation-settings: 'FILL' 1">check_circle</span>
+                            <p class="text-blue-100 text-sm">Elections run on schedule — no postponements over logistics</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-blue-300 text-xl mt-0.5 flex-shrink-0" style="font-variation-settings: 'FILL' 1">check_circle</span>
+                            <p class="text-blue-100 text-sm">One matric number, one vote — enforced at the system level, not just on paper</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-blue-300 text-xl mt-0.5 flex-shrink-0" style="font-variation-settings: 'FILL' 1">check_circle</span>
+                            <p class="text-blue-100 text-sm">Results published immediately when polls close — no waiting, no suspense</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core Values Strip -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-8 shadow-md">
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-8">What we stand for</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="flex flex-col gap-2 group cursor-default">
+                    <div class="size-14 rounded-2xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <span class="material-symbols-outlined text-blue-600 text-2xl" style="font-variation-settings: 'FILL' 1">gavel</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-slate-900 dark:text-white text-sm">Rule of Law</p>
+                        <p class="text-xs text-slate-500 mt-1">Every process follows the student constitution</p>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 group cursor-default">
+                    <div class="size-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <span class="material-symbols-outlined text-emerald-600 text-2xl" style="font-variation-settings: 'FILL' 1">handshake</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-slate-900 dark:text-white text-sm">Accountability</p>
+                        <p class="text-xs text-slate-500 mt-1">Officers answer to the student body, full stop</p>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 group cursor-default">
+                    <div class="size-14 rounded-2xl bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <span class="material-symbols-outlined text-violet-600 text-2xl" style="font-variation-settings: 'FILL' 1">privacy_tip</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-slate-900 dark:text-white text-sm">Ballot Secrecy</p>
+                        <p class="text-xs text-slate-500 mt-1">Nobody — including admins — can see who you voted for</p>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 group cursor-default">
+                    <div class="size-14 rounded-2xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <span class="material-symbols-outlined text-amber-600 text-2xl" style="font-variation-settings: 'FILL' 1">groups</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-slate-900 dark:text-white text-sm">Wide Participation</p>
+                        <p class="text-xs text-slate-500 mt-1">Every student can vote and every student can stand</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Candidate Registration Section -->
+
 <section class="py-20 bg-gradient-to-br from-primary/5 to-blue-500/5">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -214,24 +364,24 @@
                             Running for Office? <span class="text-primary">Register Your Candidacy</span>
                         </h2>
 <p class="text-lg text-slate-600 dark:text-slate-400">
-                            Create your candidate profile and let your fellow students know what you stand for. Share your manifesto, experience, and vision for the university.
-                        </p>
+    Thinking of running this year? Fill in your details online — your profile goes live immediately for voters to see. No printing forms, no queuing at the Electoral Office.
+</p>
 <ul class="space-y-3">
 <li class="flex items-center gap-3 text-slate-700 dark:text-slate-300">
 <span class="material-symbols-outlined text-primary">check_circle</span>
-<span>Create your official candidate profile</span>
+<span>Open to SUG, College, and Departmental candidates</span>
 </li>
 <li class="flex items-center gap-3 text-slate-700 dark:text-slate-300">
 <span class="material-symbols-outlined text-primary">check_circle</span>
-<span>Upload your manifesto and campaign materials</span>
+<span>Write your manifesto directly on the registration form</span>
 </li>
 <li class="flex items-center gap-3 text-slate-700 dark:text-slate-300">
 <span class="material-symbols-outlined text-primary">check_circle</span>
-<span>Reach all eligible voters on the platform</span>
+<span>Your profile is visible to all voters on the portal</span>
 </li>
 <li class="flex items-center gap-3 text-slate-700 dark:text-slate-300">
 <span class="material-symbols-outlined text-primary">check_circle</span>
-<span>Track your campaign engagement in real-time</span>
+<span>Registration closes when the Electoral Commission locks it</span>
 </li>
 </ul>
 <div class="flex flex-col sm:flex-row gap-4 pt-4">
@@ -310,22 +460,22 @@
 <li class="flex items-start gap-3">
 <span class="material-symbols-outlined text-primary">check_circle</span>
 <div>
-<p class="font-bold">Blockchain Verified</p>
-<p class="text-slate-400 text-sm">Every vote is recorded on a private ledger that cannot be tampered with or altered.</p>
+<p class="font-bold">One vote per matric number</p>
+<p class="text-slate-400 text-sm">Once you submit, your matric number is locked. You cannot vote again with the same account.</p>
 </div>
 </li>
 <li class="flex items-start gap-3">
 <span class="material-symbols-outlined text-primary">check_circle</span>
 <div>
-<p class="font-bold">Zero-Knowledge Proofs</p>
-<p class="text-slate-400 text-sm">We verify you are a valid student without ever linking your identity to your specific vote.</p>
+<p class="font-bold">Your choice stays anonymous</p>
+<p class="text-slate-400 text-sm">We record that you voted — but not who you voted for. Even admins can only see totals, not individual selections.</p>
 </div>
 </li>
 <li class="flex items-start gap-3">
 <span class="material-symbols-outlined text-primary">check_circle</span>
 <div>
-<p class="font-bold">Real-time Monitoring</p>
-<p class="text-slate-400 text-sm">Automated systems detect and block any suspicious activity or multi-login attempts.</p>
+<p class="font-bold">No editing after submission</p>
+<p class="text-slate-400 text-sm">Votes are final. They cannot be changed or deleted — not by you, not by the system administrator.</p>
 </div>
 </li>
 </ul>
@@ -333,24 +483,24 @@
 <!-- Voter Info Card -->
 <div class="bg-primary p-10 rounded-2xl text-white flex flex-col justify-between">
 <div>
-<h2 class="text-3xl font-black mb-4">Election Support</h2>
-<p class="text-blue-100 mb-8">Having trouble voting? Our technical support team is available 24/7 during the election period.</p>
+<h2 class="text-3xl font-black mb-2">Having trouble?</h2>
+<p class="text-blue-100 mb-8">If you cannot log in or your name is missing, contact the Electoral Commission. Do not vote on someone else's behalf.</p>
 </div>
 <div class="grid grid-cols-2 gap-4">
 <div class="bg-white/10 p-4 rounded-xl border border-white/20">
 <span class="material-symbols-outlined mb-2">support_agent</span>
-<p class="text-xs font-bold uppercase mb-1">Live Chat</p>
-<p class="text-sm font-medium">Chat with Support</p>
+<p class="text-xs font-bold uppercase mb-1">Email</p>
+<p class="text-sm font-medium">elections@absu.edu.ng</p>
 </div>
 <div class="bg-white/10 p-4 rounded-xl border border-white/20">
 <span class="material-symbols-outlined mb-2">mail</span>
-<p class="text-xs font-bold uppercase mb-1">Email</p>
-<p class="text-sm font-medium">support@uni.edu</p>
+<p class="text-xs font-bold uppercase mb-1">Email Support</p>
+<p class="text-sm font-medium">support@absu.edu.ng</p>
 </div>
 <div class="bg-white/10 p-4 rounded-xl border border-white/20">
 <span class="material-symbols-outlined mb-2">help</span>
-<p class="text-xs font-bold uppercase mb-1">Help Desk</p>
-<p class="text-sm font-medium">Read the FAQs</p>
+<p class="text-xs font-bold uppercase mb-1">Hours</p>
+<p class="text-sm font-medium">Mon–Fri 8am–5pm</p>
 </div>
 <div class="bg-white/10 p-4 rounded-xl border border-white/20">
 <span class="material-symbols-outlined mb-2">location_on</span>
@@ -366,8 +516,8 @@
 <section class="pb-20">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-8 md:p-12 text-center shadow-xl">
-<h2 class="text-3xl font-black text-slate-900 dark:text-white mb-4">Don't wait until the last minute.</h2>
-<p class="text-slate-600 dark:text-slate-400 mb-8 max-w-xl mx-auto text-lg">Your candidate needs your vote today. Join over 5,000 of your peers who have already participated.</p>
+<h2 class="text-3xl font-black text-slate-900 dark:text-white mb-2">Polls are open.</h2>
+<p class="text-slate-600 dark:text-slate-400 mb-8 max-w-xl mx-auto">Takes about 3 minutes. Log in and vote before the deadline closes.</p>
 <a href="login.html" class="bg-primary text-white px-10 py-5 rounded-xl text-xl font-bold shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all inline-block">
                         Cast Your Vote Now
                     </a>
@@ -384,7 +534,7 @@
 <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
 <span class="font-bold text-slate-900 dark:text-white">University Student Union</span>
 </div>
-<p class="text-slate-500 text-xs text-center md:text-left">© 2026 SUG General Elections Commission. All rights reserved. <br/>Authorized by the University Board of Trustees.</p>
+<p class="text-slate-500 text-xs text-center md:text-left">© 2026 ABSU Electoral Commission. All rights reserved.<br/>Managed by the ABSU SUG Electoral Commission.</p>
 </div>
 <div class="flex gap-8 text-sm font-bold text-slate-600 dark:text-slate-400">
 <a class="hover:text-primary transition-colors" href="privacy-policy.html">Privacy Policy</a>
@@ -401,4 +551,39 @@
 </div>
 </footer>
   <script src="assets/js/main.js"></script>
+  <script>
+    const API_BASE = 'http://localhost:5005/api';
+
+    // Live stats: fetches from the lightweight /api/turnout endpoint.
+    // This returns only 3 numbers (totalStudents, totalVoted, pct).
+    // NEVER fetches all student rows — safe at any dataset size.
+    async function loadLiveStats() {
+        try {
+            const [turnoutRes, settRes] = await Promise.all([
+                fetch(`${API_BASE}/turnout`).catch(() => null),
+                fetch(`${API_BASE}/settings`).catch(() => null)
+            ]);
+
+            if (turnoutRes && turnoutRes.ok) {
+                const { totalStudents, totalVoted, pct } = await turnoutRes.json();
+
+                const pctEl = document.getElementById('turnout-pct');
+                const barEl = document.getElementById('turnout-bar');
+                const regEl = document.getElementById('stat-registered');
+                const votEl = document.getElementById('stat-voted');
+
+                if (pctEl) pctEl.textContent = `${pct}%`;
+                if (barEl) barEl.style.width = `${Math.min(pct, 100)}%`;
+                if (regEl) regEl.textContent = `${(totalStudents || 0).toLocaleString()} registered`;
+                if (votEl) votEl.textContent = `${(totalVoted || 0).toLocaleString()} voted`;
+            }
+        } catch(e) {
+            // Silently fail — stats are non-critical
+        }
+    }
+
+    loadLiveStats();
+    setInterval(loadLiveStats, 30000);
+
+  </script>
 </body></html>

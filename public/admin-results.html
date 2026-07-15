@@ -8,12 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
+        const isSuperAdmin = sessionStorage.getItem('superAdminLoggedIn') === 'true';
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#9333ea", // Purple to denote Super Admin
+                        "primary": isSuperAdmin ? "#9333ea" : "#135bec",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -30,7 +31,7 @@
             font-family: 'Lexend', sans-serif;
         }
         .sidebar-active {
-            background-color: #9333ea;
+            background-color: var(--color-primary, #9333ea);
             color: white;
         }
         .podium-1 { background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #ffd700 100%); }
@@ -47,12 +48,12 @@
                 <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
                 <div>
                     <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
-                    <p class="text-slate-500 text-xs font-medium">Super Admin</p>
+                    <p id="admin-role-text" class="text-slate-500 text-xs font-medium">Super Admin</p>
                 </div>
             </div>
             <!-- Nav Links -->
             <nav class="flex flex-col gap-1">
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="super-admin.html">
+                <a id="nav-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="super-admin.html">
                     <span class="material-symbols-outlined text-[22px]">dashboard</span>
                     <span class="text-sm font-medium">Dashboard</span>
                 </a>
@@ -60,9 +61,17 @@
                     <span class="material-symbols-outlined text-[22px]">group</span>
                     <span class="text-sm font-medium">Candidates</span>
                 </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="student-db.html">
+                    <span class="material-symbols-outlined text-[22px]">database</span>
+                    <span class="text-sm font-medium">Student DB</span>
+                </a>
                 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg sidebar-active transition-all group" href="admin-results.html">
                     <span class="material-symbols-outlined text-[22px]">bar_chart</span>
                     <span class="text-sm font-medium">Results</span>
+                </a>
+                <a id="nav-controls" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group hidden" href="super-admin-controls.html">
+                    <span class="material-symbols-outlined text-[22px]">toggle_on</span>
+                    <span class="text-sm font-medium">System Controls</span>
                 </a>
             </nav>
         </div>
@@ -95,16 +104,9 @@
                 <h2 class="text-xl font-bold tracking-tight">Electoral Standings Desk</h2>
             </div>
             <div class="flex items-center gap-6">
-                <!-- Toggle Filter SUG/College -->
+                <!-- Toggle Filter SUG/College/Dept -->
                 <select id="college-filter" class="bg-slate-50 dark:bg-slate-800 border-primary/10 rounded-lg text-xs font-bold px-3 py-2 focus:ring-primary focus:border-primary">
                     <option value="SUG">SUG General Results</option>
-                    <option value="Biological & Physical Sciences">Biological & Physical Sciences</option>
-                    <option value="Law">Law</option>
-                    <option value="Engineering & Environmental Studies">Engineering & Environmental Studies</option>
-                    <option value="Business Administration">Business Administration</option>
-                    <option value="Humanities">Humanities</option>
-                    <option value="Education">Education</option>
-                    <option value="Clinical Sciences">Clinical Sciences</option>
                 </select>
             </div>
         </header>
@@ -180,16 +182,37 @@
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
 
+    <script src="assets/js/main.js"></script>
     <script>
         const API_URL = 'http://localhost:5005/api';
 
         // Check auth
         function checkAuth() {
-            if (!sessionStorage.getItem('superAdminLoggedIn')) {
-                window.location.href = 'super-admin-login.html';
+            const isSuper = sessionStorage.getItem('superAdminLoggedIn') === 'true';
+            const isAdmin = sessionStorage.getItem('adminLoggedIn') === 'true';
+            
+            if (!isSuper && !isAdmin) {
+                window.location.href = 'admin-login.html';
                 return false;
             }
             
+            // Adjust theme color and sidebar targets dynamically
+            document.documentElement.style.setProperty('--color-primary', isSuper ? '#9333ea' : '#135bec');
+            const roleText = document.getElementById('admin-role-text');
+            if (roleText) {
+                roleText.textContent = isSuper ? 'Super Admin' : 'Admin Console';
+            }
+            
+            const dashboardLink = document.getElementById('nav-dashboard');
+            if (dashboardLink) {
+                dashboardLink.href = isSuper ? 'super-admin.html' : 'admin.html';
+            }
+
+            const controlsLink = document.getElementById('nav-controls');
+            if (controlsLink && isSuper) {
+                controlsLink.classList.remove('hidden');
+            }
+
             // Display admin info
             const adminUser = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
             if (adminUser.name) {
@@ -206,22 +229,65 @@
         const container = document.getElementById('results-container');
         const noVotesMsg = document.getElementById('no-votes-message');
 
-        // SUG positions list
+        // Colleges and departments mapping
+        const COLLEGES_MAP = [
+            { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
+            { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
+            { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
+            { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
+            { name: "Humanities & Social Sciences", depts: ["History", "English", "Linguistics"] },
+            { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
+            { name: "Medicine & Health Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
+        ];
+
+        // Dynamically load options in filter select
+        const collegesOptGroup = document.createElement('optgroup');
+        collegesOptGroup.label = "Colleges / Faculties";
+        COLLEGES_MAP.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = `COLLEGE|${c.name}`;
+            opt.textContent = c.name;
+            collegesOptGroup.appendChild(opt);
+        });
+        filterEl.appendChild(collegesOptGroup);
+
+        const deptsOptGroup = document.createElement('optgroup');
+        deptsOptGroup.label = "Departments";
+        COLLEGES_MAP.forEach(c => {
+            c.depts.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = `DEPARTMENT|${d}`;
+                opt.textContent = `${d} (${c.name})`;
+                deptsOptGroup.appendChild(opt);
+            });
+        });
+        filterEl.appendChild(deptsOptGroup);
+
+        // SUG/College/Dept positions list
         const ELECTION_POSITIONS = {
             'SUG': [
                 { id: 'president', title: 'President' },
-                { id: 'vp', title: 'Vice President' },
-                { id: 'general-secretary', title: 'General Secretary' },
+                { id: 'vice-president', title: 'Vice-President' },
+                { id: 'secretary-general', title: 'Secretary-General' },
+                { id: 'assistant-secretary-general', title: 'Assistant Secretary-General' },
+                { id: 'treasurer', title: 'Treasurer' },
                 { id: 'financial-secretary', title: 'Financial Secretary' },
-                { id: 'pro', title: 'Public Relations Officer (PRO)' }
+                { id: 'pro', title: 'Public Relations Officer' },
+                { id: 'director-of-welfare', title: 'Director Of Welfare' },
+                { id: 'director-of-sports', title: 'Director of Sports' },
+                { id: 'director-of-socials', title: 'Director of Socials' }
             ],
             'COLLEGE': [
-                { id: 'president', title: 'College Representative' },
-                { id: 'secretary', title: 'College Secretary' }
+                { id: 'college_rep', title: 'College Representative' },
+                { id: 'college_sec', title: 'College Secretary' }
+            ],
+            'DEPARTMENT': [
+                { id: 'dept_president', title: 'Department President' },
+                { id: 'dept_sec', title: 'Department Secretary' }
             ]
         };
 
-        async function calculateResults(level, college = null) {
+        async function calculateResults(level, college = null, dept = null) {
             const positions = ELECTION_POSITIONS[level];
             const results = {};
 
@@ -236,8 +302,9 @@
                     const candidates = allCandidates.filter(c => {
                         const levelMatch = c.level === level;
                         const posMatch = c.position === pos.id;
-                        const collegeMatch = level === 'SUG' || c.college === college;
-                        return levelMatch && posMatch && collegeMatch;
+                        const collegeMatch = level !== 'COLLEGE' || c.college === college;
+                        const deptMatch = level !== 'DEPARTMENT' || c.dept === dept;
+                        return levelMatch && posMatch && collegeMatch && deptMatch;
                     });
 
                     candidates.forEach(c => {
@@ -253,10 +320,19 @@
 
         async function renderResults() {
             const selection = filterEl.value;
-            const level = selection === 'SUG' ? 'SUG' : 'COLLEGE';
-            const college = selection === 'SUG' ? null : selection;
+            let level = 'SUG';
+            let college = null;
+            let dept = null;
+
+            if (selection.startsWith('COLLEGE|')) {
+                level = 'COLLEGE';
+                college = selection.split('|')[1];
+            } else if (selection.startsWith('DEPARTMENT|')) {
+                level = 'DEPARTMENT';
+                dept = selection.split('|')[1];
+            }
             
-            const results = await calculateResults(level, college);
+            const results = await calculateResults(level, college, dept);
             
             let totalVoters = 0;
             let totalRegisteredVotes = 0;

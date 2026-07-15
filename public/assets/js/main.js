@@ -3,13 +3,47 @@
  * Shared functionality across all pages
  */
 
+// Global fetch interceptor to attach Authorization header automatically for all backend API calls
+(function() {
+    const originalFetch = window.fetch;
+    window.fetch = async function(input, init) {
+        const url = typeof input === 'string' ? input : (input instanceof Request ? input.url : '');
+        
+        // Intercept calls going to our backend API
+        if (url.includes('/api/') || url.includes(':5005')) {
+            init = init || {};
+            init.headers = init.headers || {};
+            
+            // Retrieve token from sessionStorage
+            const token = sessionStorage.getItem('authToken');
+            
+            if (token) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set('Authorization', `Bearer ${token}`);
+                } else if (Array.isArray(init.headers)) {
+                    const hasAuth = init.headers.some(h => h[0].toLowerCase() === 'authorization');
+                    if (!hasAuth) {
+                        init.headers.push(['Authorization', `Bearer ${token}`]);
+                    }
+                } else {
+                    if (!init.headers['Authorization'] && !init.headers['authorization']) {
+                        init.headers['Authorization'] = `Bearer ${token}`;
+                    }
+                }
+            }
+        }
+        return originalFetch.call(this, input, init);
+    };
+})();
+
 const CONFIG = {
     appName: 'ABSU Election Portal',
     storageKeys: {
         loggedInUser: 'loggedInUser',
         allVotes: 'allVotes',
         hasVoted: 'hasVoted',
-        darkMode: 'darkMode'
+        darkMode: 'darkMode',
+        authToken: 'authToken'
     },
     electionDeadline: '2026-05-15T00:00:00',
     colleges: [
@@ -19,7 +53,6 @@ const CONFIG = {
         'Humanities & Social Sciences',
         'Engineering & Environmental Studies',
         'Biological & Physical Sciences',
-        'Agricultural & Veterinary Medicine',
         'Education'
     ]
 };
@@ -28,19 +61,29 @@ const CONFIG = {
 const ELECTION_DATA = {
     levels: {
         SUG: 'University Wide (SUG)',
-        COLLEGE: 'College Level'
+        COLLEGE: 'College Level',
+        DEPARTMENT: 'Department Level'
     },
     positions: {
         SUG: [
-            { id: 'president', title: 'Student Union President' },
-            { id: 'vp', title: 'Vice President' },
-            { id: 'gensec', title: 'General Secretary' },
-            { id: 'finsec', title: 'Financial Secretary' },
-            { id: 'pro', title: 'Public Relations Officer' }
+            { id: 'president', title: 'President' },
+            { id: 'vice-president', title: 'Vice-President' },
+            { id: 'secretary-general', title: 'Secretary-General' },
+            { id: 'assistant-secretary-general', title: 'Assistant Secretary-General' },
+            { id: 'treasurer', title: 'Treasurer' },
+            { id: 'financial-secretary', title: 'Financial Secretary' },
+            { id: 'pro', title: 'Public Relations Officer' },
+            { id: 'director-of-welfare', title: 'Director Of Welfare' },
+            { id: 'director-of-sports', title: 'Director of Sports' },
+            { id: 'director-of-socials', title: 'Director of Socials' }
         ],
         COLLEGE: [
             { id: 'college_rep', title: 'College Representative' },
             { id: 'college_sec', title: 'College Secretary' }
+        ],
+        DEPARTMENT: [
+            { id: 'dept_president', title: 'Department President' },
+            { id: 'dept_sec', title: 'Department Secretary' }
         ]
     }
 };
@@ -99,7 +142,7 @@ const UI = {
     /**
      * Update Countdown Timers
      */
-    initCountdown: () => {
+    initCountdown: async () => {
         const countdownElements = {
             days: document.querySelector('[data-countdown="days"]'),
             hours: document.querySelector('[data-countdown="hours"]'),
@@ -109,9 +152,22 @@ const UI = {
 
         if (!countdownElements.days) return;
 
+        let deadlineStr = CONFIG.electionDeadline;
+        try {
+            const res = await fetch(`${API_URL}/settings`);
+            if (res.ok) {
+                const settings = await res.json();
+                if (settings.election_deadline) {
+                    deadlineStr = settings.election_deadline;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load custom election deadline settings:', e);
+        }
+
         const update = () => {
             const now = new Date().getTime();
-            const deadline = new Date(CONFIG.electionDeadline).getTime();
+            const deadline = new Date(deadlineStr).getTime();
             const diff = deadline - now;
 
             if (diff <= 0) {
@@ -157,12 +213,14 @@ const UI = {
 // User Session Management
 const Auth = {
     getUser: () => JSON.parse(sessionStorage.getItem(CONFIG.storageKeys.loggedInUser)),
+    getToken: () => sessionStorage.getItem(CONFIG.storageKeys.authToken),
     logout: () => {
         sessionStorage.removeItem(CONFIG.storageKeys.loggedInUser);
+        sessionStorage.removeItem(CONFIG.storageKeys.authToken);
         window.location.href = 'index.html';
     },
     requireAuth: () => {
-        if (!Auth.getUser()) window.location.href = 'login.html';
+        if (!Auth.getUser() || !Auth.getToken()) window.location.href = 'login.html';
     }
 };
 
@@ -177,14 +235,15 @@ const Data = {
             return [];
         }
     },
-    getCandidates: async (level, position, college = null) => {
+    getCandidates: async (level, position, college = null, dept = null) => {
         const all = await Data.getAllCandidates();
         return all.filter(c => {
             const levelMatch = c.level === level;
             const posMatch = c.position === position;
-            const collegeMatch = level === 'SUG' || c.college === college;
+            const collegeMatch = level !== 'COLLEGE' || c.college === college;
+            const deptMatch = level !== 'DEPARTMENT' || c.dept === dept;
             const activeMatch = c.status !== 'disqualified';
-            return levelMatch && posMatch && collegeMatch && activeMatch;
+            return levelMatch && posMatch && collegeMatch && deptMatch && activeMatch;
         });
     },
     saveVote: async (user, votes) => {
@@ -197,7 +256,8 @@ const Data = {
                     matricNo: user.matricNo,
                     votes: votes,
                     manualEntry: false,
-                    college: user.college
+                    college: user.college,
+                    dept: user.dept
                 })
             });
             const data = await res.json();
@@ -222,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Global Logout Button Listener
     const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
+    if (logoutBtn && !window.location.pathname.includes('admin') && !window.location.pathname.includes('student-db')) {
         logoutBtn.addEventListener('click', Auth.logout);
     }
     
@@ -239,4 +299,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const userCollegeEl = document.getElementById('user-college');
         if (userCollegeEl) userCollegeEl.textContent = user.college;
     }
+
+    // Load background motion effect
+    const bgScript = document.createElement('script');
+    bgScript.src = 'assets/js/bg-motion.js';
+    bgScript.defer = true;
+    document.head.appendChild(bgScript);
 });

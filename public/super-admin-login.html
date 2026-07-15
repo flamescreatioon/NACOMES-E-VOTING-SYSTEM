@@ -188,40 +188,55 @@
             }
         });
 
-        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+        document.getElementById('admin-login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
+            const form = document.getElementById('admin-login-form');
 
-            const admin = SUPER_ADMIN_ACCOUNTS.find(a => 
-                a.username.toLowerCase() === username && a.password === password
-            );
+            try {
+                const res = await fetch('http://localhost:5005/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
 
-            if (admin) {
-                try {
-                    sessionStorage.setItem('superAdminLoggedIn', 'true');
-                    sessionStorage.setItem('adminUser', JSON.stringify({
-                        username: admin.username,
-                        name: admin.name,
-                        role: admin.role,
-                        loginTime: new Date().toISOString()
-                    }));
-                } catch (e) {
-                    alert('Login failed: Unable to save session. Please enable cookies/storage.');
+                if (!res.ok) {
+                    errorText.textContent = data.error || 'Invalid super admin credentials.';
+                    errorDiv.classList.remove('hidden');
+                    form.classList.add('animate-shake');
+                    setTimeout(() => form.classList.remove('animate-shake'), 500);
                     return;
                 }
 
+                if (data.admin.role !== 'Super Admin') {
+                    errorText.textContent = 'Access denied. Only Super Administrators can log in here.';
+                    errorDiv.classList.remove('hidden');
+                    form.classList.add('animate-shake');
+                    setTimeout(() => form.classList.remove('animate-shake'), 500);
+                    return;
+                }
+
+                // Store admin session and token
+                sessionStorage.setItem('authToken', data.token);
+                sessionStorage.setItem('superAdminLoggedIn', 'true');
+                sessionStorage.setItem('adminUser', JSON.stringify({
+                    username: data.admin.username,
+                    name: data.admin.name,
+                    role: data.admin.role,
+                    loginTime: new Date().toISOString()
+                }));
+
                 window.location.href = 'super-admin.html';
-            } else {
-                errorText.textContent = 'Invalid super admin credentials.';
+
+            } catch (err) {
+                console.error('Error during super admin login:', err);
+                errorText.textContent = "Network error: Could not reach the server.";
                 errorDiv.classList.remove('hidden');
-                
-                const form = document.getElementById('admin-login-form');
-                form.classList.add('animate-shake');
-                setTimeout(() => form.classList.remove('animate-shake'), 500);
             }
         });
 

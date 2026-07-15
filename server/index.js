@@ -16,10 +16,10 @@ const INITIAL_CANDIDATES = [
     { id: 'john-adebayo', name: 'John Adebayo', level: 'SUG', position: 'president', college: 'Biological & Physical Sciences', dept: 'Computer Science' },
     { id: 'amina-ibrahim', name: 'Amina Ibrahim', level: 'SUG', position: 'president', college: 'Law', dept: 'Law' },
     { id: 'chukwuemeka-obi', name: 'Chukwuemeka Obi', level: 'SUG', position: 'president', college: 'Engineering & Environmental Studies', dept: 'Engineering' },
-    { id: 'sarah-johnson', name: 'Sarah Johnson', level: 'SUG', position: 'vp', college: 'Business Administration', dept: 'Accounting' },
-    { id: 'michael-oku', name: 'Michael Oku', level: 'SUG', position: 'vp', college: 'Humanities', dept: 'History' },
-    { id: 'david-nduka', name: 'David Nduka', level: 'SUG', position: 'general-secretary', college: 'Education', dept: 'Educational Management' },
-    { id: 'grace-okoli', name: 'Grace Okoli', level: 'SUG', position: 'general-secretary', college: 'Clinical Sciences', dept: 'Medicine' }
+    { id: 'sarah-johnson', name: 'Sarah Johnson', level: 'SUG', position: 'vice-president', college: 'Business Administration', dept: 'Accounting' },
+    { id: 'michael-oku', name: 'Michael Oku', level: 'SUG', position: 'vice-president', college: 'Humanities', dept: 'History' },
+    { id: 'david-nduka', name: 'David Nduka', level: 'SUG', position: 'secretary-general', college: 'Education', dept: 'Educational Management' },
+    { id: 'grace-okoli', name: 'Grace Okoli', level: 'SUG', position: 'secretary-general', college: 'Clinical Sciences', dept: 'Medicine' }
 ];
 
 db.get("SELECT COUNT(*) as count FROM candidates", (err, row) => {
@@ -183,10 +183,7 @@ app.get('/api/results', (req, res) => {
             // We'll return a flat mapping and let frontend handle it, or structure it here.
             
             // Map from hyphenated to camelCase just in case frontend relies on it
-            let key = row.position;
-            if (key === 'vice-president') key = 'vicePresident';
-            if (key === 'general-secretary') key = 'generalSecretary';
-            if (key === 'financial-secretary') key = 'financialSecretary';
+            let key = row.position.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
             
             if (!electionVotes[key]) electionVotes[key] = {};
             electionVotes[key][row.name] = row.votes;

@@ -57,9 +57,17 @@
 <span class="material-symbols-outlined text-[22px]">group</span>
 <span class="text-sm font-medium">Candidates</span>
 </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="student-db.html">
+<span class="material-symbols-outlined text-[22px]">database</span>
+<span class="text-sm font-medium">Student DB</span>
+</a>
 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="admin-results.html">
 <span class="material-symbols-outlined text-[22px]">bar_chart</span>
 <span class="text-sm font-medium">Results</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="super-admin-controls.html">
+<span class="material-symbols-outlined text-[22px]">toggle_on</span>
+<span class="text-sm font-medium">System Controls</span>
 </a>
 </nav>
 </div>
@@ -92,19 +100,23 @@
 </div>
 <div class="flex items-center gap-6">
 <div class="flex items-center gap-3 border-l border-slate-200 pl-6">
-<button id="reset-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-green-500/20 transition-all">
-<span class="material-symbols-outlined text-lg">how_to_vote</span>
+                    <button id="manual-vote-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-green-500/20 transition-all">
+                        <span class="material-symbols-outlined text-lg">how_to_vote</span>
                         Manual Vote
                     </button>
-<button id="bulk-vote-btn" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all">
-<span class="material-symbols-outlined text-lg">add_circle</span>
+                    <button id="bulk-vote-btn" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all">
+                        <span class="material-symbols-outlined text-lg">add_circle</span>
                         Bulk Vote (+100)
                     </button>
-<button id="export-btn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
-<span class="material-symbols-outlined text-lg">download</span>
+                    <button id="export-btn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
+                        <span class="material-symbols-outlined text-lg">download</span>
                         Export Results
                     </button>
-</div>
+                    <button id="system-reset-btn" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-rose-600/20 transition-all" title="Reset system for next election">
+                        <span class="material-symbols-outlined text-lg">restart_alt</span>
+                        Reset Election
+                    </button>
+                </div>
 </div>
 </header>
 <!-- Dashboard Body -->
@@ -140,9 +152,8 @@
 <div id="turnout-bar" class="bg-amber-500 h-full w-[53.5%] rounded-full transition-all duration-500"></div>
 </div>
 </div>
-</div>
-<!-- Registered Candidates List -->
-<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm mb-6">
+            <!-- Registered Candidates List -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm mb-6">
 <div class="flex items-center justify-between mb-6">
 <h3 class="text-lg font-bold">Registered Candidates</h3>
 <span id="candidate-count-badge" class="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">0 candidates</span>
@@ -240,18 +251,34 @@ Select Candidates
 </select>
 </div>
 
-<!-- Vice President -->
+<!-- Vice-President -->
 <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Vice President</label>
-<select id="mv-vp" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Vice-President</label>
+<select id="mv-vice-president" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
 <option value="">-- Select candidate --</option>
 </select>
 </div>
 
-<!-- General Secretary -->
+<!-- Secretary-General -->
 <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">General Secretary</label>
-<select id="mv-secretary" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Secretary-General</label>
+<select id="mv-secretary-general" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Assistant Secretary-General -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Assistant Secretary-General</label>
+<select id="mv-assistant-secretary-general" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Treasurer -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Treasurer</label>
+<select id="mv-treasurer" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
 <option value="">-- Select candidate --</option>
 </select>
 </div>
@@ -259,15 +286,39 @@ Select Candidates
 <!-- Financial Secretary -->
 <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
 <label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Financial Secretary</label>
-<select id="mv-financial" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<select id="mv-financial-secretary" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
 <option value="">-- Select candidate --</option>
 </select>
 </div>
 
-<!-- PRO -->
+<!-- Public Relations Officer -->
 <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
 <label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Public Relations Officer</label>
 <select id="mv-pro" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Director Of Welfare -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Director Of Welfare</label>
+<select id="mv-director-of-welfare" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Director of Sports -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Director of Sports</label>
+<select id="mv-director-of-sports" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Director of Socials -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Director of Socials</label>
+<select id="mv-director-of-socials" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
 <option value="">-- Select candidate --</option>
 </select>
 </div>
@@ -321,18 +372,34 @@ Select Candidates for the Ballot
 </select>
 </div>
 
-<!-- Vice President -->
+<!-- Vice-President -->
 <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Vice President</label>
-<select id="bv-vp" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Vice-President</label>
+<select id="bv-vice-president" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
 <option value="">-- Select candidate --</option>
 </select>
 </div>
 
-<!-- General Secretary -->
+<!-- Secretary-General -->
 <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">General Secretary</label>
-<select id="bv-secretary" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Secretary-General</label>
+<select id="bv-secretary-general" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Assistant Secretary-General -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Assistant Secretary-General</label>
+<select id="bv-assistant-secretary-general" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Treasurer -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Treasurer</label>
+<select id="bv-treasurer" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
 <option value="">-- Select candidate --</option>
 </select>
 </div>
@@ -340,15 +407,39 @@ Select Candidates for the Ballot
 <!-- Financial Secretary -->
 <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
 <label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Financial Secretary</label>
-<select id="bv-financial" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<select id="bv-financial-secretary" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
 <option value="">-- Select candidate --</option>
 </select>
 </div>
 
-<!-- PRO -->
+<!-- Public Relations Officer -->
 <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
 <label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Public Relations Officer (PRO)</label>
 <select id="bv-pro" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Director Of Welfare -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Director Of Welfare</label>
+<select id="bv-director-of-welfare" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Director of Sports -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Director of Sports</label>
+<select id="bv-director-of-sports" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+<option value="">-- Select candidate --</option>
+</select>
+</div>
+
+<!-- Director of Socials -->
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<label class="block text-xs font-bold text-primary uppercase tracking-wider mb-2">Director of Socials</label>
+<select id="bv-director-of-socials" class="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
 <option value="">-- Select candidate --</option>
 </select>
 </div>
@@ -381,6 +472,7 @@ Cancel
 </div>
 </div>
 
+<script src="assets/js/main.js"></script>
 <script>
 // Check admin login
 function checkAdminAuth() {
@@ -503,10 +595,12 @@ async function updateCandidatesTable() {
             html += `
                 <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
                     <td class="py-3 text-sm font-medium flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
-                            ${candidate.name.charAt(0)}
-                        </div>
-                        ${candidate.name}
+                        <a href="admin-candidate-details.html?id=${candidate.id}" class="flex items-center gap-2 hover:text-primary transition-all group/name">
+                            <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold group-hover/name:bg-primary group-hover/name:text-white transition-all">
+                                ${candidate.name.charAt(0)}
+                            </div>
+                            <span>${candidate.name}</span>
+                        </a>
                     </td>
                     <td class="py-3 text-xs text-slate-600 font-semibold uppercase">${candidate.position.replace('-', ' ')}</td>
                     <td class="py-3 text-xs text-slate-500">${candidate.college || 'SUG'}</td>
@@ -554,7 +648,7 @@ const closeModalBtn = document.getElementById('close-modal');
 const cancelVoteBtn = document.getElementById('cancel-vote');
 
 // Open manual vote modal
-document.getElementById('reset-btn').addEventListener('click', function() {
+document.getElementById('manual-vote-btn').addEventListener('click', function() {
     loadCandidatesIntoSelects();
     modal.classList.remove('hidden');
     modal.classList.add('flex');
@@ -587,19 +681,29 @@ async function loadCandidatesIntoSelects() {
     
     const positions = {
         'president': 'mv-president',
-        'vice-president': 'mv-vp',
-        'general-secretary': 'mv-secretary',
-        'financial-secretary': 'mv-financial',
-        'pro': 'mv-pro'
+        'vice-president': 'mv-vice-president',
+        'secretary-general': 'mv-secretary-general',
+        'assistant-secretary-general': 'mv-assistant-secretary-general',
+        'treasurer': 'mv-treasurer',
+        'financial-secretary': 'mv-financial-secretary',
+        'pro': 'mv-pro',
+        'director-of-welfare': 'mv-director-of-welfare',
+        'director-of-sports': 'mv-director-of-sports',
+        'director-of-socials': 'mv-director-of-socials'
     };
 
     // Default candidates if none registered
     const defaultCandidates = {
         'president': ['Adebayo Okonkwo', 'Chinedu Eze', 'Fatima Abubakar'],
         'vice-president': ['Sarah Johnson', 'Michael Obi', 'Amina Yusuf'],
-        'general-secretary': ['David Nduka', 'Grace Okoli', 'Ibrahim Musa'],
+        'secretary-general': ['David Nduka', 'Grace Okoli', 'Ibrahim Musa'],
+        'assistant-secretary-general': ['Samuel Udo', 'Kemi Adebayo', 'Chika Nnaji'],
+        'treasurer': ['Ngozi Chukwu', 'Emeka Kalu', 'Yusuf Bello'],
         'financial-secretary': ['Jennifer Ade', 'Emeka Nwankwo', 'Hauwa Bello'],
-        'pro': ['Samuel Peters', 'Ngozi Chukwu', 'Yusuf Abdullahi']
+        'pro': ['Samuel Peters', 'Ngozi Chukwu', 'Yusuf Abdullahi'],
+        'director-of-welfare': ['Chinwe Eze', 'Blessing Obi', 'Victor Okoro'],
+        'director-of-sports': ['Chinedu Okonkwo', 'Daniel Ade', 'Emeka Uzo'],
+        'director-of-socials': ['Joy Nduka', 'Michael Ojo', 'Fatima Idris']
     };
 
     Object.keys(positions).forEach(position => {
@@ -631,11 +735,16 @@ document.getElementById('manual-vote-form').addEventListener('submit', async fun
 
     // Get selected candidates
     const votes = {
-        president: document.getElementById('mv-president').value,
-        vicePresident: document.getElementById('mv-vp').value,
-        generalSecretary: document.getElementById('mv-secretary').value,
-        financialSecretary: document.getElementById('mv-financial').value,
-        pro: document.getElementById('mv-pro').value
+        'president': document.getElementById('mv-president').value,
+        'vice-president': document.getElementById('mv-vice-president').value,
+        'secretary-general': document.getElementById('mv-secretary-general').value,
+        'assistant-secretary-general': document.getElementById('mv-assistant-secretary-general').value,
+        'treasurer': document.getElementById('mv-treasurer').value,
+        'financial-secretary': document.getElementById('mv-financial-secretary').value,
+        'pro': document.getElementById('mv-pro').value,
+        'director-of-welfare': document.getElementById('mv-director-of-welfare').value,
+        'director-of-sports': document.getElementById('mv-director-of-sports').value,
+        'director-of-socials': document.getElementById('mv-director-of-socials').value
     };
 
     const adminName = JSON.parse(sessionStorage.getItem('adminUser') || '{}').name || 'Super Admin';
@@ -708,19 +817,29 @@ async function loadCandidatesIntoBulkSelects() {
     
     const positions = {
         'president': 'bv-president',
-        'vice-president': 'bv-vp',
-        'general-secretary': 'bv-secretary',
-        'financial-secretary': 'bv-financial',
-        'pro': 'bv-pro'
+        'vice-president': 'bv-vice-president',
+        'secretary-general': 'bv-secretary-general',
+        'assistant-secretary-general': 'bv-assistant-secretary-general',
+        'treasurer': 'bv-treasurer',
+        'financial-secretary': 'bv-financial-secretary',
+        'pro': 'bv-pro',
+        'director-of-welfare': 'bv-director-of-welfare',
+        'director-of-sports': 'bv-director-of-sports',
+        'director-of-socials': 'bv-director-of-socials'
     };
 
     // Default candidates if none registered
     const defaultCandidates = {
         'president': ['Adebayo Okonkwo', 'Chinedu Eze', 'Fatima Abubakar'],
         'vice-president': ['Sarah Johnson', 'Michael Obi', 'Amina Yusuf'],
-        'general-secretary': ['David Nduka', 'Grace Okoli', 'Ibrahim Musa'],
+        'secretary-general': ['David Nduka', 'Grace Okoli', 'Ibrahim Musa'],
+        'assistant-secretary-general': ['Samuel Udo', 'Kemi Adebayo', 'Chika Nnaji'],
+        'treasurer': ['Ngozi Chukwu', 'Emeka Kalu', 'Yusuf Bello'],
         'financial-secretary': ['Jennifer Ade', 'Emeka Nwankwo', 'Hauwa Bello'],
-        'pro': ['Samuel Peters', 'Ngozi Chukwu', 'Yusuf Abdullahi']
+        'pro': ['Samuel Peters', 'Ngozi Chukwu', 'Yusuf Abdullahi'],
+        'director-of-welfare': ['Chinwe Eze', 'Blessing Obi', 'Victor Okoro'],
+        'director-of-sports': ['Chinedu Okonkwo', 'Daniel Ade', 'Emeka Uzo'],
+        'director-of-socials': ['Joy Nduka', 'Michael Ojo', 'Fatima Idris']
     };
 
     Object.keys(positions).forEach(position => {
@@ -748,11 +867,16 @@ document.getElementById('bulk-vote-form').addEventListener('submit', async funct
     e.preventDefault();
 
     const votes = {
-        president: document.getElementById('bv-president').value,
-        vicePresident: document.getElementById('bv-vp').value,
-        generalSecretary: document.getElementById('bv-secretary').value,
-        financialSecretary: document.getElementById('bv-financial').value,
-        pro: document.getElementById('bv-pro').value
+        'president': document.getElementById('bv-president').value,
+        'vice-president': document.getElementById('bv-vice-president').value,
+        'secretary-general': document.getElementById('bv-secretary-general').value,
+        'assistant-secretary-general': document.getElementById('bv-assistant-secretary-general').value,
+        'treasurer': document.getElementById('bv-treasurer').value,
+        'financial-secretary': document.getElementById('bv-financial-secretary').value,
+        'pro': document.getElementById('bv-pro').value,
+        'director-of-welfare': document.getElementById('bv-director-of-welfare').value,
+        'director-of-sports': document.getElementById('bv-director-of-sports').value,
+        'director-of-socials': document.getElementById('bv-director-of-socials').value
     };
 
     // Check if at least one candidate is selected
@@ -797,6 +921,42 @@ document.getElementById('bulk-vote-form').addEventListener('submit', async funct
     } catch(e) {
         alert('Network error submitting bulk vote.');
         console.error(e);
+    }
+});
+
+// System Database Reset
+document.getElementById('system-reset-btn').addEventListener('click', async function() {
+    const confirmation = confirm("WARNING: Are you sure you want to completely RESET the system database for the next election?\n\nThis will purge all votes cast, remove newly added candidates, reset the candidate tallies, and restore the student database to its seed state.\n\nThis action is permanent and cannot be undone.");
+    if (!confirmation) return;
+
+    try {
+        const btn = document.getElementById('system-reset-btn');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="inline-block animate-spin material-symbols-outlined text-lg">refresh</span> Resetting...`;
+        
+        const res = await fetch('http://localhost:5005/api/admin/reset-database', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (res.ok) {
+            alert('Database reset successfully! The electoral registers have been re-initialized for the next election.');
+            window.location.reload();
+        } else {
+            const err = await res.json();
+            alert(`Error resetting database: ${err.error || 'Unknown error'}`);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } catch(e) {
+        alert('Network error requesting database reset.');
+        console.error(e);
+        const btn = document.getElementById('system-reset-btn');
+        btn.disabled = false;
+        btn.innerHTML = `<span class="material-symbols-outlined text-lg">restart_alt</span> Reset Election`;
     }
 });
 

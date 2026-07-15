@@ -17,10 +17,15 @@ A modern, secure, and user-friendly web-based election portal for ABSU Student U
 ## Available Positions
 
 - President
-- Vice President
-- General Secretary
+- Vice-President
+- Secretary-General
+- Assistant Secretary-General
+- Treasurer
 - Financial Secretary
-- Public Relations Officer (PRO)
+- Public Relations Officer
+- Director Of Welfare
+- Director of Sports
+- Director of Socials
 
 ## Tech Stack
 

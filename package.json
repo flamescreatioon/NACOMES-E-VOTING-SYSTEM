@@ -8,6 +8,7 @@
     "client": "browser-sync start --server public --files public --port 3000 --no-open",
     "dev": "node dev.js",
     "start": "node backend/index.js",
+    "reset-db": "node backend/reset-db.js",
     "build": "npm run clean && npm run copy-assets",
     "copy-assets": "shx cp -r public dist",
     "clean": "shx rm -rf dist",

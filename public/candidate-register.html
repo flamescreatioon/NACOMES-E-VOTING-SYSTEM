@@ -81,7 +81,7 @@
 </div>
 
 <!-- Registration Form -->
-<div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl shadow-primary/5 border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div id="registration-card" class="bg-white dark:bg-slate-900 rounded-xl shadow-xl shadow-primary/5 border border-slate-200 dark:border-slate-800 overflow-hidden">
 <div class="p-8">
 <form id="candidate-form" class="space-y-8">
 <!-- Section: Personal Information -->
@@ -164,14 +164,6 @@
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">account_balance</span>
 <select class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all" id="college" name="college" required>
 <option value="" disabled selected>Select your college</option>
-<option value="sciences">College of Sciences</option>
-<option value="engineering">College of Engineering</option>
-<option value="medicine">College of Medicine</option>
-<option value="law">College of Law</option>
-<option value="arts">College of Arts</option>
-<option value="education">College of Education</option>
-<option value="social-sciences">College of Social Sciences</option>
-<option value="agriculture">College of Agriculture</option>
 </select>
 </div>
 </div>
@@ -183,17 +175,6 @@
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">domain</span>
 <select class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all" id="department" name="department" required>
 <option value="" disabled selected>Select your department</option>
-<option value="computer-science">Computer Science</option>
-<option value="mathematics">Mathematics</option>
-<option value="physics">Physics</option>
-<option value="chemistry">Chemistry</option>
-<option value="biology">Biology</option>
-<option value="electrical-engineering">Electrical Engineering</option>
-<option value="mechanical-engineering">Mechanical Engineering</option>
-<option value="civil-engineering">Civil Engineering</option>
-<option value="accounting">Accounting</option>
-<option value="economics">Economics</option>
-<option value="business-admin">Business Administration</option>
 </select>
 </div>
 </div>
@@ -245,7 +226,21 @@
 <span class="material-symbols-outlined text-primary">campaign</span>
                             Campaign Information
                         </h2>
-<div class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<!-- Election Level -->
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="election-level">Election Scope/Level</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">layers</span>
+<select class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all" id="election-level" name="election-level" required>
+<option value="SUG" selected>SUG General Election</option>
+<option value="COLLEGE">College Level Election</option>
+<option value="DEPARTMENT">Department Level Election</option>
+</select>
+</div>
+<p id="registration-closed-warning" class="text-xs text-rose-500 font-bold mt-2 hidden">Registration for this election level is currently closed. You cannot submit this form.</p>
+</div>
+
 <!-- Position Running For -->
 <div>
 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="position">Position Running For</label>
@@ -253,15 +248,8 @@
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">star</span>
 <select class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all" id="position" name="position" required>
 <option value="" disabled selected>Select position</option>
-<option value="president">President</option>
-<option value="vice-president">Vice President</option>
-<option value="general-secretary">General Secretary</option>
-<option value="financial-secretary">Financial Secretary</option>
-<option value="public-relations">Public Relations Officer</option>
-<option value="welfare-director">Welfare Director</option>
-<option value="sports-director">Sports Director</option>
-<option value="social-director">Social Director</option>
 </select>
+</div>
 </div>
 </div>
 
@@ -377,7 +365,210 @@
 </div>
 </div>
 </footer>
+<script src="assets/js/main.js"></script>
 <script>
+    // Colleges and Departments Seed Mapping
+    const COLLEGES_MAP = [
+        { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
+        { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
+        { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
+        { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
+        { name: "Humanities & Social Sciences", depts: ["History", "English", "Linguistics"] },
+        { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
+        { name: "Medicine & Health Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
+    ];
+
+    const POSITIONS_MAP = {
+        SUG: [
+            { id: 'president', title: 'President' },
+            { id: 'vice-president', title: 'Vice-President' },
+            { id: 'secretary-general', title: 'Secretary-General' },
+            { id: 'assistant-secretary-general', title: 'Assistant Secretary-General' },
+            { id: 'treasurer', title: 'Treasurer' },
+            { id: 'financial-secretary', title: 'Financial Secretary' },
+            { id: 'pro', title: 'Public Relations Officer' },
+            { id: 'director-of-welfare', title: 'Director Of Welfare' },
+            { id: 'director-of-sports', title: 'Director of Sports' },
+            { id: 'director-of-socials', title: 'Director of Socials' }
+        ],
+        COLLEGE: [
+            { id: 'college_rep', title: 'College Representative' },
+            { id: 'college_sec', title: 'College Secretary' }
+        ],
+        DEPARTMENT: [
+            { id: 'dept_president', title: 'Department President' },
+            { id: 'dept_sec', title: 'Department Secretary' }
+        ]
+    };
+
+    // Populate Colleges dropdown on load
+    function initCollegesAndDepts() {
+        const collegeSelect = document.getElementById('college');
+        const deptSelect = document.getElementById('department');
+
+        COLLEGES_MAP.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.name;
+            opt.textContent = c.name;
+            collegeSelect.appendChild(opt);
+        });
+
+        // College selection change listener
+        collegeSelect.addEventListener('change', function() {
+            const selectedCollege = this.value;
+            deptSelect.innerHTML = '<option value="" disabled selected>Select your department</option>';
+            
+            const match = COLLEGES_MAP.find(c => c.name === selectedCollege);
+            if (match) {
+                match.depts.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.textContent = d;
+                    deptSelect.appendChild(opt);
+                });
+            }
+            verifyRegistrationStatus();
+        });
+
+        // Department selection change listener
+        deptSelect.addEventListener('change', function() {
+            verifyRegistrationStatus();
+        });
+    }
+
+    // Populate Positions dropdown dynamically depending on selected election scope level
+    function initElectionLevels() {
+        const levelSelect = document.getElementById('election-level');
+        const posSelect = document.getElementById('position');
+
+        function updatePositions() {
+            const scope = levelSelect.value;
+            posSelect.innerHTML = '<option value="" disabled selected>Select position</option>';
+            
+            if (POSITIONS_MAP[scope]) {
+                POSITIONS_MAP[scope].forEach(pos => {
+                    const opt = document.createElement('option');
+                    opt.value = pos.id;
+                    opt.textContent = pos.title;
+                    posSelect.appendChild(opt);
+                });
+            }
+        }
+
+        levelSelect.addEventListener('change', () => {
+            updatePositions();
+            verifyRegistrationStatus();
+        });
+        updatePositions(); // Run once to populate SUG
+    }
+
+    let systemSettings = {};
+
+    // Check if candidate registration is active
+    async function checkRegistrationActive() {
+        try {
+            const res = await fetch('http://localhost:5005/api/settings');
+            if (res.ok) {
+                systemSettings = await res.json();
+                verifyRegistrationStatus();
+            }
+        } catch(e) {
+            console.error("Failed to load registration status:", e);
+        }
+    }
+
+    function verifyRegistrationStatus() {
+        const levelSelect = document.getElementById('election-level');
+        const scope = levelSelect.value;
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const warning = document.getElementById('registration-closed-warning');
+
+        const collegeSelect = document.getElementById('college');
+        const deptSelect = document.getElementById('department');
+        
+        const collegeName = collegeSelect.value;
+        const deptName = deptSelect.value;
+
+        let isClosed = false;
+        if (scope === 'SUG' && systemSettings.registration_active_sug === false) {
+            isClosed = true;
+        } else if (scope === 'COLLEGE') {
+            if (systemSettings.registration_active_college === false) {
+                isClosed = true;
+            } else if (collegeName && systemSettings['registration_active_college_' + collegeName] === false) {
+                isClosed = true;
+            }
+        } else if (scope === 'DEPARTMENT') {
+            if (systemSettings.registration_active_department === false) {
+                isClosed = true;
+            } else if (deptName && systemSettings['registration_active_dept_' + deptName] === false) {
+                isClosed = true;
+            }
+        }
+
+        if (isClosed) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            warning.classList.remove('hidden');
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            warning.classList.add('hidden');
+        }
+    }
+
+    // Initialize all dynamic forms on load
+    document.addEventListener('DOMContentLoaded', () => {
+        checkRegistrationActive();
+        initCollegesAndDepts();
+        initElectionLevels();
+
+        // Pre-populate if logged in
+        if (typeof Auth !== 'undefined') {
+            const user = Auth.getUser();
+            if (user) {
+                const nameInput = document.getElementById('full-name');
+                const matricInput = document.getElementById('matric-no');
+                const emailInput = document.getElementById('email');
+                const collegeSelect = document.getElementById('college');
+                const deptSelect = document.getElementById('department');
+                const levelSelect = document.getElementById('level');
+
+                if (nameInput) { 
+                    nameInput.value = user.name; 
+                    nameInput.readOnly = true; 
+                    nameInput.classList.add('bg-slate-100', 'dark:bg-slate-800', 'cursor-not-allowed'); 
+                }
+                if (matricInput) { 
+                    matricInput.value = user.matricNo; 
+                    matricInput.readOnly = true; 
+                    matricInput.classList.add('bg-slate-100', 'dark:bg-slate-800', 'cursor-not-allowed'); 
+                }
+                if (emailInput) { 
+                    emailInput.value = user.contactInfo; 
+                }
+                
+                if (collegeSelect && user.college) {
+                    collegeSelect.value = user.college;
+                    // Trigger college change listener to populate department dropdown
+                    const event = new Event('change');
+                    collegeSelect.dispatchEvent(event);
+                }
+                
+                if (deptSelect && user.dept) {
+                    deptSelect.value = user.dept;
+                    const event = new Event('change');
+                    deptSelect.dispatchEvent(event);
+                }
+
+                if (levelSelect && user.level) {
+                    const cleanedLevel = user.level.replace(/L/i, '');
+                    levelSelect.value = cleanedLevel;
+                }
+            }
+        }
+    });
+
     document.getElementById('candidate-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -392,10 +583,16 @@
         // Map form fields to the API schema
         const candidateData = {
             name: formData.get('full-name'),
-            level: 'SUG', // assuming general SUG election for this form
+            level: formData.get('election-level'), // SUG, COLLEGE or DEPARTMENT
             position: formData.get('position'),
             college: formData.get('college'),
-            dept: formData.get('department')
+            dept: formData.get('department'),
+            matricNo: formData.get('matric-no'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            slogan: formData.get('slogan'),
+            manifesto: formData.get('manifesto'),
+            experience: formData.get('experience')
         };
         
         try {

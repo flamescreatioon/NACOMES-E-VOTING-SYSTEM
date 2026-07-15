@@ -66,8 +66,9 @@
                 <div class="flex flex-wrap items-center gap-4">
                     <span class="text-sm font-bold text-slate-400 uppercase tracking-widest">Election Level:</span>
                     <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                        <button onclick="setLevel('SUG')" id="btn-sug" class="px-6 py-2 rounded-lg text-sm font-bold transition-all bg-white dark:bg-slate-700 shadow-sm text-primary">SUG (General)</button>
-                        <button onclick="setLevel('COLLEGE')" id="btn-college" class="px-6 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">College Level</button>
+                        <button onclick="setLevel('SUG')" id="btn-sug" class="px-6 py-2 rounded-lg text-sm font-bold transition-all text-slate-500">SUG (General)</button>
+                        <button onclick="setLevel('COLLEGE')" id="btn-college" class="px-6 py-2 rounded-lg text-sm font-bold transition-all text-slate-500">College Level</button>
+                        <button onclick="setLevel('DEPARTMENT')" id="btn-dept" class="px-6 py-2 rounded-lg text-sm font-bold transition-all text-slate-500">Department Level</button>
                     </div>
                 </div>
 
@@ -75,6 +76,13 @@
                     <span class="text-sm font-bold text-slate-400 uppercase tracking-widest">Select College:</span>
                     <select id="college-select" onchange="renderCandidates()" class="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold px-4 py-2 focus:ring-primary min-w-[250px]">
                         <!-- Colleges populated by JS -->
+                    </select>
+                </div>
+
+                <div id="dept-filter-container" class="hidden flex flex-wrap items-center gap-4 animate-fade-in">
+                    <span class="text-sm font-bold text-slate-400 uppercase tracking-widest">Select Department:</span>
+                    <select id="dept-select" onchange="renderCandidates()" class="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold px-4 py-2 focus:ring-primary min-w-[250px]">
+                        <!-- Departments populated by JS -->
                     </select>
                 </div>
             </div>
@@ -98,31 +106,70 @@
     <script src="assets/js/main.js"></script>
     <script>
         let currentLevel = 'SUG';
+        let CANDIDATES = [];
         const grid = document.getElementById('candidates-grid');
         const emptyState = document.getElementById('empty-state');
         const collegeFilter = document.getElementById('college-filter-container');
         const collegeSelect = document.getElementById('college-select');
+        const deptFilter = document.getElementById('dept-filter-container');
+        const deptSelect = document.getElementById('dept-select');
+
+        // Colleges and departments mapping
+        const COLLEGES_MAP = [
+            { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
+            { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
+            { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
+            { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
+            { name: "Humanities & Social Sciences", depts: ["History", "English", "Linguistics"] },
+            { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
+            { name: "Medicine & Health Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
+        ];
 
         // Populate Colleges
-        CONFIG.colleges.forEach(c => {
+        COLLEGES_MAP.forEach(c => {
             const opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c;
+            opt.value = c.name;
+            opt.textContent = c.name;
             collegeSelect.appendChild(opt);
+        });
+
+        // Populate Departments
+        COLLEGES_MAP.forEach(c => {
+            c.depts.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.textContent = `${d} (${c.name})`;
+                deptSelect.appendChild(opt);
+            });
         });
 
         function setLevel(level) {
             currentLevel = level;
-            document.getElementById('btn-sug').className = level === 'SUG' ? 'px-6 py-2 rounded-lg text-sm font-bold transition-all bg-white dark:bg-slate-700 shadow-sm text-primary' : 'px-6 py-2 rounded-lg text-sm font-bold transition-all text-slate-500';
-            document.getElementById('btn-college').className = level === 'COLLEGE' ? 'px-6 py-2 rounded-lg text-sm font-bold transition-all bg-white dark:bg-slate-700 shadow-sm text-primary' : 'px-6 py-2 rounded-lg text-sm font-bold transition-all text-slate-500';
             
-            collegeFilter.classList.toggle('hidden', level === 'SUG');
+            const activeTabClass = 'px-6 py-2 rounded-lg text-sm font-bold transition-all bg-white dark:bg-slate-700 shadow-sm text-primary';
+            const inactiveTabClass = 'px-6 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:text-slate-750 dark:hover:text-slate-300';
+            
+            document.getElementById('btn-sug').className = level === 'SUG' ? activeTabClass : inactiveTabClass;
+            document.getElementById('btn-college').className = level === 'COLLEGE' ? activeTabClass : inactiveTabClass;
+            document.getElementById('btn-dept').className = level === 'DEPARTMENT' ? activeTabClass : inactiveTabClass;
+            
+            collegeFilter.classList.toggle('hidden', level !== 'COLLEGE');
+            deptFilter.classList.toggle('hidden', level !== 'DEPARTMENT');
+            
             renderCandidates();
         }
 
         function renderCandidates() {
             const college = currentLevel === 'COLLEGE' ? collegeSelect.value : null;
-            const filtered = CANDIDATES.filter(c => c.level === currentLevel && (currentLevel === 'SUG' || c.college === college));
+            const dept = currentLevel === 'DEPARTMENT' ? deptSelect.value : null;
+            
+            const filtered = CANDIDATES.filter(c => {
+                const levelMatch = c.level === currentLevel;
+                const collegeMatch = currentLevel !== 'COLLEGE' || c.college === college;
+                const deptMatch = currentLevel !== 'DEPARTMENT' || c.dept === dept;
+                const activeMatch = c.status !== 'disqualified';
+                return levelMatch && collegeMatch && deptMatch && activeMatch;
+            });
 
             if (filtered.length === 0) {
                 grid.innerHTML = '';
@@ -131,29 +178,45 @@
             }
 
             emptyState.classList.add('hidden');
-            grid.innerHTML = filtered.map(c => `
-                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group overflow-hidden">
-                    <div class="h-48 bg-slate-100 dark:bg-slate-800 relative flex items-center justify-center">
-                        <img src="assets/images/candidates/${c.id}.jpg" alt="${c.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
-                        <div class="absolute top-4 right-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
-                            ${c.position.replace('_', ' ')}
+            grid.innerHTML = filtered.map(c => {
+                // Determine display info
+                let scopeLabel = 'General SUG';
+                if (c.level === 'COLLEGE') scopeLabel = `${c.college} Level`;
+                if (c.level === 'DEPARTMENT') scopeLabel = `${c.dept} Dept`;
+
+                return `
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group overflow-hidden">
+                        <div class="h-48 bg-slate-150 dark:bg-slate-850 relative flex items-center justify-center overflow-hidden">
+                            <div class="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase select-none">
+                                ${c.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div class="absolute top-4 right-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+                                ${c.position.replace(/_|-/g, ' ')}
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1 truncate">${c.name}</h3>
+                            <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">${scopeLabel}</p>
+                            <p class="text-[11px] text-slate-400 font-medium mb-4 truncate">${c.dept} • ${c.college}</p>
+                            <div class="flex gap-2">
+                                <a href="login.html" class="flex-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition-all text-center block">View Profile</a>
+                            </div>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1">${c.name}</h3>
-                        <p class="text-xs text-slate-500 font-medium mb-4">${c.dept} • ${c.college}</p>
-                        <div class="flex gap-2">
-                            <button class="flex-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity">Profile</button>
-                            <button class="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                                <span class="material-symbols-outlined text-lg">share</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        setLevel('SUG');
+        async function initPage() {
+            try {
+                CANDIDATES = await Data.getAllCandidates();
+            } catch(e) {
+                console.error("Error loading candidates list:", e);
+            }
+            setLevel('SUG');
+        }
+
+        document.addEventListener('DOMContentLoaded', initPage);
     </script>
 </body>
 </html>

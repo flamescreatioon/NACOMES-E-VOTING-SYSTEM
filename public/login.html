@@ -103,9 +103,9 @@
 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="matric-no">Matriculation Number</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">badge</span>
-<input class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all placeholder:text-slate-400" id="matric-no" name="matric-no" placeholder="e.g. U2024/7891011" type="text"/>
+<input class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all placeholder:text-slate-400" id="matric-no" name="matric-no" placeholder="e.g. U2024/1234567 or U2024/100000" type="text"/>
 </div>
-<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Example format: U[Year]/[7-Digits]</p>
+<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Format: U[Year]/[6 or 7-Digits]</p>
 </div>
 <!-- Password Field -->
 <div>
@@ -151,6 +151,69 @@
 <span class="text-[10px] font-bold uppercase tracking-widest">Privacy Protected</span>
 </div>
 </div>
+</div>
+
+<!-- Demo Credentials (Profiles) -->
+<div class="mt-6 p-5 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800">
+    <div class="flex items-center gap-2 mb-3">
+        <span class="material-symbols-outlined text-primary">badge</span>
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Student Demo Accounts</p>
+    </div>
+    <div class="space-y-3">
+        <!-- Profile 1 -->
+        <div class="border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">John Doe (Computer Science)</span>
+                <span class="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">7-Digit Matric</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                    <p class="text-[10px] text-slate-400">Matric Number</p>
+                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">U2024/1234567</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400">Password</p>
+                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">test123</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile 2 -->
+        <div class="border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Jane Smith (Law)</span>
+                <span class="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">7-Digit Matric</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                    <p class="text-[10px] text-slate-400">Matric Number</p>
+                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">U2023/7654321</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400">Password</p>
+                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">student</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seeded accounts note -->
+        <div>
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Seeded Students (15k Pool)</span>
+                <span class="text-[9px] bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">6-Digit Matric</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                    <p class="text-[10px] text-slate-400">Matric Number</p>
+                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">U2021/100000 to U2024/114999</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400">Password</p>
+                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">student2026</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <!-- Bottom Note -->
 <p class="mt-8 text-center text-xs text-slate-400 dark:text-slate-500 px-4">
@@ -202,6 +265,7 @@
             
             // Store user info in sessionStorage
             sessionStorage.setItem('loggedInUser', JSON.stringify(data.user));
+            sessionStorage.setItem('authToken', data.token);
             
             // Redirect to voting dashboard
             window.location.href = 'dashboard.html';

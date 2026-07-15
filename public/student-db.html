@@ -1,330 +1,503 @@
 <!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Student Database Management | University Election Admin</title>
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "primary": "#135bec",
-              "background-light": "#f6f6f8",
-              "background-dark": "#101622",
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Student Database Management - ABSU Election</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        const isSuperAdmin = sessionStorage.getItem('superAdminLoggedIn') === 'true';
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": isSuperAdmin ? "#9333ea" : "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
             },
-            fontFamily: {
-              "display": ["Lexend", "sans-serif"]
-            },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-          },
-        },
-      }
+        }
     </script>
-<style>
+    <style>
         body {
             font-family: 'Lexend', sans-serif;
         }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        .sidebar-active {
+            background-color: var(--color-primary, #9333ea);
+            color: white;
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
-<!-- Top Navigation Bar -->
-<header class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 lg:px-12 py-3">
-<div class="max-w-7xl mx-auto flex items-center justify-between">
-<div class="flex items-center gap-8">
-<div class="flex items-center gap-3 text-primary">
-<div class="size-8 bg-primary/10 rounded-lg flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">how_to_vote</span>
-</div>
-<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">UniVote Admin</h2>
-</div>
-<nav class="hidden md:flex items-center gap-6">
-<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Dashboard</a>
-<a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1" href="#">Students</a>
-<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Elections</a>
-<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Reports</a>
-</nav>
-</div>
-<div class="flex items-center gap-4">
-<div class="relative hidden sm:block">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-<input class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary w-64 transition-all" placeholder="Global search..." type="text"/>
-</div>
-<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative">
-<span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-</button>
-<div class="h-8 w-px bg-slate-200 dark:border-slate-700 mx-1"></div>
-<div class="flex items-center gap-3 pl-2">
-<div class="text-right hidden sm:block">
-<p class="text-xs font-bold text-slate-900 dark:text-white leading-none">Admin User</p>
-<p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Super Admin</p>
-</div>
-<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/10 overflow-hidden">
-<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="Stylized avatar icon of an administrator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmRSxwCYghDQ5EUDUzxw8sJ2uhVIqFswBTSjo9PnamN7aTVpkVjI6PSinszvZVUQyvTCrCe12tzxI55WTT9ICO8_kk60e7Q-BdFV9-U3ikgd2xshzFLS4we-82c0yXglN5aRmMzQUIPAo4_PqROl00TaZWbQr1HHr7xiLj7-aaWKaR8CL8VJ2TL-lPrnjIFFUbCW9qD3kyTctFuaoGHKQt2EnWh-y7xwrL0VCx8jree3Xx5YozLNlBA3ydu4B45FxH7R3Mvo920JQ"/>
-</div>
-</div>
-</div>
-</div>
-</header>
-<main class="max-w-7xl mx-auto px-6 lg:px-12 py-8">
-<!-- Breadcrumbs & Header -->
-<div class="mb-8">
-<nav class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-2">
-<a class="hover:text-primary transition-colors" href="#">Admin</a>
-<span class="material-symbols-outlined text-xs leading-none">chevron_right</span>
-<span class="text-slate-900 dark:text-white font-medium">Student Database</span>
-</nav>
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-<div>
-<h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Student Database Management</h1>
-<p class="text-slate-500 dark:text-slate-400 mt-1">Manage, verify, and audit the registry of eligible student voters.</p>
-</div>
-<div class="flex gap-3">
-<button class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all">
-<span class="material-symbols-outlined text-lg">download</span>
-<span>Template</span>
-</button>
-<button class="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform active:scale-95">
-<span class="material-symbols-outlined text-lg">person_add</span>
-<span>Add Student</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Metrics Grid -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
-<p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Students</p>
-<div class="flex items-baseline gap-2">
-<h3 class="text-2xl font-black text-slate-900 dark:text-white">2,450</h3>
-<span class="text-emerald-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_upward</span> 12%</span>
-</div>
-</div>
-<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
-<p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Verified Voters</p>
-<div class="flex items-baseline gap-2">
-<h3 class="text-2xl font-black text-slate-900 dark:text-white">2,100</h3>
-<span class="text-emerald-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_upward</span> 5%</span>
-</div>
-</div>
-<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
-<p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Pending Action</p>
-<div class="flex items-baseline gap-2">
-<h3 class="text-2xl font-black text-slate-900 dark:text-white">350</h3>
-<span class="text-amber-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">remove</span> 0%</span>
-</div>
-</div>
-<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-primary/20 bg-primary/5">
-<p class="text-primary text-xs font-bold uppercase tracking-wider mb-1">Registry Security</p>
-<div class="flex items-baseline gap-2">
-<h3 class="text-2xl font-black text-primary">High</h3>
-<span class="material-symbols-outlined text-primary text-sm">verified_user</span>
-</div>
-</div>
-</div>
-<!-- CSV Bulk Import Area -->
-<section class="mb-12">
-<div class="flex items-center gap-2 mb-4">
-<span class="material-symbols-outlined text-primary">upload_file</span>
-<h2 class="text-xl font-bold text-slate-900 dark:text-white">Bulk Import Student Data</h2>
-</div>
-<div class="relative group">
-<div class="w-full h-48 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center bg-white dark:bg-slate-900 hover:border-primary dark:hover:border-primary transition-all cursor-pointer">
-<div class="size-14 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
-</div>
-<p class="text-slate-900 dark:text-white font-bold">Drag and drop CSV file here</p>
-<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">or <span class="text-primary font-semibold underline underline-offset-4">browse files</span> from your computer</p>
-<p class="text-slate-400 dark:text-slate-600 text-xs mt-4">Maximum file size: 10MB (CSV only)</p>
-</div>
-</div>
-</section>
-<!-- Student List Table -->
-<section>
-<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-<div class="flex items-center gap-2">
-<h2 class="text-xl font-bold text-slate-900 dark:text-white">Eligible Students Registry</h2>
-<span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-full">2,450 Entries</span>
-</div>
-<div class="flex flex-wrap items-center gap-3">
-<div class="relative min-w-[300px]">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-<input class="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Search by Matric No or Name..." type="text"/>
-</div>
-<select class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-4 py-2 text-slate-600 dark:text-slate-400 focus:ring-2 focus:ring-primary">
-<option>Status: All</option>
-<option>Verified</option>
-<option>Not Verified</option>
-</select>
-<button class="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 hover:bg-slate-50">
-<span class="material-symbols-outlined">filter_list</span>
-</button>
-</div>
-</div>
-<!-- Table Container -->
-<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Matric Number</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Full Name</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Faculty/Dept</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Date Added</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">Actions</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-<!-- Row 1 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2021/CS/1024</td>
-<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Alexandria Mitchell</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Engineering / CS</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
-<span class="material-symbols-outlined text-[14px]">check_circle</span>
-                                        Verified
-                                    </span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 24, 2023</td>
-<td class="px-6 py-4 text-right">
-<div class="flex items-center justify-end gap-2">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
-<span class="material-symbols-outlined text-lg">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
-<span class="material-symbols-outlined text-lg">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 2 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2021/LAW/0852</td>
-<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Benjamin Okafor</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Law / Jurisprudence</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold">
-<span class="material-symbols-outlined text-[14px]">info</span>
-                                        Not Verified
-                                    </span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 25, 2023</td>
-<td class="px-6 py-4 text-right">
-<div class="flex items-center justify-end gap-2">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
-<span class="material-symbols-outlined text-lg">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
-<span class="material-symbols-outlined text-lg">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 3 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2021/MED/1190</td>
-<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Catherine Silva</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Medicine / Surgery</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
-<span class="material-symbols-outlined text-[14px]">check_circle</span>
-                                        Verified
-                                    </span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 25, 2023</td>
-<td class="px-6 py-4 text-right">
-<div class="flex items-center justify-end gap-2">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
-<span class="material-symbols-outlined text-lg">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
-<span class="material-symbols-outlined text-lg">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 4 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2022/ARTS/0441</td>
-<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">David Zhang</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Arts / Philosophy</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
-<span class="material-symbols-outlined text-[14px]">check_circle</span>
-                                        Verified
-                                    </span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 26, 2023</td>
-<td class="px-6 py-4 text-right">
-<div class="flex items-center justify-end gap-2">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
-<span class="material-symbols-outlined text-lg">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
-<span class="material-symbols-outlined text-lg">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 5 -->
-<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">U2021/SOC/2209</td>
-<td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Elena Rodriquez</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Social Sci / Economics</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold">
-<span class="material-symbols-outlined text-[14px]">info</span>
-                                        Not Verified
-                                    </span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Oct 26, 2023</td>
-<td class="px-6 py-4 text-right">
-<div class="flex items-center justify-end gap-2">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
-<span class="material-symbols-outlined text-lg">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all">
-<span class="material-symbols-outlined text-lg">delete</span>
-</button>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<!-- Pagination Footer -->
-<div class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-<p class="text-sm text-slate-500 dark:text-slate-400">Showing <span class="font-bold text-slate-900 dark:text-white">1</span> to <span class="font-bold text-slate-900 dark:text-white">10</span> of <span class="font-bold text-slate-900 dark:text-white">2,450</span> results</p>
-<div class="flex items-center gap-2">
-<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-400 cursor-not-allowed">Previous</button>
-<button class="px-3 py-1 bg-primary text-white border border-primary rounded-lg text-sm font-bold">1</button>
-<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">2</button>
-<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">3</button>
-<span class="text-slate-400 text-sm">...</span>
-<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">245</button>
-<button class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">Next</button>
-</div>
-</div>
-</div>
-</section>
-</main>
-<footer class="mt-auto py-8 px-12 border-t border-slate-200 dark:border-slate-800 text-center">
-<div class="flex items-center justify-center gap-2 text-slate-400 dark:text-slate-500 text-sm">
-<span class="material-symbols-outlined text-[16px]">verified_user</span>
-<p>Secure Election Environment © 2023 University Election Commission. All connections are encrypted.</p>
-</div>
-</footer>
-</body></html>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 border-r border-primary/10 bg-white dark:bg-slate-900 h-screen sticky top-0 flex flex-col justify-between py-6 px-4 z-20">
+        <div class="flex flex-col gap-8">
+            <!-- Brand -->
+            <div class="flex items-center gap-3 px-2">
+                <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+                <div>
+                    <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
+                    <p id="admin-role-text" class="text-slate-500 text-xs font-medium">Super Admin</p>
+                </div>
+            </div>
+            <!-- Nav Links -->
+            <nav class="flex flex-col gap-1">
+                <a id="nav-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="super-admin.html">
+                    <span class="material-symbols-outlined text-[22px]">dashboard</span>
+                    <span class="text-sm font-medium">Dashboard</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="admin-candidates.html">
+                    <span class="material-symbols-outlined text-[22px]">group</span>
+                    <span class="text-sm font-medium">Candidates</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg sidebar-active transition-all group" href="student-db.html">
+                    <span class="material-symbols-outlined text-[22px]">database</span>
+                    <span class="text-sm font-medium">Student DB</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group" href="admin-results.html">
+                    <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+                    <span class="text-sm font-medium">Results</span>
+                </a>
+                <a id="nav-controls" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all group hidden" href="super-admin-controls.html">
+                    <span class="material-symbols-outlined text-[22px]">toggle_on</span>
+                    <span class="text-sm font-medium">System Controls</span>
+                </a>
+            </nav>
+        </div>
+        <div class="flex flex-col gap-4">
+            <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all">
+                <span class="material-symbols-outlined text-[22px]">home</span>
+                <span class="text-sm font-medium">Back to Site</span>
+            </a>
+            <button id="logout-btn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all w-full text-left">
+                <span class="material-symbols-outlined text-[22px]">logout</span>
+                <span class="text-sm font-medium">Logout</span>
+            </button>
+            <div class="p-3 bg-primary/5 rounded-xl flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary">verified_user</span>
+                </div>
+                <div class="flex-1">
+                    <p id="admin-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Super Admin</p>
+                    <p id="admin-role" class="text-[10px] text-slate-500 font-medium">Chief Electoral Officer</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-y-auto z-10">
+        <!-- Header -->
+        <header class="h-16 border-b border-primary/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-bold tracking-tight">Student Database Registry</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="dark-mode-toggle" class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title="Toggle Dark Mode">
+                    <span class="material-symbols-outlined dark:hidden">dark_mode</span>
+                    <span class="material-symbols-outlined hidden dark:block text-yellow-400">light_mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Body -->
+        <div class="p-8 flex flex-col gap-8 max-w-7xl mx-auto w-full">
+            
+            <!-- Statistics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Total Students -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-primary/5 shadow-sm">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Total Registered</p>
+                    <h3 id="stats-total" class="text-3xl font-black text-slate-900 dark:text-white mt-2">0</h3>
+                </div>
+                <!-- Voted Students -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-primary/5 shadow-sm">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Turnout (Voted)</p>
+                    <h3 id="stats-voted" class="text-3xl font-black text-slate-900 dark:text-white mt-2">0</h3>
+                </div>
+                <!-- Pending Voters -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-primary/5 shadow-sm">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Pending Voters</p>
+                    <h3 id="stats-pending" class="text-3xl font-black text-slate-900 dark:text-white mt-2">0</h3>
+                </div>
+                <!-- Voter Turnout Rate -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-primary/5 shadow-sm">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Turnout Rate</p>
+                    <div class="flex items-baseline gap-2 mt-2">
+                        <h3 id="stats-rate" class="text-3xl font-black text-primary">0%</h3>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+                        <div id="stats-progress" class="bg-primary h-full w-0 transition-all duration-700"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registry Section -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-primary/5 shadow-sm">
+                <!-- Search and Filters Panel -->
+                <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold">Registry List</h3>
+                        <p class="text-xs text-slate-400">Search, filter and manage student voter eligibility status</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Search Box -->
+                        <div class="relative min-w-[280px]">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                            <input id="search-input" class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white" placeholder="Search by name or Matric No..." type="text"/>
+                        </div>
+
+                        <!-- College Filter -->
+                        <select id="college-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold px-3 py-2 text-slate-600 dark:text-slate-400 focus:ring-2 focus:ring-primary/20">
+                            <option value="">All Colleges</option>
+                            <option value="Biological & Physical Sciences">Sciences</option>
+                            <option value="Law">Law</option>
+                            <option value="Engineering & Environmental Studies">Engineering</option>
+                            <option value="Business Administration">Business</option>
+                            <option value="Humanities">Humanities</option>
+                            <option value="Education">Education</option>
+                            <option value="Clinical Sciences">Clinical Sciences</option>
+                        </select>
+
+                        <!-- Turnout Status Filter -->
+                        <select id="status-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold px-3 py-2 text-slate-600 dark:text-slate-400 focus:ring-2 focus:ring-primary/20">
+                            <option value="">All Turnout</option>
+                            <option value="voted">Voted</option>
+                            <option value="not_voted">Not Voted</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-slate-200 dark:border-slate-800">
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Matric Number</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Student Name</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">College / Faculty</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Department / Level</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Vote Status</th>
+                                <th class="text-right text-xs font-bold text-slate-500 uppercase pb-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-registry-table" class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                            <!-- Populated Dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Footer -->
+                <div class="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/50 pt-6 mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p id="pagination-label" class="text-xs text-slate-500 dark:text-slate-400">
+                        Showing <span class="font-bold text-slate-900 dark:text-white">0</span> to <span class="font-bold text-slate-900 dark:text-white">0</span> of <span class="font-bold text-slate-900 dark:text-white">0</span> entries
+                    </p>
+                    <div id="pagination-buttons" class="flex items-center gap-1.5">
+                        <!-- Rendered Dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+
+    <script src="assets/js/main.js"></script>
+    <script>
+        const API_URL = 'http://localhost:5005/api';
+        let currentPage = 1;
+        let limit = 10;
+        let searchTimeout;
+
+        // Check authentication
+        function checkAuth() {
+            const isSuper = sessionStorage.getItem('superAdminLoggedIn') === 'true';
+            const isAdmin = sessionStorage.getItem('adminLoggedIn') === 'true';
+            
+            if (!isSuper && !isAdmin) {
+                window.location.href = 'admin-login.html';
+                return false;
+            }
+            
+            // Adjust theme color and sidebar targets dynamically
+            document.documentElement.style.setProperty('--color-primary', isSuper ? '#9333ea' : '#135bec');
+            const roleText = document.getElementById('admin-role-text');
+            if (roleText) {
+                roleText.textContent = isSuper ? 'Super Admin' : 'Admin Console';
+            }
+            
+            const dashboardLink = document.getElementById('nav-dashboard');
+            if (dashboardLink) {
+                dashboardLink.href = isSuper ? 'super-admin.html' : 'admin.html';
+            }
+
+            const controlsLink = document.getElementById('nav-controls');
+            if (controlsLink && isSuper) {
+                controlsLink.classList.remove('hidden');
+            }
+
+            // Display admin info
+            const adminUser = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
+            if (adminUser.name) {
+                document.getElementById('admin-name').textContent = adminUser.name;
+            }
+            if (adminUser.role) {
+                document.getElementById('admin-role').textContent = adminUser.role;
+            }
+            return true;
+        }
+
+        // Fetch statistics metrics
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_URL}/students/stats`);
+                if (!res.ok) throw new Error('Failed to load stats');
+                const data = await res.json();
+
+                document.getElementById('stats-total').textContent = data.total.toLocaleString();
+                document.getElementById('stats-voted').textContent = data.voted.toLocaleString();
+                document.getElementById('stats-pending').textContent = data.pending.toLocaleString();
+
+                const rate = data.total > 0 ? ((data.voted / data.total) * 100).toFixed(1) : '0.0';
+                document.getElementById('stats-rate').textContent = `${rate}%`;
+                document.getElementById('stats-progress').style.width = `${rate}%`;
+            } catch (err) {
+                console.error(err.message);
+            }
+        }
+
+        // Fetch and load student table
+        async function loadStudents() {
+            const search = document.getElementById('search-input').value.trim();
+            const college = document.getElementById('college-select').value;
+            const status = document.getElementById('status-select').value;
+            const offset = (currentPage - 1) * limit;
+
+            const tbody = document.getElementById('student-registry-table');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-12">
+                        <span class="inline-block animate-spin material-symbols-outlined text-primary text-2xl">refresh</span>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const url = new URL(`${API_URL}/students`);
+                url.searchParams.append('search', search);
+                url.searchParams.append('college', college);
+                url.searchParams.append('status', status);
+                url.searchParams.append('limit', limit);
+                url.searchParams.append('offset', offset);
+
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Could not fetch student registry list');
+                const data = await res.json();
+
+                renderTable(data.rows);
+                renderPagination(data.total);
+            } catch (err) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-12 text-sm text-rose-500 font-medium">
+                            ${err.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Render rows
+        function renderTable(students) {
+            const tbody = document.getElementById('student-registry-table');
+            if (students.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-12 text-sm text-slate-500 font-medium">
+                            No student registry match found. Try adjusting filters.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            students.forEach(s => {
+                const hasVoted = s.hasVoted === 1;
+                const statusBadge = hasVoted 
+                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-500/20">
+                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Voted
+                       </span>`
+                    : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                         <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> Unvoted
+                       </span>`;
+
+                html += `
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all">
+                        <td class="py-4 text-sm font-bold text-slate-900 dark:text-white">${s.matricNo}</td>
+                        <td class="py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">${s.name}</td>
+                        <td class="py-4 text-xs text-slate-500">${s.college}</td>
+                        <td class="py-4 text-xs text-slate-500 font-medium">${s.dept} (${s.level})</td>
+                        <td class="py-4 text-xs">${statusBadge}</td>
+                        <td class="py-4 text-right">
+                            <button onclick="deleteStudent('${s.matricNo}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all" title="Remove Student">
+                                <span class="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Render pagination controls
+        function renderPagination(total) {
+            const start = total === 0 ? 0 : (currentPage - 1) * limit + 1;
+            const end = Math.min(currentPage * limit, total);
+            document.getElementById('pagination-label').innerHTML = `
+                Showing <span class="font-bold text-slate-900 dark:text-white">${start}</span> to <span class="font-bold text-slate-900 dark:text-white">${end}</span> of <span class="font-bold text-slate-900 dark:text-white">${total.toLocaleString()}</span> entries
+            `;
+
+            const totalPages = Math.ceil(total / limit);
+            const container = document.getElementById('pagination-buttons');
+            container.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border ${currentPage === 1 ? 'border-slate-200 text-slate-400 cursor-not-allowed dark:border-slate-800' : 'border-slate-200 hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-all'}`;
+            prevBtn.textContent = 'Previous';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { currentPage--; loadStudents(); };
+            container.appendChild(prevBtn);
+
+            // Dynamic page buttons (show current page, surrounding pages, and ellipsis)
+            const pages = [];
+            if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else {
+                if (currentPage <= 3) {
+                    pages.push(1, 2, 3, 4, '...', totalPages);
+                } else if (currentPage >= totalPages - 2) {
+                    pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+                } else {
+                    pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+                }
+            }
+
+            pages.forEach(p => {
+                const btn = document.createElement('button');
+                if (p === '...') {
+                    btn.className = "px-3 py-1.5 text-xs text-slate-400 select-none cursor-default";
+                    btn.textContent = '...';
+                } else {
+                    const isActive = p === currentPage;
+                    btn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${isActive ? 'bg-primary text-white border-primary' : 'border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-750 dark:text-slate-300 dark:hover:bg-slate-800'}`;
+                    btn.textContent = p;
+                    btn.onclick = () => { currentPage = p; loadStudents(); };
+                }
+                container.appendChild(btn);
+            });
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border ${currentPage === totalPages ? 'border-slate-200 text-slate-400 cursor-not-allowed dark:border-slate-800' : 'border-slate-200 hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-all'}`;
+            nextBtn.textContent = 'Next';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => { currentPage++; loadStudents(); };
+            container.appendChild(nextBtn);
+        }
+
+        // Delete Student record
+        async function deleteStudent(matricNo) {
+            if (!confirm(`Are you sure you want to permanently delete student ${matricNo} from the election roll? This action cannot be undone.`)) return;
+
+            try {
+                const res = await fetch(`${API_URL}/students/${encodeURIComponent(matricNo)}`, {
+                    method: 'DELETE'
+                });
+
+                if (!res.ok) throw new Error('Failed to delete student from database');
+                showToast(`Student registry ${matricNo} deleted!`, 'success');
+                
+                // Refresh list and stats
+                loadStats();
+                loadStudents();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // Toast Helper
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-500' : 'bg-rose-500';
+            const icon = type === 'success' ? 'check_circle' : 'error';
+            
+            toast.className = `${bgClass} text-white flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border border-white/10 transition-all transform translate-y-2 opacity-0 duration-300 z-[99999]`;
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-lg">${icon}</span>
+                <span class="text-xs font-semibold">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Search Input listener with debounce
+        document.getElementById('search-input').addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                loadStudents();
+            }, 300);
+        });
+
+        // Filter event listeners
+        document.getElementById('college-select').addEventListener('change', () => {
+            currentPage = 1;
+            loadStudents();
+        });
+
+        document.getElementById('status-select').addEventListener('change', () => {
+            currentPage = 1;
+            loadStudents();
+        });
+
+        // Logout listener
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            sessionStorage.removeItem('superAdminLoggedIn');
+            sessionStorage.removeItem('adminLoggedIn');
+            sessionStorage.removeItem('adminUser');
+            window.location.href = 'admin-login.html';
+        });
+
+        // Load details on start
+        if (checkAuth()) {
+            loadStats();
+            loadStudents();
+        }
+    </script>
+</body>
+</html>
