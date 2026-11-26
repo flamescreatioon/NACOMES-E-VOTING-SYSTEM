@@ -1,3 +1,13 @@
+require('dotenv').config();
+// ── Neon Postgres mode ─────────────────────────────────────────────────────
+// When DATABASE_URL is set, use Neon (Postgres) instead of local SQLite.
+// The adapter below exposes the same sqlite3-style API (get/all/run/prepare/
+// serialize/close/ready) so backend/index.js works unchanged.
+if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim()) {
+module.exports = require('./db-postgres')(process.env.DATABASE_URL.trim());
+return;
+}
+
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
@@ -130,9 +140,56 @@ function initializeDatabase() {
             )
         `);
 
-        // Create students table if not exists
-        db.run(`
-            CREATE TABLE IF NOT EXISTS students (
+// Create approved matric numbers table (source of truth for registration).
+// The .txt files in backend/data/ are backups / seed source only.
+db.run(`
+CREATE TABLE IF NOT EXISTS approved_matrics (
+matricNo TEXT NOT NULL,
+level TEXT NOT NULL,
+createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (matricNo, level)
+)
+`, (err) => {
+if (!err) {
+seedApprovedMatrics();
+}
+});
+
+function seedApprovedMatrics() {
+let approved;
+try {
+approved = require('./approved-matrics');
+} catch (e) {
+console.error('Could not load approved-matrics module:', e.message);
+return;
+}
+let rows = [];
+try {
+rows = approved.readAllTxtBackup(dataDir);
+} catch (e) {
+console.error('Could not read txt backups for approved matrics:', e.message);
+return;
+}
+if (!rows.length) {
+console.log('No approved matric numbers found in txt backups — skipping seed.');
+return;
+}
+// Seed only new entries (INSERT OR IGNORE) so re-uploads just add rows.
+const stmt = db.prepare('INSERT OR IGNORE INTO approved_matrics (matricNo, level) VALUES (?, ?)');
+for (const r of rows) {
+stmt.run([r.matricNo, r.level]);
+}
+stmt.finalize(() => {
+db.get('SELECT COUNT(*) AS total FROM approved_matrics', (tErr, tRow) => {
+const total = !tErr && tRow ? tRow.total : '?';
+console.log(`Approved matric numbers synced from txt backups (total in DB: ${total}).`);
+});
+});
+}
+
+// Create students table if not exists
+db.run(`
+CREATE TABLE IF NOT EXISTS students (
                 matricNo TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 level TEXT NOT NULL,
@@ -207,7 +264,9 @@ function initializeDatabase() {
         // ── Query Indexes ─────────────────────────────────────────────────
         // These turn O(n) full-table scans into O(log n) lookups.
         // MUST exist for the system to survive election-day load.
-        db.run("CREATE INDEX IF NOT EXISTS idx_votes_matricNo    ON votes(matricNo)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_approved_matrics_matric ON approved_matrics(matricNo)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_approved_matrics_level ON approved_matrics(level)");
+        db.run("CREATE INDEX IF NOT EXISTS idx_votes_matricNo ON votes(matricNo)");
         db.run("CREATE INDEX IF NOT EXISTS idx_votes_votedAt     ON votes(votedAt DESC)");
         db.run("CREATE INDEX IF NOT EXISTS idx_votes_college     ON votes(college)");
         db.run("CREATE INDEX IF NOT EXISTS idx_students_matricNo ON students(matricNo)");

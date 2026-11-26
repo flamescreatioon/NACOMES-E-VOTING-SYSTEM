@@ -167,9 +167,11 @@
 
                         <!-- Turnout Status Filter -->
                         <select id="status-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold px-3 py-2 text-slate-600 dark:text-slate-400 focus:ring-2 focus:ring-primary/20">
-                            <option value="">All Turnout</option>
-                            <option value="voted">Voted</option>
-                            <option value="not_voted">Not Voted</option>
+ <option value="">All Turnout</option>
+ <option value="voted">Voted</option>
+ <option value="not_voted">Not Voted</option>
+ <option value="assisted">Assisted (admin-entered)</option>
+ <option value="self">Self (device)</option>
                         </select>
                     </div>
                 </div>
@@ -183,8 +185,9 @@
                                 <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Student Name</th>
                                 <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">College / Faculty</th>
                                 <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Department / Level</th>
-                                <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Vote Status</th>
-                                <th class="text-right text-xs font-bold text-slate-500 uppercase pb-4">Actions</th>
+ <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Vote Status</th>
+ <th class="text-left text-xs font-bold text-slate-500 uppercase pb-4">Vote Source</th>
+ <th class="text-right text-xs font-bold text-slate-500 uppercase pb-4">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="student-registry-table" class="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -207,7 +210,31 @@
         </div>
     </main>
 
-    <!-- Toast Notifications -->
+    <!-- Assist Vote Modal (vote on behalf of student without device) -->
+<div id="assist-vote-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white dark:bg-slate-900">
+<div>
+<h3 class="text-lg font-bold">Vote on Behalf</h3>
+<p id="assist-vote-subtitle" class="text-xs text-slate-400">Select candidates for this student</p>
+</div>
+<button onclick="closeAssistVoteModal()" class="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"><span class="material-symbols-outlined">close</span></button>
+</div>
+<form id="assist-vote-form" class="p-6 flex flex-col gap-4">
+<div id="assist-vote-positions" class="flex flex-col gap-4"></div>
+<div>
+<label class="text-xs font-bold text-slate-500 uppercase">Reason / note (optional, stored in audit)</label>
+<input id="assist-vote-reason" class="mt-1 w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs" placeholder="e.g. Student present at polling unit, no smartphone"/>
+</div>
+<div class="flex justify-end gap-3 pt-2">
+<button type="button" onclick="closeAssistVoteModal()" class="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">Cancel</button>
+<button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white">Submit Assisted Vote</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Toast Notifications -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
 
     <script src="assets/js/main.js"></script>
@@ -284,8 +311,8 @@
             const tbody = document.getElementById('student-registry-table');
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center py-12">
-                        <span class="inline-block animate-spin material-symbols-outlined text-primary text-2xl">refresh</span>
+<td colspan="7" class="text-center py-12">
+<span class="inline-block animate-spin material-symbols-outlined text-primary text-2xl">refresh</span>
                     </td>
                 </tr>
             `;
@@ -306,9 +333,9 @@
                 renderPagination(data.total);
             } catch (err) {
                 tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center py-12 text-sm text-rose-500 font-medium">
-                            ${err.message}
+<tr>
+<td colspan="7" class="text-center py-12 text-sm text-rose-500 font-medium">
+${err.message}
                         </td>
                     </tr>
                 `;
@@ -320,42 +347,60 @@
             const tbody = document.getElementById('student-registry-table');
             if (students.length === 0) {
                 tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center py-12 text-sm text-slate-500 font-medium">
-                            No student registry match found. Try adjusting filters.
+<tr>
+<td colspan="7" class="text-center py-12 text-sm text-slate-500 font-medium">
+No student registry match found. Try adjusting filters.
                         </td>
                     </tr>
                 `;
                 return;
             }
 
-            let html = '';
-            students.forEach(s => {
-                const hasVoted = s.hasVoted === 1;
-                const statusBadge = hasVoted 
-                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-500/20">
-                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Voted
-                       </span>`
-                    : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                         <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> Unvoted
-                       </span>`;
+let html = '';
+students.forEach(s => {
+const hasVoted = s.hasVoted === 1;
+const isAssisted = hasVoted && Number(s.voteManualEntry) === 1;
+const statusBadge = hasVoted
+? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Voted
+</span>`
+: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+<span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> Unvoted
+</span>`;
 
-                html += `
-                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all">
-                        <td class="py-4 text-sm font-bold text-slate-900 dark:text-white">${s.matricNo}</td>
-                        <td class="py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">${s.name}</td>
-                        <td class="py-4 text-xs text-slate-500">${s.college}</td>
-                        <td class="py-4 text-xs text-slate-500 font-medium">${s.dept} (${s.level})</td>
-                        <td class="py-4 text-xs">${statusBadge}</td>
-                        <td class="py-4 text-right">
-                            <button onclick="deleteStudent('${s.matricNo}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all" title="Remove Student">
-                                <span class="material-symbols-outlined text-lg">delete</span>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
+const sourceCell = !hasVoted
+? `<span class="text-slate-400">—</span>`
+: (isAssisted
+? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-500/20" title="Entered by ${escapeHtml(s.voteEnteredBy || 'admin')}${s.votedAt ? ' on ' + escapeHtml(s.votedAt) : ''}">Assisted${s.voteEnteredBy ? ' · ' + escapeHtml(s.voteEnteredBy) : ''}</span>`
+: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-800 dark:bg-sky-950/20 dark:text-sky-400 border border-sky-500/20">Self</span>`);
+
+const actionBtns = hasVoted
+? `<button onclick="retractVote('${s.matricNo}', '${escapeHtml(s.name)}')" class="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-all" title="Retract vote (restore eligibility)">
+<span class="material-symbols-outlined text-lg">undo</span>
+</button>
+<button onclick="deleteStudent('${s.matricNo}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all" title="Remove Student">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>`
+: `<button onclick="openAssistVoteModal('${s.matricNo}', '${escapeHtml(s.name)}')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all" title="Vote on behalf (no device)">
+<span class="material-symbols-outlined text-lg">how_to_vote</span>
+</button>
+<button onclick="deleteStudent('${s.matricNo}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all" title="Remove Student">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>`;
+
+html += `
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all">
+<td class="py-4 text-sm font-bold text-slate-900 dark:text-white">${s.matricNo}</td>
+<td class="py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">${s.name}</td>
+<td class="py-4 text-xs text-slate-500">${s.college}</td>
+<td class="py-4 text-xs text-slate-500 font-medium">${s.dept} (${s.level})</td>
+<td class="py-4 text-xs">${statusBadge}</td>
+<td class="py-4 text-xs">${sourceCell}</td>
+<td class="py-4 text-right whitespace-nowrap">${actionBtns}</td>
+</tr>
+`;
+});
+tbody.innerHTML = html;
         }
 
         // Render pagination controls
@@ -417,7 +462,119 @@
             container.appendChild(nextBtn);
         }
 
-        // Delete Student record
+        // Escape HTML for safe inline rendering
+function escapeHtml(str) {
+return String(str ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ========== ASSISTED VOTING (vote on behalf) ==========
+let assistTarget = null;
+
+async function openAssistVoteModal(matricNo, name) {
+assistTarget = { matricNo, name };
+document.getElementById('assist-vote-subtitle').textContent = `${name} (${matricNo}) — select one candidate per position`;
+const container = document.getElementById('assist-vote-positions');
+container.innerHTML = '<p class="text-xs text-slate-400">Loading candidates…</p>';
+
+try {
+const res = await fetch(`${API_URL}/candidates`);
+const candidates = res.ok ? await res.json() : [];
+const active = candidates.filter(c => c.status !== 'disqualified');
+const positions = [...new Set(active.map(c => c.position))].sort();
+
+if (positions.length === 0) {
+container.innerHTML = '<p class="text-xs text-rose-500 font-medium">No active candidates found. Register candidates first.</p>';
+} else {
+container.innerHTML = positions.map(pos => {
+const opts = active.filter(c => c.position === pos)
+.map(c => `<label class="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 cursor-pointer"><input type="radio" name="assist-${pos}" value="${escapeHtml(c.id)}" class="accent-emerald-700"/> ${escapeHtml(c.name)}</label>`)
+.join('');
+return `<div class="border border-slate-100 dark:border-slate-800 rounded-xl p-3"><p class="text-xs font-bold uppercase text-slate-500 mb-2">${escapeHtml(pos)}</p><div class="flex flex-col gap-1.5">${opts}</div></div>`;
+}).join('');
+}
+} catch (e) {
+container.innerHTML = '<p class="text-xs text-rose-500 font-medium">Could not load candidates.</p>';
+}
+
+const modal = document.getElementById('assist-vote-modal');
+modal.classList.remove('hidden');
+modal.classList.add('flex');
+}
+
+function closeAssistVoteModal() {
+const modal = document.getElementById('assist-vote-modal');
+modal.classList.add('hidden');
+modal.classList.remove('flex');
+assistTarget = null;
+}
+
+document.getElementById('assist-vote-form').addEventListener('submit', async (e) => {
+e.preventDefault();
+if (!assistTarget) return;
+const votes = {};
+document.querySelectorAll('#assist-vote-positions input[type="radio"]:checked').forEach(r => {
+votes[r.name.replace(/^assist-/, '')] = r.value;
+});
+if (Object.keys(votes).length === 0) {
+showToast('Select at least one candidate', 'error');
+return;
+}
+const adminUser = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
+const reason = document.getElementById('assist-vote-reason').value.trim();
+try {
+const res = await fetch(`${API_URL}/vote/manual`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+name: assistTarget.name,
+matricNo: assistTarget.matricNo,
+votes,
+manualEntry: true,
+enteredBy: `${adminUser.name || adminUser.username || 'admin'}${reason ? ' — ' + reason : ''}`
+})
+});
+const data = await res.json();
+if (!res.ok) throw new Error(data.error || 'Failed to record assisted vote');
+showToast(`Assisted vote recorded for ${assistTarget.matricNo}`, 'success');
+closeAssistVoteModal();
+loadStats();
+loadStudents();
+} catch (err) {
+showToast(err.message, 'error');
+}
+});
+
+// ========== RETRACT VOTE ==========
+async function retractVote(matricNo, name) {
+try {
+const res = await fetch(`${API_URL}/votes/${encodeURIComponent(matricNo)}`);
+if (!res.ok) {
+const d = await res.json().catch(() => ({}));
+throw new Error(d.error || 'Could not fetch vote details');
+}
+const vote = await res.json();
+const picks = (vote.details || []).map(d => `• ${d.position}: ${d.candidateName}`).join('\n');
+const reasonInput = prompt(`Retract vote for ${name} (${matricNo})?\n\n${picks || 'No per-position details.'}\n\nThis deletes the vote and decrements tallies. It is logged in the audit trail.\n\nOptional reason (Cancel aborts):`, '');
+if (reasonInput === null) return; // user pressed Cancel on the prompt
+const reason = reasonInput.trim();
+if (!confirm(`Confirm retracting vote for ${matricNo}? This cannot be undone.`)) return;
+
+const del = await fetch(`${API_URL}/votes/${encodeURIComponent(matricNo)}`, {
+method: 'DELETE',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ reason })
+});
+const delData = await del.json().catch(() => ({}));
+if (!del.ok) throw new Error(delData.error || 'Failed to retract vote');
+showToast(`Vote retracted for ${matricNo}`, 'success');
+loadStats();
+loadStudents();
+} catch (err) {
+showToast(err.message, 'error');
+}
+}
+
+// Delete Student record
         async function deleteStudent(matricNo) {
             if (!confirm(`Are you sure you want to permanently delete student ${matricNo} from the election roll? This action cannot be undone.`)) return;
 

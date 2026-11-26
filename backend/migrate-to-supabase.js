@@ -65,14 +65,15 @@ const toBool = (v) => v === 1 || v === true || v === 'true' || v === 't';
 (async () => {
   console.log('Reading SQLite:', dbPath);
 
-  const [candidates, students, votes, details, settings] = await Promise.all([
+const [candidates, students, votes, details, settings, approvedMatrics] = await Promise.all([
     all('SELECT * FROM candidates'),
     all('SELECT * FROM students'),
     all('SELECT * FROM votes'),
     all('SELECT * FROM vote_details'),
+  all('SELECT * FROM approved_matrics').catch(() => []),
     all('SELECT * FROM system_settings'),
   ]);
-  console.log(`SQLite counts: candidates=${candidates.length} students=${students.length} votes=${votes.length} vote_details=${details.length} settings=${settings.length}`);
+console.log(`SQLite counts: candidates=${candidates.length} students=${students.length} votes=${votes.length} vote_details=${details.length} settings=${settings.length} approved_matrics=${(approvedMatrics||[]).length}`);
 
   // ── Filter to REAL data ──
   const TEST_MATRICS = new Set(['U2024/1234567', 'U2023/7654321']);
@@ -110,6 +111,8 @@ const toBool = (v) => v === 1 || v === true || v === 'true' || v === 't';
   await upsert('candidates', candidates, 'id');
   console.log('Uploading students...');
   await upsert('students', realStudents, 'matricNo');
+console.log('Uploading approved_matrics...');
+await upsert('approved_matrics', (approvedMatrics || []).map((a) => ({ matricNo: a.matricNo, level: a.level })), 'matricNo,level');
   console.log('Uploading system_settings...');
   await upsert('system_settings', pgSettings, 'key');
   console.log('Uploading votes...');

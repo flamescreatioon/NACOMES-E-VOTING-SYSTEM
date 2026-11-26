@@ -20,6 +20,8 @@ function removeSqliteFiles(dbPath) {
 }
 
 function runStartupSetup() {
+ // Neon mode: skip SQLite self-heal (schema+seed handled by db-postgres adapter).
+ if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim()) { db.ready.then(()=>seedCandidates(db)); return; }
     db.ready.then(() => {
         db.get("SELECT password, college, dept, contactInfo FROM students WHERE matricNo = 'U2024/1234567'", [], (err, row) => {
             const needsRebuild = !err && row && (
@@ -112,9 +114,21 @@ try {
 } catch(e) { /* compression not installed, skip */ }
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+origin: (origin, callback) => {
+// Allow same-origin / non-browser clients (no Origin header) and any
+// localhost / 127.0.0.1 port (Live Server :5500, browser-sync :3000, etc.).
+// In production, set ALLOWED_ORIGINS env var to a comma-separated list.
+if (!origin) return callback(null, true);
+const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+try {
+const u = new URL(origin);
+const isLocal = (u.hostname === 'localhost' || u.hostname === '127.0.0.1');
+if (isLocal || allowed.includes(origin)) return callback(null, true);
+} catch (e) { /* fall through to deny */ }
+return callback(null, false);
+},
+methods: ['GET', 'POST', 'PUT', 'DELETE'],
+allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '5mb' }));
 
@@ -391,50 +405,14 @@ app.delete('/api/candidates/:id', authenticate, authorize(['superadmin']), (req,
 // ==========================================
 // STUDENT AUTHENTICATION & REGISTRATION
 // ==========================================
-const LEVEL_MATRIC_WHITELISTS = {
-    '200L': {
-        label: '200 Level',
-        filePath: path.join(__dirname, 'data', 'matric_numbers_only.txt'),
-        set: new Set()
-    },
-    '300L': {
-        label: '300 Level',
-        filePath: path.join(__dirname, 'data', '300level_matric_numbers.txt'),
-        set: new Set()
-    },
-    '500L': {
-        label: '500 Level',
-        filePath: path.join(__dirname, 'data', '500_level_matric_numbers.txt'),
-        set: new Set()
-    }
-};
+// Source of truth: approved_matrics DB table (SQLite locally, Postgres on
+// Supabase/Neon). The .txt files in backend/data/ are BACKUP / seed only.
+// See backend/approved-matrics.js.
+const approvedMatrics = require('./approved-matrics');
+const { normalizeMatric, LEVEL_LABELS } = approvedMatrics;
+approvedMatrics.loadTxtWhitelists();
 
-function normalizeMatric(value) {
-    return String(value || '').trim().replace(/\\/g, '/').toUpperCase();
-}
-
-function loadApprovedMatrics() {
-    for (const entry of Object.values(LEVEL_MATRIC_WHITELISTS)) {
-        try {
-            if (fs.existsSync(entry.filePath)) {
-                const raw = fs.readFileSync(entry.filePath, 'utf8');
-                const list = raw
-                    .split(/\r?\n/)
-                    .map(normalizeMatric)
-                    .filter(Boolean);
-                entry.set = new Set(list);
-                console.log(`Loaded ${entry.set.size} approved ${entry.label} Computer Engineering matriculation numbers.`);
-            } else {
-                console.warn(`Approved ${entry.label} matriculation whitelist not found at ${entry.filePath}`);
-            }
-        } catch (err) {
-            console.error(`Error loading approved ${entry.label} matriculation whitelist:`, err.message);
-        }
-    }
-}
-loadApprovedMatrics();
-
-app.post('/api/register', (req, res) => {
+app.post('/api/register', async (req, res) => {
     const { name, matricNo, level, dept, college, contactInfo, password } = req.body;
     if (!name || !matricNo || !level || !dept || !contactInfo || !password) {
         return res.status(400).json({ error: "All registration fields are required." });
@@ -442,14 +420,22 @@ app.post('/api/register', (req, res) => {
 
     const normalizedMatric = normalizeMatric(matricNo);
     const rawLevel = String(level).trim().toUpperCase();
-    const levelKey = rawLevel.endsWith('L') ? rawLevel : `${rawLevel}L`;
-    const whitelist = LEVEL_MATRIC_WHITELISTS[levelKey];
+    const levelKey = rawLevel.endsWith('L') ? rawLevel : (rawLevel + 'L');
+    const levelLabel = LEVEL_LABELS[levelKey] || rawLevel;
 
-    if (whitelist && !whitelist.set.has(normalizedMatric)) {
+    if (!LEVEL_LABELS[levelKey]) {
+        return res.status(400).json({ error: 'Invalid level selected.' });
+    }
+
+    // Reg no must exist in the approved_matrics table (DB is the source of
+    // truth; txt backup is consulted only if the DB lookup itself fails).
+    const isApproved = await approvedMatrics.isMatricApproved(db, levelKey, normalizedMatric);
+    if (!isApproved) {
         return res.status(403).json({
-            error: `Registration Denied! Your matriculation number is not found in the approved Computer Engineering student database. Only students with verified matriculation numbers are permitted to create a ${whitelist.label} student profile. Please contact your course representative or department administrator for assistance.`
+        error: `Registration Denied! Your matriculation number is not found in the approved Computer Engineering student database. Only students with verified matriculation numbers are permitted to create a ${levelLabel} student profile. Please contact your course representative or department administrator for assistance.`
         });
     }
+
 
     const matchedCollege = findCollegeByDept(dept) || college;
     if (!matchedCollege) {
@@ -516,7 +502,8 @@ app.post('/api/admin/login', rateLimit(10), (req, res) => { // max 10 admin logi
         { username: 'superadmin', password: 'super2026', name: 'Chief Electoral Officer', role: 'superadmin' },
         { username: 'admin', password: 'admin123', name: 'System Administrator', role: 'admin' },
         { username: 'registrar', password: 'reg2026', name: 'Dr. Sarah Jenkins', role: 'admin' },
-        { username: 'officer', password: 'officer123', name: 'Election Officer', role: 'admin' }
+        { username: 'officer', password: 'officer123', name: 'Election Officer', role: 'admin' },
+ { username: 'ugochukwu.achor@mouau.edu.ng', password: 'Ugo20022@', name: 'Ugochukwu Achor', role: 'superadmin' }
     ];
 
     const match = ADMIN_ACCOUNTS_DB.find(a => a.username === username.toLowerCase() && a.password === password);
@@ -662,10 +649,103 @@ app.post('/api/vote', rateLimit(8), authenticate, (req, res) => {  // max 8 vote
     });
 });
 
-// Manual Admin Vote
+// Manual Admin Vote (assisted voting for students without devices).
+// Forces audit flags: manualEntry=1, enteredBy=<admin username>. Rejects
+// if the student doesn't exist or has already voted.
 app.post('/api/vote/manual', authenticate, authorize(['admin', 'superadmin']), (req, res) => {
-    // Expected to have enteredBy, manualEntry flags
-    processVote(req.body, res);
+	const { name, matricNo, votes, college } = req.body;
+	if (!matricNo || !votes || Object.keys(votes).length === 0) {
+		return res.status(400).json({ error: "matricNo and votes are required." });
+	}
+	db.get("SELECT matricNo, name FROM students WHERE UPPER(matricNo) = ?", [String(matricNo).toUpperCase()], (studErr, student) => {
+		if (studErr) return res.status(500).json({ error: studErr.message });
+		if (!student) return res.status(404).json({ error: "Student not found in registry." });
+		db.get("SELECT id FROM votes WHERE UPPER(matricNo) = ?", [String(matricNo).toUpperCase()], (voteErr, existing) => {
+			if (voteErr) return res.status(500).json({ error: voteErr.message });
+			if (existing) return res.status(400).json({ error: "This Matric Number has already voted." });
+			processVote({
+				name: name || student.name,
+				matricNo: student.matricNo,
+				votes,
+				college,
+				manualEntry: true,
+				enteredBy: req.user.username || req.user.matricNo || 'admin'
+			}, {
+				json: (data) => { invalidateStatsCache(); res.json(data); },
+				status: (code) => ({ json: (data) => res.status(code).json(data) })
+			});
+		});
+	});
+});
+
+// Retract a vote (admin-assisted correction, e.g. voted on wrong behalf).
+// Deletes vote_details + votes row and decrements candidate tallies so
+// counts stay consistent. Every retraction is written to vote_audit.
+app.delete('/api/votes/:matricNo', authenticate, authorize(['admin', 'superadmin']), (req, res) => {
+	const matricNo = String(req.params.matricNo || '').toUpperCase();
+	const reason = String(req.body?.reason || req.query?.reason || '').slice(0, 500);
+	if (!matricNo) return res.status(400).json({ error: "matricNo is required." });
+
+	db.get("SELECT id, name, matricNo, manualEntry, enteredBy FROM votes WHERE UPPER(matricNo) = ?", [matricNo], (err, vote) => {
+		if (err) return res.status(500).json({ error: err.message });
+		if (!vote) return res.status(404).json({ error: "No vote found for this Matric Number." });
+
+		db.all("SELECT position, candidateName FROM vote_details WHERE voteId = ?", [vote.id], (dErr, details) => {
+			if (dErr) return res.status(500).json({ error: dErr.message });
+
+			db.serialize(() => {
+				db.run("BEGIN TRANSACTION");
+				db.run("CREATE TABLE IF NOT EXISTS vote_audit (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, action TEXT NOT NULL, matricNo TEXT, details TEXT, performedBy TEXT)");
+
+				let pending = details.length;
+				const finish = (aErr) => {
+					if (aErr) { db.run("ROLLBACK"); return res.status(500).json({ error: aErr.message }); }
+					db.run("DELETE FROM vote_details WHERE voteId = ?", [vote.id], (e1) => {
+						if (e1) { db.run("ROLLBACK"); return res.status(500).json({ error: e1.message }); }
+						db.run("DELETE FROM votes WHERE id = ?", [vote.id], (e2) => {
+							if (e2) { db.run("ROLLBACK"); return res.status(500).json({ error: e2.message }); }
+							db.run(
+								"INSERT INTO vote_audit (action, matricNo, details, performedBy) VALUES ('retract', ?, ?, ?)",
+								[vote.matricNo, `Retracted ${details.length} position(s)` + (reason ? ` | reason: ${reason}` : ''), req.user.username || req.user.matricNo || 'admin'],
+								(e3) => {
+									if (e3) { db.run("ROLLBACK"); return res.status(500).json({ error: e3.message }); }
+									db.run("COMMIT");
+									invalidateStatsCache();
+									res.json({ success: true, message: `Vote retracted for ${vote.matricNo}`, retracted: details.length });
+								}
+							);
+						});
+					});
+				};
+
+				if (pending === 0) return finish(null);
+				let failed = null;
+				for (const d of details) {
+					db.run(
+						"UPDATE candidates SET votes = CASE WHEN votes > 0 THEN votes - 1 ELSE 0 END WHERE position = ? AND name = ?",
+						[d.position, d.candidateName],
+						(e) => {
+							if (e && !failed) failed = e;
+							if (--pending === 0) finish(failed);
+						}
+					);
+				}
+			});
+		});
+	});
+});
+
+// Vote detail for one voter (used by retract confirmation + audit view)
+app.get('/api/votes/:matricNo', authenticate, authorize(['admin', 'superadmin']), (req, res) => {
+	const matricNo = String(req.params.matricNo || '').toUpperCase();
+	db.get("SELECT id, name, matricNo, votedAt, manualEntry, enteredBy, college FROM votes WHERE UPPER(matricNo) = ?", [matricNo], (err, vote) => {
+		if (err) return res.status(500).json({ error: err.message });
+		if (!vote) return res.status(404).json({ error: "No vote found for this Matric Number." });
+		db.all("SELECT position, candidateName FROM vote_details WHERE voteId = ?", [vote.id], (dErr, details) => {
+			if (dErr) return res.status(500).json({ error: dErr.message });
+			res.json({ ...vote, details });
+		});
+	});
 });
 
 // Bulk Admin Vote
@@ -822,6 +902,10 @@ app.get('/api/stats/college-distribution', (req, res) => {
 // Reset Database Endpoint
 app.post('/api/admin/reset-database', authenticate, authorize(['superadmin']), (req, res) => {
     console.log("Database reset requested by admin...");
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() && typeof db.resetNeon === 'function') {
+      db.resetNeon().then(() => { seedCandidates(db); res.json({ success: true, message: "Database has been reset and clean seed initialized successfully." }); }).catch((e) => res.status(500).json({ error: "Failed to reset Neon database: " + e.message }));
+      return;
+    }
     
     // Close the database connection first
     db.close((err) => {
@@ -880,30 +964,35 @@ app.get('/api/students', authenticate, authorize(['admin', 'superadmin']), (req,
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
 
-    let query = `
-        SELECT s.matricNo, s.name, s.level, s.dept, s.contactInfo, s.college, s.registeredAt,
-        CASE WHEN v.matricNo IS NOT NULL THEN 1 ELSE 0 END as hasVoted
-        FROM students s
-        LEFT JOIN votes v ON UPPER(s.matricNo) = UPPER(v.matricNo)
-        WHERE 1=1
-    `;
-    const params = [];
+let query = `
+SELECT s.matricNo, s.name, s.level, s.dept, s.contactInfo, s.college, s.registeredAt,
+CASE WHEN v.matricNo IS NOT NULL THEN 1 ELSE 0 END as hasVoted,
+v.manualEntry as voteManualEntry, v.enteredBy as voteEnteredBy, v.votedAt as votedAt
+FROM students s
+LEFT JOIN votes v ON UPPER(s.matricNo) = UPPER(v.matricNo)
+WHERE 1=1
+ `;
+const params = [];
 
-    if (search) {
-        query += " AND (s.name LIKE ? OR s.matricNo LIKE ?)";
-        params.push(`%${search}%`, `%${search}%`);
-    }
+if (search) {
+query += " AND (s.name LIKE ? OR s.matricNo LIKE ?)";
+params.push(`%${search}%`, `%${search}%`);
+}
 
-    if (college) {
-        query += " AND s.college = ?";
-        params.push(college);
-    }
+if (college) {
+query += " AND s.college = ?";
+params.push(college);
+}
 
-    if (status === 'voted') {
-        query += " AND v.matricNo IS NOT NULL";
-    } else if (status === 'not_voted') {
-        query += " AND v.matricNo IS NULL";
-    }
+if (status === 'voted') {
+query += " AND v.matricNo IS NOT NULL";
+} else if (status === 'not_voted') {
+query += " AND v.matricNo IS NULL";
+} else if (status === 'assisted') {
+query += " AND v.manualEntry = 1";
+} else if (status === 'self') {
+query += " AND v.matricNo IS NOT NULL AND (v.manualEntry IS NULL OR v.manualEntry = 0)";
+}
 
     let countQuery = `
         SELECT COUNT(*) as count 
@@ -919,11 +1008,15 @@ app.get('/api/students', authenticate, authorize(['admin', 'superadmin']), (req,
     if (college) {
         countQuery += " AND s.college = ?";
     }
-    if (status === 'voted') {
-        countQuery += " AND v.matricNo IS NOT NULL";
-    } else if (status === 'not_voted') {
-        countQuery += " AND v.matricNo IS NULL";
-    }
+if (status === 'voted') {
+countQuery += " AND v.matricNo IS NOT NULL";
+} else if (status === 'not_voted') {
+countQuery += " AND v.matricNo IS NULL";
+} else if (status === 'assisted') {
+countQuery += " AND v.manualEntry = 1";
+} else if (status === 'self') {
+countQuery += " AND v.matricNo IS NOT NULL AND (v.manualEntry IS NULL OR v.manualEntry = 0)";
+}
 
     db.get(countQuery, countParams, (err, countRow) => {
         if (err) return res.status(500).json({ error: err.message });

@@ -62,6 +62,16 @@ CREATE TABLE IF NOT EXISTS bulk_vote_log (
   votesAdded INTEGER
 );
 
+-- ── Approved matric numbers (registration whitelist) ─────────────
+-- Source of truth for registration. backend/data/*.txt files are BACKUP /
+-- seed only. Rows: one per (matricNo, level).
+CREATE TABLE IF NOT EXISTS approved_matrics (
+matricNo TEXT NOT NULL,
+level TEXT NOT NULL,
+createdAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+PRIMARY KEY (matricNo, level)
+);
+
 -- ── System settings (feature flags + deadline) ───────────────
 CREATE TABLE IF NOT EXISTS system_settings (
   key TEXT PRIMARY KEY,
@@ -69,6 +79,8 @@ CREATE TABLE IF NOT EXISTS system_settings (
 );
 
 -- ── Indexes (same as SQLite version) ─────────────────────────
+CREATE INDEX IF NOT EXISTS idx_approved_matrics_matric ON approved_matrics(matricNo);
+CREATE INDEX IF NOT EXISTS idx_approved_matrics_level ON approved_matrics(level);
 CREATE INDEX IF NOT EXISTS idx_votes_matricNo ON votes(matricNo);
 CREATE INDEX IF NOT EXISTS idx_votes_votedAt ON votes(votedAt DESC);
 CREATE INDEX IF NOT EXISTS idx_votes_college ON votes(college);
