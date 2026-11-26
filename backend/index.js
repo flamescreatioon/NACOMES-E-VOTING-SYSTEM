@@ -4,29 +4,52 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 let db = require('./database');
+const { MOUAU_COLLEGES, findCollegeByDept } = require('./mouau-colleges');
 
-// Self-healing database migration: if database has plaintext passwords, reset it
-db.get("SELECT password FROM students WHERE matricNo = 'U2024/1234567'", [], (err, row) => {
-    if (!err && row && row.password === 'test123') {
-        console.log("Detected legacy plaintext database. Re-building database with salted hashes...");
-        db.close((closeErr) => {
-            const dbPath = path.join(__dirname, 'data', 'election.sqlite');
-            try {
-                if (fs.existsSync(dbPath)) {
-                    fs.unlinkSync(dbPath);
-                    console.log("Deleted legacy database file.");
-                }
-            } catch (unlinkErr) {
-                console.error("Failed to delete legacy database:", unlinkErr.message);
+// Self-healing database migration: rebuild legacy plaintext or pre-MOUAU databases
+function removeSqliteFiles(dbPath) {
+    for (const suffix of ['', '-wal', '-shm']) {
+        try {
+            if (fs.existsSync(dbPath + suffix)) {
+                fs.unlinkSync(dbPath + suffix);
             }
-            // Re-open and initialize a fresh database
-            delete require.cache[require.resolve('./database')];
-            db = require('./database');
-        });
+        } catch (unlinkErr) {
+            console.error(`Failed to delete ${dbPath + suffix}:`, unlinkErr.message);
+        }
     }
-});
+}
 
-const JWT_SECRET = 'absu-election-super-secret-key-2026';
+function runStartupSetup() {
+    db.ready.then(() => {
+        db.get("SELECT password, college, dept, contactInfo FROM students WHERE matricNo = 'U2024/1234567'", [], (err, row) => {
+            const needsRebuild = !err && row && (
+                row.password === 'test123' ||
+                row.college === 'Biological & Physical Sciences' ||
+                row.dept !== 'Computer Engineering' ||
+                (row.contactInfo && row.contactInfo.includes('@absu.edu.ng'))
+            );
+            if (needsRebuild) {
+                console.log("Detected legacy database (plaintext passwords or non-NACOME seed). Re-building database for NACOME (Computer Engineering, CEET, MOUAU)...");
+                db.close((closeErr) => {
+                    if (closeErr) {
+                        console.error("Failed to close legacy database:", closeErr.message);
+                        return;
+                    }
+                    const dbPath = path.join(__dirname, 'data', 'election.sqlite');
+                    removeSqliteFiles(dbPath);
+                    console.log("Deleted legacy database file.");
+                    delete require.cache[require.resolve('./database')];
+                    db = require('./database');
+                    db.ready.then(() => seedCandidates(db));
+                });
+            } else {
+                seedCandidates(db);
+            }
+        });
+    });
+}
+
+const JWT_SECRET = 'mouau-election-super-secret-key-2026';
 
 function hashPassword(password, salt) {
     return crypto.createHmac('sha256', salt.toUpperCase()).update(password).digest('hex');
@@ -93,7 +116,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '5mb' }));
 
 // ── Simple In-Memory Rate Limiter ─────────────────────────────────────────────
 // Tracks request counts per IP in a sliding 60-second window.
@@ -233,134 +256,32 @@ function drainVoteQueue() {
 // ==========================================
 // SEED INITIAL DATA
 // ==========================================
-const INITIAL_CANDIDATES = [
-    {
-        id: 'john-adebayo',
-        name: 'John Adebayo',
-        level: 'SUG',
-        position: 'president',
-        college: 'Biological & Physical Sciences',
-        dept: 'Computer Science',
-        matricNo: 'U2022/100001',
-        email: 'john.adebayo@absu.edu.ng',
-        phone: '+234 812 345 6789',
-        slogan: 'Empowering Students, Transforming Campus Life',
-        manifesto: 'My vision is to build an inclusive SUG that prioritizes student welfare, academic support, and transparency. I will establish a digital complaints portal, lobby for library renovations, and organize periodic town halls to listen to student needs.',
-        experience: 'Assistant Class Representative (2023), President of Computer Science Student Association (COSSA, 2024-2025).'
-    },
-    {
-        id: 'amina-ibrahim',
-        name: 'Amina Ibrahim',
-        level: 'SUG',
-        position: 'president',
-        college: 'Law',
-        dept: 'Public Law',
-        matricNo: 'U2022/100002',
-        email: 'amina.ibrahim@absu.edu.ng',
-        phone: '+234 703 456 7890',
-        slogan: 'Justice, Accountability, and Student Welfare',
-        manifesto: 'As a law student, I believe in justice and representation. I will fight for fair student disciplinary procedures, negotiate for affordable shuttle transport services, and promote female student leadership initiatives across all colleges.',
-        experience: 'Public Relations Officer for Law Students Association (LAWSA, 2024), Student Advocate in the Moot Court (2023-2025).'
-    },
-    {
-        id: 'chukwuemeka-obi',
-        name: 'Chukwuemeka Obi',
-        level: 'SUG',
-        position: 'president',
-        college: 'Engineering & Environmental Studies',
-        dept: 'Mechanical Engineering',
-        matricNo: 'U2022/100003',
-        email: 'emeka.obi@absu.edu.ng',
-        phone: '+234 806 789 0123',
-        slogan: 'Innovation, Infrastructure, and Progress',
-        manifesto: 'Our campus infrastructure needs urgent attention. I will advocate for constant Wi-Fi in classrooms, solar-powered reading hubs in all hostels, and active support for student innovators and developers through tech incubation hubs.',
-        experience: 'Electoral Commissioner for Faculty of Engineering (2024), Co-founder of ABSU Tech Hub (2023).'
-    },
-    {
-        id: 'sarah-johnson',
-        name: 'Sarah Johnson',
-        level: 'SUG',
-        position: 'vice-president',
-        college: 'Business Administration',
-        dept: 'Accounting',
-        matricNo: 'U2022/100004',
-        email: 'sarah.johnson@absu.edu.ng',
-        phone: '+234 905 123 4567',
-        slogan: 'Financial Transparency and Welfare First',
-        manifesto: 'I will ensure all student union dues are accounted for with quarterly audit reports published publicly. I will also organize a student support fund for financially disadvantaged students and negotiate discount packages at major campus vendors.',
-        experience: 'Treasurer of Business Administration Students League (2024), Financial Secretary of Catholic Student Fellowship (2023).'
-    },
-    {
-        id: 'michael-oku',
-        name: 'Michael Oku',
-        level: 'SUG',
-        position: 'vice-president',
-        college: 'Humanities',
-        dept: 'History',
-        matricNo: 'U2022/100005',
-        email: 'michael.oku@absu.edu.ng',
-        phone: '+234 815 654 3210',
-        slogan: 'Preserving Our Heritage, Unifying Our Voice',
-        manifesto: 'A unified student voice is an unstoppable force. I plan to organize campus history tours, revitalize student clubs and societies, and improve inter-collegiate collaboration on sports and social festivals.',
-        experience: 'Class Representative for History Department (2022-2025), General Secretary of ABSU Debate Club.'
-    },
-    {
-        id: 'david-nduka',
-        name: 'David Nduka',
-        level: 'SUG',
-        position: 'secretary-general',
-        college: 'Education',
-        dept: 'Educational Management',
-        matricNo: 'U2022/100006',
-        email: 'david.nduka@absu.edu.ng',
-        phone: '+234 809 987 6543',
-        slogan: 'Bridging the Gap: Administration to Students',
-        manifesto: 'Communication is key. I will streamline administrative correspondence, introduce monthly newsletters detailing student union activities, and launch a WhatsApp-based news channel for instant updates on portal registrations and exam schedules.',
-        experience: 'Secretary of Education Student Association (EDUSA, 2024), Chief Editor of Faculty Press Club (2023).'
-    },
-    {
-        id: 'grace-okoli',
-        name: 'Grace Okoli',
-        level: 'SUG',
-        position: 'secretary-general',
-        college: 'Clinical Sciences',
-        dept: 'Medicine & Surgery',
-        matricNo: 'U2022/100007',
-        email: 'grace.okoli@absu.edu.ng',
-        phone: '+234 701 234 5678',
-        slogan: 'Health, Sanitation, and Student Well-being',
-        manifesto: 'Health is wealth. I will establish student first-aid points across classrooms, campaign for hygienic facilities in all hostels, and launch a monthly physical fitness and mental health awareness week on campus.',
-        experience: 'Red Cross Campus Team Lead (2024), Welfare Officer for Medical Laboratory Science Association (2023).'
-    }
+const INITIAL_CANDIDATES = [];
+
+const LEGACY_SEEDED_CANDIDATE_IDS = [
+    'john-adebayo',
+    'amina-ibrahim',
+    'chukwuemeka-obi',
+    'sarah-johnson',
+    'michael-oku',
+    'david-nduka',
+    'grace-okoli'
 ];
 
 function seedCandidates(database) {
-    database.get("SELECT COUNT(*) as count FROM candidates", (err, row) => {
-        if (!err && row && row.count === 0) {
-            console.log("Seeding initial candidates...");
-            const stmt = database.prepare(`
-                INSERT INTO candidates (id, name, level, position, college, dept, votes, matricNo, email, phone, slogan, manifesto, experience, status) 
-                VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, 'active')
-            `);
-            INITIAL_CANDIDATES.forEach(c => {
-                stmt.run(c.id, c.name, c.level, c.position, c.college, c.dept, c.matricNo, c.email, c.phone, c.slogan, c.manifesto, c.experience);
-            });
-            stmt.finalize();
-        } else if (!err) {
-            // Data exists, but let's make sure the new columns are populated for seeded candidates (self-healing migration)
-            console.log("Checking if seeded candidates need profile updates...");
-            INITIAL_CANDIDATES.forEach(c => {
-                database.run(`
-                    UPDATE candidates 
-                    SET matricNo = ?, email = ?, phone = ?, slogan = ?, manifesto = ?, experience = ? 
-                    WHERE id = ? AND (matricNo IS NULL OR slogan IS NULL)
-                `, [c.matricNo, c.email, c.phone, c.slogan, c.manifesto, c.experience, c.id]);
-            });
+    const placeholders = LEGACY_SEEDED_CANDIDATE_IDS.map(() => '?').join(', ');
+    database.run(
+        `DELETE FROM candidates WHERE id IN (${placeholders})`,
+        LEGACY_SEEDED_CANDIDATE_IDS,
+        (err) => {
+            if (err) {
+                console.error("Error clearing seeded candidates:", err.message);
+            }
         }
-    });
+    );
 }
 
-seedCandidates(db);
+runStartupSetup();
 
 // ==========================================
 // CANDIDATE ROUTES
@@ -470,35 +391,76 @@ app.delete('/api/candidates/:id', authenticate, authorize(['superadmin']), (req,
 // ==========================================
 // STUDENT AUTHENTICATION & REGISTRATION
 // ==========================================
+const LEVEL_MATRIC_WHITELISTS = {
+    '200L': {
+        label: '200 Level',
+        filePath: path.join(__dirname, 'data', 'matric_numbers_only.txt'),
+        set: new Set()
+    },
+    '300L': {
+        label: '300 Level',
+        filePath: path.join(__dirname, 'data', '300level_matric_numbers.txt'),
+        set: new Set()
+    },
+    '500L': {
+        label: '500 Level',
+        filePath: path.join(__dirname, 'data', '500_level_matric_numbers.txt'),
+        set: new Set()
+    }
+};
+
+function normalizeMatric(value) {
+    return String(value || '').trim().replace(/\\/g, '/').toUpperCase();
+}
+
+function loadApprovedMatrics() {
+    for (const entry of Object.values(LEVEL_MATRIC_WHITELISTS)) {
+        try {
+            if (fs.existsSync(entry.filePath)) {
+                const raw = fs.readFileSync(entry.filePath, 'utf8');
+                const list = raw
+                    .split(/\r?\n/)
+                    .map(normalizeMatric)
+                    .filter(Boolean);
+                entry.set = new Set(list);
+                console.log(`Loaded ${entry.set.size} approved ${entry.label} Computer Engineering matriculation numbers.`);
+            } else {
+                console.warn(`Approved ${entry.label} matriculation whitelist not found at ${entry.filePath}`);
+            }
+        } catch (err) {
+            console.error(`Error loading approved ${entry.label} matriculation whitelist:`, err.message);
+        }
+    }
+}
+loadApprovedMatrics();
+
 app.post('/api/register', (req, res) => {
-    const { name, matricNo, level, dept, contactInfo, password } = req.body;
+    const { name, matricNo, level, dept, college, contactInfo, password } = req.body;
     if (!name || !matricNo || !level || !dept || !contactInfo || !password) {
         return res.status(400).json({ error: "All registration fields are required." });
     }
 
-    const absuColleges = [
-        { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
-        { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
-        { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
-        { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
-        { name: "Humanities", depts: ["History", "English", "Linguistics"] },
-        { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
-        { name: "Clinical Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
-    ];
+    const normalizedMatric = normalizeMatric(matricNo);
+    const rawLevel = String(level).trim().toUpperCase();
+    const levelKey = rawLevel.endsWith('L') ? rawLevel : `${rawLevel}L`;
+    const whitelist = LEVEL_MATRIC_WHITELISTS[levelKey];
 
-    let matchedCollege = "Biological & Physical Sciences";
-    for (const col of absuColleges) {
-        if (col.depts.includes(dept)) {
-            matchedCollege = col.name;
-            break;
-        }
+    if (whitelist && !whitelist.set.has(normalizedMatric)) {
+        return res.status(403).json({
+            error: `Registration Denied! Your matriculation number is not found in the approved Computer Engineering student database. Only students with verified matriculation numbers are permitted to create a ${whitelist.label} student profile. Please contact your course representative or department administrator for assistance.`
+        });
     }
 
-    const hashedPass = hashPassword(password, matricNo);
+    const matchedCollege = findCollegeByDept(dept) || college;
+    if (!matchedCollege) {
+        return res.status(400).json({ error: "Invalid department selected. Please select a valid MOUAU department." });
+    }
+
+    const hashedPass = hashPassword(password, normalizedMatric);
 
     db.run(
         "INSERT INTO students (matricNo, name, level, dept, contactInfo, college, password) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [matricNo.toUpperCase(), name, level, dept, contactInfo, matchedCollege, hashedPass],
+        [normalizedMatric, name, level, dept, contactInfo, matchedCollege, hashedPass],
         function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
@@ -675,27 +637,16 @@ app.post('/api/vote', rateLimit(8), authenticate, (req, res) => {  // max 8 vote
         
         const { votes, college, dept } = req.body;
         if (votes) {
-            const hasSugVote = Object.keys(votes).some(pos => ['president', 'vice-president', 'secretary-general', 'assistant-secretary-general', 'treasurer', 'financial-secretary', 'pro', 'director-of-welfare', 'director-of-sports', 'director-of-socials'].includes(pos));
-            const hasCollegeVote = Object.keys(votes).some(pos => ['college_rep', 'college_sec'].includes(pos));
-            const hasDeptVote = Object.keys(votes).some(pos => ['dept_president', 'dept_sec'].includes(pos));
-            
-            if (hasSugVote && settings.voting_active_sug === false) {
-                return res.status(400).json({ error: "SUG General Election voting is currently closed." });
-            }
-            if (hasCollegeVote) {
-                if (settings.voting_active_college === false) {
-                    return res.status(400).json({ error: "College level voting is currently closed." });
-                }
-                if (college && settings['voting_active_college_' + college] === false) {
-                    return res.status(400).json({ error: `Voting for the College of ${college} is currently locked.` });
-                }
-            }
-            if (hasDeptVote) {
+            const nacomePositions = ['president', 'vice-president', 'secretary-general', 'assistant-secretary-general', 'treasurer', 'financial-secretary', 'pro', 'director-of-welfare', 'director-of-sports', 'director-of-socials', 'technical-director', 'dept_president', 'dept_sec'];
+            const hasNacomeVote = Object.keys(votes).some(pos => nacomePositions.includes(pos));
+
+            if (hasNacomeVote) {
                 if (settings.voting_active_department === false) {
-                    return res.status(400).json({ error: "Departmental level voting is currently closed." });
+                    return res.status(400).json({ error: "NACOME Departmental Election voting is currently closed." });
                 }
-                if (dept && settings['voting_active_dept_' + dept] === false) {
-                    return res.status(400).json({ error: `Voting for the Department of ${dept} is currently locked.` });
+                const targetDept = dept || 'Computer Engineering';
+                if (settings['voting_active_dept_' + targetDept] === false) {
+                    return res.status(400).json({ error: `Voting for ${targetDept} (NACOME) is currently locked.` });
                 }
             }
         }
@@ -725,18 +676,6 @@ app.post('/api/vote/bulk', authenticate, authorize(['admin', 'superadmin']), (re
         return res.status(400).json({ error: "Missing parameters" });
     }
 
-    const absuColleges = [
-        "Biological & Physical Sciences",
-        "Law",
-        "Engineering & Environmental Studies",
-        "Business Administration",
-        "Humanities",
-        "Education",
-        "Clinical Sciences",
-        "Agriculture",
-        "Social Sciences"
-    ];
-
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
 
@@ -753,15 +692,7 @@ app.post('/api/vote/bulk', authenticate, authorize(['admin', 'superadmin']), (re
         const fakeFirstNames = ["John", "Jane", "Michael", "Sarah", "David", "Grace", "Samuel", "Ngozi", "Emeka", "Amina", "Chinedu", "Fatima", "Yusuf", "Jennifer", "Ibrahim", "Daniel", "Joy", "Victor", "Blessing", "Emmanuel"];
         const fakeLastNames = ["Okonkwo", "Eze", "Johnson", "Obi", "Nduka", "Okoli", "Ade", "Nwankwo", "Bello", "Peters", "Chukwu", "Abdullahi", "Olu", "Kalu", "Ojo", "Idris"];
         
-        const absuCollegesData = [
-            { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
-            { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
-            { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
-            { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
-            { name: "Humanities", depts: ["History", "English", "Linguistics"] },
-            { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
-            { name: "Clinical Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
-        ];
+        const mouauCollegesData = MOUAU_COLLEGES;
 
         const stmtStudent = db.prepare("INSERT OR IGNORE INTO students (matricNo, name, level, dept, contactInfo, college, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
         const stmtVote = db.prepare("INSERT INTO votes (name, matricNo, isAutoGenerated, enteredBy, college) VALUES (?, ?, 1, ?, ?)");
@@ -777,11 +708,11 @@ app.post('/api/vote/bulk', authenticate, authorize(['admin', 'superadmin']), (re
             const matric = `U${year}/${idStr}`;
             const studentName = `${firstName} ${lastName}`;
             
-            const randomCollegeObj = absuCollegesData[Math.floor(Math.random() * absuCollegesData.length)];
+            const randomCollegeObj = mouauCollegesData[Math.floor(Math.random() * mouauCollegesData.length)];
             const randomCollege = randomCollegeObj.name;
             const randomDept = randomCollegeObj.depts[Math.floor(Math.random() * randomCollegeObj.depts.length)];
             const randomLevel = levelsList[Math.floor(Math.random() * levelsList.length)];
-            const randomEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@absu.edu.ng`;
+            const randomEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mouau.edu.ng`;
             
             const hashedPass = hashPassword("student2026", matric);
             stmtStudent.run(matric, studentName, randomLevel, randomDept, randomEmail, randomCollege, hashedPass, (err) => {
@@ -901,19 +832,18 @@ app.post('/api/admin/reset-database', authenticate, authorize(['superadmin']), (
         
         const dbPath = path.join(__dirname, 'data', 'election.sqlite');
         try {
-            if (fs.existsSync(dbPath)) {
-                fs.unlinkSync(dbPath);
-                console.log("Existing database file deleted successfully.");
-            }
+            removeSqliteFiles(dbPath);
+            console.log("Existing database file deleted successfully.");
             
             // Re-require database to re-initialize and open it
             delete require.cache[require.resolve('./database')];
             db = require('./database');
             
-            // Re-seed candidates on the new database connection
-            seedCandidates(db);
-            
-            res.json({ success: true, message: "Database has been reset and clean seed initialized successfully." });
+            // Re-seed candidates on the new database connection after tables exist
+            db.ready.then(() => {
+                seedCandidates(db);
+                res.json({ success: true, message: "Database has been reset and clean seed initialized successfully." });
+            });
         } catch (resetErr) {
             console.error("Error during database file reset:", resetErr.message);
             // Re-open database if it was closed but failed to recreate

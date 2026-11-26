@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 640" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="800" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f4f7f4"/>
+      <stop offset="100%" stop-color="#e3efe5"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b6623"/>
+      <stop offset="100%" stop-color="#074a19"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="640" rx="32" fill="url(#bgGrad)"/>
+  <circle cx="670" cy="110" r="140" fill="#0b6623" fill-opacity="0.06"/>
+  <circle cx="130" cy="520" r="160" fill="#eab308" fill-opacity="0.10"/>
+
+  <!-- Campus Hall Arch / Window -->
+  <rect x="90" y="70" width="620" height="390" rx="24" fill="#ffffff" stroke="#d9e5dc" stroke-width="2"/>
+  <rect x="120" y="100" width="560" height="44" rx="12" fill="url(#greenGrad)"/>
+  <circle cx="152" cy="122" r="10" fill="#eab308"/>
+  <rect x="174" y="116" width="210" height="12" rx="6" fill="#ffffff" fill-opacity="0.9"/>
+  <rect x="570" y="114" width="88" height="16" rx="8" fill="#eab308"/>
+
+  <!-- Ballot Box / Digital Voting Kiosk (Center) -->
+  <rect x="315" y="290" width="170" height="145" rx="16" fill="url(#greenGrad)"/>
+  <rect x="300" y="274" width="200" height="24" rx="10" fill="#074a19"/>
+  <rect x="360" y="282" width="80" height="7" rx="3.5" fill="#eab308"/>
+  <!-- Ballot Paper Going Into Slot -->
+  <g transform="rotate(-6 400 265)">
+    <rect x="368" y="218" width="64" height="68" rx="8" fill="#ffffff" stroke="#0b6623" stroke-width="3"/>
+    <path d="M385 252 L396 263 L417 239" stroke="#0b6623" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Seal on Ballot Box -->
+  <circle cx="400" cy="365" r="30" fill="#ffffff" fill-opacity="0.14"/>
+  <path d="M386 365 L396 375 L416 353" stroke="#eab308" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Left Student Casting Vote -->
+  <g>
+    <!-- Body / Jacket -->
+    <path d="M165 445 C165 375, 255 375, 255 445 Z" fill="#1e293b"/>
+    <path d="M196 385 L224 385 L218 445 L202 445 Z" fill="#0b6623"/>
+    <!-- Head -->
+    <circle cx="210" cy="336" r="34" fill="#6b3e26"/>
+    <!-- Hair -->
+    <path d="M176 332 C176 300, 244 300, 244 332 C236 318, 184 318, 176 332 Z" fill="#111827"/>
+    <!-- Smile -->
+    <path d="M198 348 Q210 358 222 348" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <!-- Arm reaching toward ballot -->
+    <path d="M245 398 L355 268" stroke="#6b3e26" stroke-width="18" stroke-linecap="round"/>
+    <path d="M245 398 L295 339" stroke="#1e293b" stroke-width="22" stroke-linecap="round"/>
+  </g>
+
+  <!-- Right Student Holding Tablet -->
+  <g>
+    <!-- Body -->
+    <path d="M545 445 C545 375, 635 375, 635 445 Z" fill="#0b6623"/>
+    <!-- Head -->
+    <circle cx="590" cy="336" r="34" fill="#7c4a2d"/>
+    <!-- Hair -->
+    <path d="M554 338 C552 296, 628 296, 626 338 C614 316, 566 316, 554 338 Z" fill="#111827"/>
+    <!-- Smile -->
+    <path d="M578 348 Q590 358 602 348" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <!-- Tablet -->
+    <rect x="498" y="348" width="76" height="58" rx="8" fill="#0f172a" stroke="#eab308" stroke-width="3"/>
+    <rect x="506" y="356" width="60" height="42" rx="4" fill="#ecfdf5"/>
+    <path d="M524 377 L533 386 L550 368" stroke="#0b6623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Arm -->
+    <path d="M552 400 L535 385" stroke="#7c4a2d" stroke-width="16" stroke-linecap="round"/>
+  </g>
+
+  <!-- Floor -->
+  <rect x="65" y="445" width="670" height="14" rx="7" fill="#cbd5e1"/>
+
+  <!-- Bottom Caption Pill -->
+  <rect x="170" y="505" width="460" height="68" rx="20" fill="#ffffff" stroke="#d9e5dc" stroke-width="2"/>
+  <circle cx="212" cy="539" r="18" fill="#0b6623" fill-opacity="0.12"/>
+  <path d="M204 539 L210 545 L221 533" stroke="#0b6623" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="244" y="534" font-family="Lexend, Arial, sans-serif" font-size="16" font-weight="700" fill="#0f172a">One Student. One Verified Vote.</text>
+  <text x="244" y="556" font-family="Lexend, Arial, sans-serif" font-size="12" font-weight="500" fill="#64748b">NACOME • Computer Engineering, MOUAU</text>
+</svg>

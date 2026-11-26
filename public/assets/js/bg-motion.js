@@ -1,5 +1,5 @@
 /**
- * ABSU Election Portal 2026 - Background Motion Effect
+ * MOUAU Election Portal 2026 (mouau.edu.ng) - Background Motion Effect
  * Highly premium, optimized, theme-sensitive, and responsive.
  */
 
@@ -7,7 +7,7 @@
     // Accessibility check: respects user preference for reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
-        console.log('ABSU BG Motion: Reduced motion preferred. Background animations disabled.');
+        console.log('MOUAU BG Motion: Reduced motion preferred. Background animations disabled.');
         return;
     }
 
@@ -79,11 +79,11 @@
     function updateThemeColors() {
         isDark = document.documentElement.classList.contains('dark');
         if (isDark) {
-            blob1.style.background = 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0) 70%)';
-            blob2.style.background = 'radial-gradient(circle, rgba(19, 91, 236, 0.08) 0%, rgba(19, 91, 236, 0) 70%)';
+            blob1.style.background = 'radial-gradient(circle, rgba(11, 102, 35, 0.16) 0%, rgba(11, 102, 35, 0) 70%)';
+            blob2.style.background = 'radial-gradient(circle, rgba(234, 179, 8, 0.10) 0%, rgba(234, 179, 8, 0) 70%)';
         } else {
-            blob1.style.background = 'radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0) 70%)';
-            blob2.style.background = 'radial-gradient(circle, rgba(19, 91, 236, 0.04) 0%, rgba(19, 91, 236, 0) 70%)';
+            blob1.style.background = 'radial-gradient(circle, rgba(11, 102, 35, 0.06) 0%, rgba(11, 102, 35, 0) 70%)';
+            blob2.style.background = 'radial-gradient(circle, rgba(234, 179, 8, 0.05) 0%, rgba(234, 179, 8, 0) 70%)';
         }
     }
     updateThemeColors();
@@ -206,8 +206,8 @@
         blob2.style.transform = `translate(${-mouseParallaxX}px, ${-mouseParallaxY}px)`;
 
         // Particle configuration colors based on dark mode status
-        const particleColor = isDark ? 'rgba(147, 197, 253, 0.45)' : 'rgba(19, 91, 236, 0.3)';
-        const lineColorPrefix = isDark ? 'rgba(99, 102, 241, ' : 'rgba(19, 91, 236, ';
+        const particleColor = isDark ? 'rgba(134, 239, 172, 0.45)' : 'rgba(11, 102, 35, 0.30)';
+        const lineColorPrefix = isDark ? 'rgba(250, 204, 21, ' : 'rgba(11, 102, 35, ';
         const maxLineDistance = 110;
 
         // Draw and update particle connections
@@ -250,7 +250,7 @@
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(mouse.x, mouse.y);
-                    ctx.strokeStyle = isDark ? `rgba(147, 197, 253, ${opacity})` : `rgba(19, 91, 236, ${opacity})`;
+                    ctx.strokeStyle = isDark ? `rgba(134, 239, 172, ${opacity})` : `rgba(11, 102, 35, ${opacity})`;
                     ctx.lineWidth = 1.1;
                     ctx.stroke();
                 }

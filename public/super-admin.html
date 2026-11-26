@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Super Admin Dashboard - ABSU Election</title>
+<title>Super Admin Dashboard - MOUAU Election</title>
+<link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -13,9 +14,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#9333ea", // Purple to denote Super Admin
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": "#064e1b", // Deep MOUAU Forest Green to denote Super Admin
+                        "primary-dark": "#053d15",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend"]
@@ -30,8 +33,9 @@
             font-family: 'Lexend', sans-serif;
         }
         .sidebar-active {
-            background-color: #9333ea;
+            background-color: #064e1b;
             color: white;
+            border-left: 3px solid #eab308;
         }
     </style>
 </head>
@@ -41,10 +45,10 @@
 <div class="flex flex-col gap-8">
 <!-- Brand -->
 <div class="flex items-center gap-3 px-2">
-<img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+<img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-10 w-auto"/>
 <div>
-<h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
-<p class="text-slate-500 text-xs font-medium">Super Admin</p>
+<h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">MOUAU</h1>
+<p class="text-amber-600 dark:text-secondary text-xs font-semibold">Super Admin</p>
 </div>
 </div>
 <!-- Nav Links -->
@@ -619,7 +623,7 @@ async function updateCandidatesTable() {
 document.getElementById('export-btn').addEventListener('click', async function() {
     const allVotes = await getAllVotes();
     
-    let exportData = "ABSU 2026 SUG Election Results\n";
+    let exportData = "MOUAU 2026 SUG Election Results\n";
     exportData += "Generated: " + new Date().toLocaleString() + "\n";
     exportData += "=".repeat(50) + "\n\n";
     exportData += "Total Voters: " + allVotes.length + "\n";
@@ -637,7 +641,7 @@ document.getElementById('export-btn').addEventListener('click', async function()
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ABSU_Election_Results_2026.txt';
+    a.download = 'MOUAU_Election_Results_2026.txt';
     a.click();
     URL.revokeObjectURL(url);
 });

@@ -1,31 +1,32 @@
-# ABSU Election Portal 2026
+# NACOME Election Portal 2026 (MOUAU)
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 
-A modern, secure, and user-friendly web-based election portal for ABSU Student Union Government Elections.
+A modern, secure, and user-friendly web-based election portal for the **National Association of Computer Engineering Students (NACOME)**, **Department of Computer Engineering**, **College of Engineering and Engineering Technology (CEET)**, **Michael Okpara University of Agriculture, Umudike (MOUAU • `mouau.edu.ng`)**.
 
 ## Features
 
 - **Student Authentication** - Secure login with matriculation number and password
-- **Student Registration** - New student account creation with profile management
-- **Candidate Registration** - Students can register as candidates for various positions
-- **Voting Dashboard** - Clean, card-based UI for casting votes
+- **Student Registration** - Computer Engineering (CEET, MOUAU) student account creation with profile management
+- **Candidate Registration** - Eligible NACOME students can register as candidates for departmental executive positions
+- **Voting Dashboard** - Clean, card-based UI for casting NACOME departmental votes
 - **Live Results** - Real-time election results with vote counting algorithm
 - **Responsive Design** - Works on desktop, tablet, and mobile devices
 
-## Available Positions
+## Available Positions (NACOME)
 
-- President
+- NACOME President
 - Vice-President
 - Secretary-General
 - Assistant Secretary-General
 - Treasurer
 - Financial Secretary
-- Public Relations Officer
-- Director Of Welfare
+- Public Relations Officer (PRO)
+- Director of Welfare
 - Director of Sports
 - Director of Socials
+- Technical & Academic Director
 
 ## Tech Stack
 
@@ -53,7 +54,7 @@ election-portal/
 │       ├── js/
 │       │   └── main.js         # Shared JavaScript (optional)
 │       └── images/
-│           └── absu-logo.png   # Official ABSU university logo
+│           └── mouau-logo.svg  # Fallback MOUAU crest (official PNG loaded from portal.mouau.edu.ng)
 ├── package.json
 ├── README.md
 ├── .gitignore
@@ -173,7 +174,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-University Election Commission - election@university.edu.ng
+S.P Technology ltd - elections@mouau.edu.ng (https://mouau.edu.ng)
 
 Project Link: [https://github.com/university/election-portal](https://github.com/university/election-portal)
 

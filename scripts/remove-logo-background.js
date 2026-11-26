@@ -1,12 +1,12 @@
 /**
- * Removes baked-in checkerboard / white background from absu-logo.png.
+ * Removes baked-in checkerboard / white background from mouau-logo.png.
  * Uses flood-fill from image edges so white text inside the shield is preserved.
  */
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-const logoPath = path.join(__dirname, '..', 'public', 'assets', 'images', 'absu-logo.png');
+const logoPath = path.join(__dirname, '..', 'public', 'assets', 'images', 'mouau-logo.png');
 
 function isBackgroundPixel(r, g, b, a) {
   if (a < 10) return true;

@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Electoral Results Desk - ABSU Election</title>
+    <title>Electoral Results Desk - MOUAU Election</title>
+    <link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -14,9 +15,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": isSuperAdmin ? "#9333ea" : "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": isSuperAdmin ? "#064e1b" : "#0b6623",
+                        "primary-dark": "#053d15",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend"]
@@ -31,8 +34,9 @@
             font-family: 'Lexend', sans-serif;
         }
         .sidebar-active {
-            background-color: var(--color-primary, #9333ea);
+            background-color: var(--color-primary, #064e1b);
             color: white;
+            border-left: 3px solid #eab308;
         }
         .podium-1 { background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #ffd700 100%); }
         .podium-2 { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #c0c0c0 100%); }
@@ -45,10 +49,10 @@
         <div class="flex flex-col gap-8">
             <!-- Brand -->
             <div class="flex items-center gap-3 px-2">
-                <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+                <img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-10 w-auto"/>
                 <div>
-                    <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
-                    <p id="admin-role-text" class="text-slate-500 text-xs font-medium">Super Admin</p>
+                    <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">MOUAU</h1>
+                    <p id="admin-role-text" class="text-amber-600 dark:text-secondary text-xs font-semibold">Super Admin</p>
                 </div>
             </div>
             <!-- Nav Links -->
@@ -197,7 +201,7 @@
             }
             
             // Adjust theme color and sidebar targets dynamically
-            document.documentElement.style.setProperty('--color-primary', isSuper ? '#9333ea' : '#135bec');
+            document.documentElement.style.setProperty('--color-primary', isSuper ? '#064e1b' : '#0b6623');
             const roleText = document.getElementById('admin-role-text');
             if (roleText) {
                 roleText.textContent = isSuper ? 'Super Admin' : 'Admin Console';
@@ -229,16 +233,8 @@
         const container = document.getElementById('results-container');
         const noVotesMsg = document.getElementById('no-votes-message');
 
-        // Colleges and departments mapping
-        const COLLEGES_MAP = [
-            { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
-            { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
-            { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
-            { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
-            { name: "Humanities & Social Sciences", depts: ["History", "English", "Linguistics"] },
-            { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
-            { name: "Medicine & Health Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
-        ];
+        // MOUAU Colleges and departments mapping from main.js
+        const COLLEGES_MAP = CONFIG.collegesMap;
 
         // Dynamically load options in filter select
         const collegesOptGroup = document.createElement('optgroup');
@@ -454,7 +450,7 @@
                 let html = '';
                 distributions.forEach((item, index) => {
                     const percentage = totalVotes > 0 ? ((item.voteCount / totalVotes) * 100).toFixed(1) : 0;
-                    const barColor = index === 0 ? 'bg-primary' : 'bg-purple-500';
+                    const barColor = index === 0 ? 'bg-primary' : 'bg-secondary';
                     
                     html += `
                         <div class="space-y-1">

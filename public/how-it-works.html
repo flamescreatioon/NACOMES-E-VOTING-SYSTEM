@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>How it Works | ABSU Election Portal</title>
+    <title>How it Works | NACOME Election Portal • MOUAU</title>
+    <link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -13,9 +14,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": "#0b6623",
+                        "primary-dark": "#074a19",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend", "sans-serif"]
@@ -26,21 +29,17 @@
     </script>
     <style>
         body { font-family: 'Lexend', sans-serif; }
-        .glass-effect { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
-        .dark .glass-effect { background: rgba(16, 22, 34, 0.8); }
+        .glass-effect { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); }
+        .dark .glass-effect { background: rgba(10, 22, 14, 0.85); }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 glass-effect">
+    <header class="sticky top-0 z-50 w-full border-b-2 border-secondary/50 dark:border-emerald-900 glass-effect">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                    <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-12 w-auto"/>
-                    <div class="flex flex-col">
-                        <span class="text-slate-900 dark:text-slate-100 font-bold text-lg leading-none">SUG Elections</span>
-                        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Official Voting Portal</span>
-                    </div>
+                <a href="index.html" class="flex items-center hover:opacity-80 transition-opacity">
+                    <img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-12 w-auto"/>
                 </a>
                 <nav class="hidden md:flex items-center gap-8">
                     <a class="text-sm font-semibold hover:text-primary transition-colors" href="index.html">Home</a>
@@ -61,12 +60,12 @@
         </div>
     </header>
 
-    <main class="flex-grow py-16 md:py-24">
-        <div class="max-w-4xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6">Voting Process Explained</h1>
+    <main class="flex-grow py-10 sm:py-16 md:py-24">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-10 sm:mb-16">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 sm:mb-6">Voting Process Explained</h1>
                 <p class="text-lg text-slate-600 dark:text-slate-400">
-                    Learn everything you need to know about the 2026 ABSU Student Union Government Elections, from authentication to result verification.
+                    Learn everything you need to know about the 2026 NACOME Elections (Department of Computer Engineering, CEET — Michael Okpara University of Agriculture, Umudike), from authentication to result verification.
                 </p>
             </div>
 
@@ -84,7 +83,7 @@
                         <div class="prose prose-slate dark:prose-invert max-w-none space-y-4 text-slate-600 dark:text-slate-400">
                             <p>To ensure only eligible students can participate, we use a robust authentication system linked to the University Registry.</p>
                             <ul class="list-disc pl-5 space-y-2">
-                                <li><strong>Matriculation Number:</strong> You must use your official matric number in the format <code class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">U[Year]/[7-Digits]</code>.</li>
+                                <li><strong>Matriculation Number:</strong> You must use your official matric number in the format <code class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">MOUAU/CME/[Year]/[Number]</code> (e.g. <code class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">MOUAU/CME/17/9962</code>).</li>
                                 <li><strong>Secure Password:</strong> Use your portal password. If you haven't changed it, use the default provided by your department.</li>
                                 <li><strong>Identity Protection:</strong> Your login session is encrypted. Once logged in, your identity is detached from your actual ballot to ensure 100% anonymity.</li>
                             </ul>
@@ -105,7 +104,7 @@
                         <div class="prose prose-slate dark:prose-invert max-w-none space-y-4 text-slate-600 dark:text-slate-400">
                             <p>Our voting dashboard is designed to be intuitive and transparent.</p>
                             <ul class="list-disc pl-5 space-y-2">
-                                <li><strong>Executive Positions:</strong> You will vote for ten key positions: President, Vice-President, Secretary-General, Assistant Secretary-General, Treasurer, Financial Secretary, Public Relations Officer, Director Of Welfare, Director of Sports, and Director of Socials.</li>
+                                <li><strong>NACOME Executive Positions:</strong> Vote for NACOME President, Vice-President, Secretary-General, Assistant Secretary-General, Treasurer, Financial Secretary, Public Relations Officer (PRO), Director of Welfare, Director of Sports, Director of Socials, and Technical & Academic Director.</li>
                                 <li><strong>Manifesto Review:</strong> Click on any candidate to read their official manifesto and vision statement before selecting.</li>
                                 <li><strong>One Vote Rule:</strong> You can only submit your ballot once. The system will block any multi-vote attempts using advanced session tracking.</li>
                                 <li><strong>Review Before Submission:</strong> You'll have a chance to review all your selections before final submission.</li>
@@ -137,17 +136,17 @@
             </div>
 
             <!-- Support CTA -->
-            <div class="mt-16 bg-primary rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl">
+            <div class="mt-16 bg-gradient-to-br from-primary to-emerald-900 border border-secondary/30 rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl">
                 <h3 class="text-3xl font-bold mb-4">Still have questions?</h3>
-                <p class="text-blue-100 mb-8 max-w-xl mx-auto">
-                    The University Election Committee is here to help. Reach out to our 24/7 technical helpdesk or visit the Student Union building.
+                <p class="text-emerald-100 mb-8 max-w-xl mx-auto">
+                    S.P Technology ltd is here to help. Reach out to our 24/7 technical helpdesk or visit the Student Union building.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="mailto:support@university.edu.ng" class="bg-white text-primary px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                    <a href="mailto:support@mouau.edu.ng" class="bg-white text-primary px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined">mail</span>
                         Email Support
                     </a>
-                    <a href="index.html" class="bg-primary-dark text-white px-8 py-4 rounded-xl font-bold border border-white/20 hover:bg-primary-dark/80 transition-all flex items-center justify-center gap-2">
+                    <a href="index.html" class="bg-primary-dark text-white px-8 py-4 rounded-xl font-bold border border-secondary/40 hover:bg-primary-dark/80 transition-all flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined">home</span>
                         Back to Home
                     </a>
@@ -158,7 +157,7 @@
 
     <footer class="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-auto">
         <div class="max-w-7xl mx-auto px-6 text-center">
-            <p class="text-slate-500 text-sm">© 2026 SUG General Elections Commission. Authorized by the University Board of Trustees.</p>
+            <p class="text-slate-500 text-sm">© 2026 S.P Technology ltd. Michael Okpara University of Agriculture, Umudike.</p>
         </div>
     </footer>
 

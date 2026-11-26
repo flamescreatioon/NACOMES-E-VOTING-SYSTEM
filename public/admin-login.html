@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Admin Login | ABSU Election Portal</title>
+    <title>Admin Login | MOUAU Election Portal</title>
+    <link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -13,9 +14,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": "#0b6623",
+                        "primary-dark": "#074a19",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend", "sans-serif"]
@@ -32,11 +35,10 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
     <!-- Header -->
-    <header class="w-full bg-white dark:bg-background-dark border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+    <header class="w-full bg-white dark:bg-background-dark border-b-2 border-secondary/50 dark:border-emerald-900 px-6 py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
-                <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ABSU Election Portal</span>
+            <a href="index.html" class="flex items-center hover:opacity-80 transition-opacity">
+                <img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-11 w-auto"/>
             </a>
             <nav class="hidden md:flex items-center gap-8">
                 <a class="text-sm font-medium hover:text-primary transition-colors" href="index.html">Home</a>
@@ -156,9 +158,9 @@
                     <!-- Super Admin -->
                     <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                             <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Super Admin Profile</span>
-                            <span class="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-semibold ml-auto">Full Access</span>
+                            <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-semibold ml-auto">Full Access</span>
                         </div>
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
@@ -177,7 +179,7 @@
                         <div class="flex items-center gap-2 mb-2">
                             <span class="w-2 h-2 rounded-full bg-primary"></span>
                             <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Standard Admin Profile</span>
-                            <span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-semibold ml-auto">View Only</span>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold ml-auto">View Only</span>
                         </div>
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
@@ -197,7 +199,7 @@
 
     <!-- Footer -->
     <footer class="py-6 text-center">
-        <p class="text-xs text-slate-400">&copy; 2026 ABSU Election Commission. Administrator access only.</p>
+        <p class="text-xs text-slate-400">&copy; 2026 MOUAU Electoral Commission • mouau.edu.ng. Administrator access only.</p>
     </footer>
 
     <script>

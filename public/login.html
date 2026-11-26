@@ -3,7 +3,8 @@
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Student Authentication | University Election Portal</title>
+<title>Student Authentication | NACOME Election Portal • MOUAU</title>
+<link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <!-- Material Symbols -->
@@ -17,9 +18,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": "#0b6623",
+                        "primary-dark": "#074a19",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend", "sans-serif"]
@@ -39,17 +42,16 @@
             font-family: 'Lexend', sans-serif;
         }
         .otp-input-group:focus-within {
-            border-color: #135bec;
+            border-color: #0b6623;
         }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
 <!-- Top Navigation Bar -->
-<header class="w-full bg-white dark:bg-background-dark border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+<header class="w-full bg-white dark:bg-background-dark border-b-2 border-secondary/50 dark:border-emerald-900 px-6 py-4">
 <div class="max-w-7xl mx-auto flex items-center justify-between">
-<a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-<img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
-<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ABSU Election Portal</span>
+<a href="index.html" class="flex items-center hover:opacity-80 transition-opacity">
+<img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-11 w-auto"/>
 </a>
 <nav class="hidden md:flex items-center gap-8">
 <a class="text-sm font-medium hover:text-primary transition-colors" href="index.html">Home</a>
@@ -73,25 +75,18 @@
 </div>
 </header>
 <!-- Main Content Area -->
-<main class="flex-grow flex items-center justify-center p-6 @container">
+<main class="flex-grow flex items-center justify-center p-4 sm:p-6 @container">
 <div class="w-full max-w-[520px]">
 <!-- Branding/Welcome Section -->
-<div class="text-center mb-8">
-<h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Student Authentication</h1>
-<p class="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                    Secure access for the 2026 General Student Council Elections.
+<div class="text-center mb-6 sm:mb-8">
+<h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2">NACOME Student Login</h1>
+<p class="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                    Secure access for the 2026 NACOME Elections (Computer Engineering Dept, CEET • MOUAU).
                 </p>
 </div>
 <!-- Authentication Card -->
 <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl shadow-primary/5 border border-slate-200 dark:border-slate-800 overflow-hidden">
-<!-- Visual Header -->
-<div class="h-32 bg-primary/10 dark:bg-primary/20 flex items-center justify-center relative overflow-hidden">
-<div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#135bec 1px, transparent 1px); background-size: 20px 20px;"></div>
-<div class="bg-white dark:bg-slate-800 p-4 rounded-full shadow-lg z-10">
-<span class="material-symbols-outlined text-primary text-4xl">fingerprint</span>
-</div>
-</div>
-<div class="p-8">
+<div class="p-5 sm:p-8">
 <!-- Error Message (hidden by default) -->
 <div id="error-message" class="hidden mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-2">
 <span class="material-symbols-outlined text-lg">error</span>
@@ -103,9 +98,9 @@
 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="matric-no">Matriculation Number</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">badge</span>
-<input class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all placeholder:text-slate-400" id="matric-no" name="matric-no" placeholder="e.g. U2024/1234567 or U2024/100000" type="text"/>
+<input class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all placeholder:text-slate-400" id="matric-no" name="matric-no" placeholder="e.g. MOUAU/CME/17/9962" type="text"/>
 </div>
-<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Format: U[Year]/[6 or 7-Digits]</p>
+<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Format: MOUAU/CME/[Year]/[Number] (e.g. MOUAU/CME/17/9962)</p>
 </div>
 <!-- Password Field -->
 <div>
@@ -136,89 +131,7 @@
 </div>
 </form>
 </div>
-<!-- Security Trust Bar -->
-<div class="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 px-8 py-4 flex flex-wrap justify-center gap-6">
-<div class="flex items-center gap-1.5 opacity-60">
-<span class="material-symbols-outlined text-lg">verified_user</span>
-<span class="text-[10px] font-bold uppercase tracking-widest">SSL Secure</span>
 </div>
-<div class="flex items-center gap-1.5 opacity-60">
-<span class="material-symbols-outlined text-lg">encrypted</span>
-<span class="text-[10px] font-bold uppercase tracking-widest">End-to-End</span>
-</div>
-<div class="flex items-center gap-1.5 opacity-60">
-<span class="material-symbols-outlined text-lg">shield_person</span>
-<span class="text-[10px] font-bold uppercase tracking-widest">Privacy Protected</span>
-</div>
-</div>
-</div>
-
-<!-- Demo Credentials (Profiles) -->
-<div class="mt-6 p-5 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800">
-    <div class="flex items-center gap-2 mb-3">
-        <span class="material-symbols-outlined text-primary">badge</span>
-        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Student Demo Accounts</p>
-    </div>
-    <div class="space-y-3">
-        <!-- Profile 1 -->
-        <div class="border-b border-slate-100 dark:border-slate-800 pb-2">
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">John Doe (Computer Science)</span>
-                <span class="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">7-Digit Matric</span>
-            </div>
-            <div class="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                    <p class="text-[10px] text-slate-400">Matric Number</p>
-                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">U2024/1234567</p>
-                </div>
-                <div>
-                    <p class="text-[10px] text-slate-400">Password</p>
-                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">test123</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Profile 2 -->
-        <div class="border-b border-slate-100 dark:border-slate-800 pb-2">
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Jane Smith (Law)</span>
-                <span class="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">7-Digit Matric</span>
-            </div>
-            <div class="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                    <p class="text-[10px] text-slate-400">Matric Number</p>
-                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">U2023/7654321</p>
-                </div>
-                <div>
-                    <p class="text-[10px] text-slate-400">Password</p>
-                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">student</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Seeded accounts note -->
-        <div>
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Seeded Students (15k Pool)</span>
-                <span class="text-[9px] bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">6-Digit Matric</span>
-            </div>
-            <div class="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                    <p class="text-[10px] text-slate-400">Matric Number</p>
-                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">U2021/100000 to U2024/114999</p>
-                </div>
-                <div>
-                    <p class="text-[10px] text-slate-400">Password</p>
-                    <p class="font-mono font-bold text-slate-700 dark:text-slate-300">student2026</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Bottom Note -->
-<p class="mt-8 text-center text-xs text-slate-400 dark:text-slate-500 px-4">
-                By logging in, you agree to the University's Electoral Code of Conduct and Data Privacy Policy. Your vote is anonymous and cannot be traced back to your identity.
-            </p>
 </div>
 </main>
 <!-- Footer -->
@@ -226,7 +139,7 @@
 <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
 <div class="flex items-center gap-2 text-slate-400 text-sm">
 <span class="material-symbols-outlined text-base">school</span>
-                © 2026 University Election Committee
+                © 2026 S.P Technology ltd • mouau.edu.ng
             </div>
 <div class="flex gap-6">
 <a class="text-xs font-semibold text-slate-400 hover:text-primary transition-colors uppercase tracking-wider" href="#">Guidelines</a>

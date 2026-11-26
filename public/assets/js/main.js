@@ -1,22 +1,22 @@
 /**
- * ABSU Election Portal 2026 - Main JavaScript
+ * MOUAU Election Portal 2026 (mouau.edu.ng) - Main JavaScript
  * Shared functionality across all pages
  */
 
 // Global fetch interceptor to attach Authorization header automatically for all backend API calls
-(function() {
+(function () {
     const originalFetch = window.fetch;
-    window.fetch = async function(input, init) {
+    window.fetch = async function (input, init) {
         const url = typeof input === 'string' ? input : (input instanceof Request ? input.url : '');
-        
+
         // Intercept calls going to our backend API
         if (url.includes('/api/') || url.includes(':5005')) {
             init = init || {};
             init.headers = init.headers || {};
-            
+
             // Retrieve token from sessionStorage
             const token = sessionStorage.getItem('authToken');
-            
+
             if (token) {
                 if (init.headers instanceof Headers) {
                     init.headers.set('Authorization', `Bearer ${token}`);
@@ -36,8 +36,21 @@
     };
 })();
 
+const MOUAU_COLLEGES_MAP = [
+    {
+        code: 'CEET',
+        name: 'College of Engineering and Engineering Technology (CEET)',
+        depts: [
+            'Computer Engineering'
+        ]
+    }
+];
+
 const CONFIG = {
-    appName: 'ABSU Election Portal',
+    appName: 'NACOME Election Portal • MOUAU',
+    department: 'Computer Engineering',
+    college: 'College of Engineering and Engineering Technology (CEET)',
+    university: 'Michael Okpara University of Agriculture, Umudike (MOUAU)',
     storageKeys: {
         loggedInUser: 'loggedInUser',
         allVotes: 'allVotes',
@@ -46,45 +59,33 @@ const CONFIG = {
         authToken: 'authToken'
     },
     electionDeadline: '2026-05-15T00:00:00',
-    colleges: [
-        'Medicine & Health Sciences',
-        'Law',
-        'Business Administration',
-        'Humanities & Social Sciences',
-        'Engineering & Environmental Studies',
-        'Biological & Physical Sciences',
-        'Education'
-    ]
+    collegesMap: MOUAU_COLLEGES_MAP,
+    colleges: MOUAU_COLLEGES_MAP.map(c => c.name)
 };
 
-// Election Data Structure
+// NACOME Election Data Structure (Computer Engineering Dept, CEET, MOUAU)
+const NACOME_POSITIONS = [
+    { id: 'president', title: 'NACOME President' },
+    { id: 'vice-president', title: 'Vice-President' },
+    { id: 'secretary-general', title: 'Secretary-General' },
+    { id: 'assistant-secretary-general', title: 'Assistant Secretary-General' },
+    { id: 'treasurer', title: 'Treasurer' },
+    { id: 'financial-secretary', title: 'Financial Secretary' },
+    { id: 'pro', title: 'Public Relations Officer (PRO)' },
+    { id: 'director-of-welfare', title: 'Director of Welfare' },
+    { id: 'director-of-sports', title: 'Director of Sports' },
+    { id: 'director-of-socials', title: 'Director of Socials' },
+    { id: 'technical-director', title: 'Technical & Academic Director' }
+];
+
 const ELECTION_DATA = {
     levels: {
-        SUG: 'University Wide (SUG)',
-        COLLEGE: 'College Level',
-        DEPARTMENT: 'Department Level'
+        DEPARTMENT: 'NACOME (Computer Engineering, CEET • MOUAU)'
     },
     positions: {
-        SUG: [
-            { id: 'president', title: 'President' },
-            { id: 'vice-president', title: 'Vice-President' },
-            { id: 'secretary-general', title: 'Secretary-General' },
-            { id: 'assistant-secretary-general', title: 'Assistant Secretary-General' },
-            { id: 'treasurer', title: 'Treasurer' },
-            { id: 'financial-secretary', title: 'Financial Secretary' },
-            { id: 'pro', title: 'Public Relations Officer' },
-            { id: 'director-of-welfare', title: 'Director Of Welfare' },
-            { id: 'director-of-sports', title: 'Director of Sports' },
-            { id: 'director-of-socials', title: 'Director of Socials' }
-        ],
-        COLLEGE: [
-            { id: 'college_rep', title: 'College Representative' },
-            { id: 'college_sec', title: 'College Secretary' }
-        ],
-        DEPARTMENT: [
-            { id: 'dept_president', title: 'Department President' },
-            { id: 'dept_sec', title: 'Department Secretary' }
-        ]
+        SUG: NACOME_POSITIONS,
+        COLLEGE: [],
+        DEPARTMENT: NACOME_POSITIONS
     }
 };
 
@@ -102,18 +103,18 @@ const UI = {
             error: 'bg-red-500',
             info: 'bg-primary'
         }[type] || 'bg-primary';
-        
+
         toast.className = `fixed bottom-8 left-1/2 transform -translate-x-1/2 ${bgColor} text-white px-6 py-3 rounded-lg shadow-xl z-[9999] animate-fade-in flex items-center gap-2`;
-        
+
         const icon = {
             success: 'check_circle',
             error: 'error',
             info: 'info'
         }[type] || 'info';
-        
+
         toast.innerHTML = `<span class="material-symbols-outlined">${icon}</span> ${message}`;
         document.body.appendChild(toast);
-        
+
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.3s ease';
@@ -129,7 +130,7 @@ const UI = {
         if (isDark) {
             document.documentElement.classList.add('dark');
         }
-        
+
         const toggleBtn = document.getElementById('dark-mode-toggle');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => {
@@ -195,18 +196,136 @@ const UI = {
      */
     handleMissingImages: () => {
         document.querySelectorAll('img').forEach(img => {
-            img.onerror = function() {
+            img.onerror = function () {
                 if (this.alt.includes('Logo')) {
+                    if (!this.src.includes('mouau-logo.svg')) {
+                        this.src = 'assets/images/mouau-logo.svg';
+                        return;
+                    }
                     // Create a text-based logo fallback
                     const div = document.createElement('div');
-                    div.className = "flex items-center justify-center bg-primary text-white font-black rounded-lg h-10 w-10 text-xs";
-                    div.textContent = "ABSU";
+                    div.className = "flex items-center justify-center bg-primary text-white font-black rounded-lg h-10 px-2 text-xs";
+                    div.textContent = "MOUAU";
                     this.replaceWith(div);
+                } else if (this.dataset && this.dataset.fallback) {
+                    const fallback = this.dataset.fallback;
+                    delete this.dataset.fallback;
+                    this.src = fallback;
                 } else {
-                    this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=random';
+                    this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=0b6623&color=fff';
                 }
             };
         });
+    },
+
+    /**
+     * Initialize Responsive Mobile Navigation (Drawer + Bottom Tab Bar)
+     */
+    initMobileNav: () => {
+        const header = document.querySelector('header');
+        if (!header || window.location.pathname.includes('admin') || window.location.pathname.includes('student-db')) return;
+
+        const desktopNav = header.querySelector('nav');
+        const headerRow = desktopNav ? desktopNav.parentElement : header.querySelector('.flex');
+        if (!desktopNav || !headerRow) return;
+
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const navLinks = Array.from(desktopNav.querySelectorAll('a'))
+            .filter(a => a.getAttribute('href') && a.getAttribute('href') !== '#')
+            .map(a => ({ href: a.getAttribute('href'), label: a.textContent.trim() }));
+
+        // Inject hamburger button into the right-hand actions container
+        const actionsContainer = headerRow.lastElementChild;
+        const menuBtn = document.createElement('button');
+        menuBtn.type = 'button';
+        menuBtn.id = 'mobile-menu-toggle';
+        menuBtn.setAttribute('aria-label', 'Toggle navigation menu');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.className = 'md:hidden inline-flex items-center justify-center size-10 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors';
+        menuBtn.innerHTML = '<span class="material-symbols-outlined text-2xl">menu</span>';
+
+        if (actionsContainer && actionsContainer !== desktopNav) {
+            actionsContainer.appendChild(menuBtn);
+        } else {
+            headerRow.appendChild(menuBtn);
+        }
+
+        // Create slide-down mobile drawer
+        const drawer = document.createElement('div');
+        drawer.id = 'mobile-nav-drawer';
+        drawer.className = 'hidden md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 space-y-1 shadow-lg';
+
+        const linkHtml = navLinks.map(item => {
+            const isActive = currentPage === item.href;
+            return `<a href="${item.href}" class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }"><span>${item.label}</span>${isActive ? '<span class="size-2 rounded-full bg-primary"></span>' : ''}</a>`;
+        }).join('');
+
+        const isLoggedIn = Boolean(Auth.getUser() && Auth.getToken());
+        const quickAction = isLoggedIn
+            ? `<a href="dashboard.html" class="flex items-center justify-center gap-2 mt-2 bg-primary text-white px-4 py-3 rounded-xl text-sm font-bold shadow-sm">
+                   <span class="material-symbols-outlined text-lg">how_to_vote</span> Voting Dashboard
+               </a>`
+            : `<div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2">
+                   <a href="login.html" class="flex items-center justify-center gap-1.5 bg-primary text-white px-3 py-3 rounded-xl text-sm font-bold">
+                       <span class="material-symbols-outlined text-lg">login</span> Login
+                   </a>
+                   <a href="register.html" class="flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-3 py-3 rounded-xl text-sm font-bold">
+                       <span class="material-symbols-outlined text-lg">person_add</span> Sign Up
+                   </a>
+               </div>`;
+
+        drawer.innerHTML = linkHtml + quickAction;
+        header.appendChild(drawer);
+
+        const toggleMenu = (forceOpen) => {
+            const open = typeof forceOpen === 'boolean' ? forceOpen : drawer.classList.contains('hidden');
+            drawer.classList.toggle('hidden', !open);
+            menuBtn.setAttribute('aria-expanded', String(open));
+            menuBtn.innerHTML = `<span class="material-symbols-outlined text-2xl">${open ? 'close' : 'menu'}</span>`;
+        };
+
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMenu();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!drawer.classList.contains('hidden') && !header.contains(e.target)) {
+                toggleMenu(false);
+            }
+        });
+
+        // Add thumb-friendly mobile bottom tab bar on pages without a fixed footer
+        const hasFixedFooter = Boolean(document.querySelector('footer.fixed'));
+        if (!hasFixedFooter) {
+            document.body.classList.add('pb-20', 'md:pb-0');
+            const bottomBar = document.createElement('nav');
+            bottomBar.setAttribute('aria-label', 'Mobile quick navigation');
+            bottomBar.className = 'md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-[0_-4px_20px_rgba(0,0,0,0.06)]';
+
+            const tabs = [
+                { href: 'index.html', icon: 'home', label: 'Home' },
+                { href: 'candidates.html', icon: 'groups', label: 'Candidates' },
+                { href: isLoggedIn ? 'dashboard.html' : 'login.html', icon: 'how_to_vote', label: isLoggedIn ? 'Vote' : 'Login' },
+                { href: 'results.html', icon: 'leaderboard', label: 'Results' }
+            ];
+
+            bottomBar.innerHTML = tabs.map(t => {
+                const active = currentPage === t.href;
+                return `<a href="${t.href}" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl min-w-[64px] transition-colors ${
+                    active ? 'text-primary font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-primary'
+                }">
+                    <span class="material-symbols-outlined text-[22px]">${t.icon}</span>
+                    <span class="text-[11px] mt-0.5">${t.label}</span>
+                </a>`;
+            }).join('');
+
+            document.body.appendChild(bottomBar);
+        }
     }
 };
 
@@ -277,24 +396,25 @@ const Data = {
 // Initialize everything
 document.addEventListener('DOMContentLoaded', () => {
     UI.initDarkMode();
+    UI.initMobileNav();
     UI.initCountdown();
     UI.handleMissingImages();
-    
+
     // Global Logout Button Listener
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn && !window.location.pathname.includes('admin') && !window.location.pathname.includes('student-db')) {
         logoutBtn.addEventListener('click', Auth.logout);
     }
-    
+
     // Display User Info if on dashboard
     const userNameEl = document.getElementById('user-name');
     const userMatricEl = document.getElementById('user-matric');
     const user = Auth.getUser();
-    
+
     if (user) {
         if (userNameEl) userNameEl.textContent = user.name;
         if (userMatricEl) userMatricEl.textContent = 'ID: ' + user.matricNo;
-        
+
         // Also show college in UI if element exists
         const userCollegeEl = document.getElementById('user-college');
         if (userCollegeEl) userCollegeEl.textContent = user.college;

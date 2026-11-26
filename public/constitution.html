@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>SUG Constitution | ABSU Election Portal</title>
+    <title>SUG Constitution | MOUAU Election Portal</title>
+    <link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -13,9 +14,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": "#0b6623",
+                        "primary-dark": "#074a19",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend", "sans-serif"]
@@ -26,21 +29,17 @@
     </script>
     <style>
         body { font-family: 'Lexend', sans-serif; }
-        .glass-effect { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
-        .dark .glass-effect { background: rgba(16, 22, 34, 0.8); }
+        .glass-effect { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); }
+        .dark .glass-effect { background: rgba(10, 22, 14, 0.85); }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 glass-effect">
+    <header class="sticky top-0 z-50 w-full border-b-2 border-secondary/50 dark:border-emerald-900 glass-effect">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                    <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-12 w-auto"/>
-                    <div class="flex flex-col">
-                        <span class="text-slate-900 dark:text-slate-100 font-bold text-lg leading-none">SUG Elections</span>
-                        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Official Voting Portal</span>
-                    </div>
+                <a href="index.html" class="flex items-center hover:opacity-80 transition-opacity">
+                    <img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-12 w-auto"/>
                 </a>
                 <nav class="hidden md:flex items-center gap-8">
                     <a class="text-sm font-semibold hover:text-primary transition-colors" href="index.html">Home</a>
@@ -78,7 +77,7 @@
             <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 md:p-12 border border-slate-200 dark:border-slate-800 shadow-xl">
                 <article class="prose prose-slate dark:prose-invert prose-lg max-w-none">
                     <h2 class="text-primary border-b border-slate-200 dark:border-slate-700 pb-2">PREAMBLE</h2>
-                    <p>We, the students of the University, firmly and solemnly resolved to live in unity and harmony as one indivisible entity dedicated to the pursuit of academic excellence, defense of students' rights, and the general welfare of the student body, do hereby make, enact, and give to ourselves this Constitution.</p>
+                    <p>We, the students of Michael Okpara University of Agriculture, Umudike (MOUAU), firmly and solemnly resolved to live in unity and harmony as one indivisible entity dedicated to Knowledge, Food and Security, academic excellence, defense of students' rights, and the general welfare of the student body, do hereby make, enact, and give to ourselves this Constitution.</p>
 
                     <h2 class="text-primary border-b border-slate-200 dark:border-slate-700 pb-2 mt-10">ARTICLE 1: NAME AND SUPREMACY</h2>
                     <h3>Section 1: Name</h3>
@@ -132,7 +131,7 @@
 
     <footer class="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-auto">
         <div class="max-w-7xl mx-auto px-6 text-center">
-            <p class="text-slate-500 text-sm">© SUG General Elections Commission. Authorized by the University Board of Trustees.</p>
+            <p class="text-slate-500 text-sm">© 2026 MOUAU SUG Electoral Commission. Michael Okpara University of Agriculture, Umudike.</p>
         </div>
     </footer>
 

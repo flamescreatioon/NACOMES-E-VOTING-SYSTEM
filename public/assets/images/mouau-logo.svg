@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230" role="img" aria-label="MOUAU Logo">
+  <defs>
+    <linearGradient id="shieldGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0e7c2b"/>
+      <stop offset="100%" stop-color="#064e1b"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="50%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer Gold Shield -->
+  <path d="M18 16 C60 28 140 28 182 16 L182 118 C182 170 135 202 100 218 C65 202 18 170 18 118 Z"
+        fill="url(#goldGrad)" stroke="#064e1b" stroke-width="3"/>
+  <!-- Inner Forest Green Shield -->
+  <path d="M26 25 C64 35 136 35 174 25 L174 116 C174 162 131 192 100 207 C69 192 26 162 26 116 Z"
+        fill="url(#shieldGreen)"/>
+  <!-- Top Banner -->
+  <path d="M26 52 Q100 62 174 52" fill="none" stroke="url(#goldGrad)" stroke-width="4"/>
+  <text x="100" y="45" text-anchor="middle" fill="#fde047" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="800" letter-spacing="2">MOUAU</text>
+  <!-- Palm & Leaf Emblem -->
+  <path d="M100 68 L100 132" stroke="#eab308" stroke-width="5" stroke-linecap="round"/>
+  <path d="M100 84 C82 72 64 76 54 88 C70 84 85 88 100 94 Z" fill="#fde047"/>
+  <path d="M100 84 C118 72 136 76 146 88 C130 84 115 88 100 94 Z" fill="#fde047"/>
+  <path d="M100 78 C84 62 68 62 58 70 C74 70 88 76 100 84 Z" fill="#eab308"/>
+  <path d="M100 78 C116 62 132 62 142 70 C126 70 112 76 100 84 Z" fill="#eab308"/>
+  <!-- Open Book (Knowledge) -->
+  <path d="M62 132 Q81 124 100 134 Q119 124 138 132 L138 158 Q119 150 100 160 Q81 150 62 158 Z"
+        fill="#ffffff" stroke="#eab308" stroke-width="2.5"/>
+  <line x1="100" y1="134" x2="100" y2="160" stroke="#0b6623" stroke-width="2"/>
+  <!-- Motto Scroll -->
+  <rect x="44" y="168" width="112" height="18" rx="9" fill="url(#goldGrad)"/>
+  <text x="100" y="180" text-anchor="middle" fill="#064e1b" font-family="Arial, Helvetica, sans-serif" font-size="7.2" font-weight="800" letter-spacing="0.4">KNOWLEDGE, FOOD &amp; SECURITY</text>
+</svg>
+

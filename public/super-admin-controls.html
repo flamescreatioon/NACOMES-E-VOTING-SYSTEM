@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Electoral Controls - ABSU Election Portal</title>
+    <title>Electoral Controls - MOUAU Election Portal</title>
+    <link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Google Fonts -->
@@ -16,9 +17,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#9333ea", // Purple to denote Super Admin
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": "#064e1b", // Deep MOUAU Forest Green to denote Super Admin
+                        "primary-dark": "#053d15",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend"]
@@ -33,8 +36,9 @@
             font-family: 'Lexend', sans-serif;
         }
         .sidebar-active {
-            background-color: #9333ea;
+            background-color: #064e1b;
             color: white;
+            border-left: 3px solid #eab308;
         }
     </style>
 </head>
@@ -47,10 +51,10 @@
         <div class="flex flex-col gap-8">
             <!-- Brand -->
             <div class="flex items-center gap-3 px-2">
-                <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+                <img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-10 w-auto"/>
                 <div>
-                    <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
-                    <p class="text-slate-500 text-xs font-medium">Super Admin</p>
+                    <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">MOUAU</h1>
+                    <p class="text-amber-600 dark:text-secondary text-xs font-semibold">Super Admin</p>
                 </div>
             </div>
             <!-- Nav Links -->
@@ -120,14 +124,14 @@
 
                 <!-- SUG General Election Controls -->
                 <div class="flex flex-col gap-4">
-                    <h4 class="text-md font-bold text-purple-600 flex items-center gap-2">
-                        <span class="material-symbols-outlined">layers</span>
+                    <h4 class="text-md font-bold text-primary dark:text-emerald-400 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary">layers</span>
                         SUG General Elections (University-Wide)
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
                             <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg text-2xl">person_add</span>
+                                <span class="material-symbols-outlined p-2 bg-emerald-50 text-primary dark:bg-emerald-950/20 dark:text-emerald-400 rounded-lg text-2xl">person_add</span>
                                 <div>
                                     <p class="text-sm font-bold">SUG Candidate Registration</p>
                                     <p id="reg-status-label-sug" class="text-xs text-slate-400">Loading state...</p>
@@ -135,12 +139,12 @@
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer select-none">
                                 <input type="checkbox" id="toggle-registration-sug" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                         </div>
                         <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
                             <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined p-2 bg-purple-50 text-purple-600 dark:bg-purple-950/20 dark:text-purple-400 rounded-lg text-2xl">how_to_vote</span>
+                                <span class="material-symbols-outlined p-2 bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400 rounded-lg text-2xl">how_to_vote</span>
                                 <div>
                                     <p class="text-sm font-bold">SUG Voter Balloting</p>
                                     <p id="vote-status-label-sug" class="text-xs text-slate-400">Loading state...</p>
@@ -148,7 +152,7 @@
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer select-none">
                                 <input type="checkbox" id="toggle-voting-sug" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                         </div>
                     </div>
@@ -158,14 +162,14 @@
 
                 <!-- College Level Election Controls -->
                 <div class="flex flex-col gap-4">
-                    <h4 class="text-md font-bold text-purple-600 flex items-center gap-2">
-                        <span class="material-symbols-outlined">account_balance</span>
+                    <h4 class="text-md font-bold text-primary dark:text-emerald-400 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary">account_balance</span>
                         College Level Elections (Colleges/Faculties Global Toggles)
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
                             <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg text-2xl">person_add</span>
+                                <span class="material-symbols-outlined p-2 bg-emerald-50 text-primary dark:bg-emerald-950/20 dark:text-emerald-400 rounded-lg text-2xl">person_add</span>
                                 <div>
                                     <p class="text-sm font-bold">College Candidate Registration</p>
                                     <p id="reg-status-label-college" class="text-xs text-slate-400">Loading state...</p>
@@ -173,12 +177,12 @@
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer select-none">
                                 <input type="checkbox" id="toggle-registration-college" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                         </div>
                         <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
                             <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined p-2 bg-purple-50 text-purple-600 dark:bg-purple-950/20 dark:text-purple-400 rounded-lg text-2xl">how_to_vote</span>
+                                <span class="material-symbols-outlined p-2 bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400 rounded-lg text-2xl">how_to_vote</span>
                                 <div>
                                     <p class="text-sm font-bold">College Voter Balloting</p>
                                     <p id="vote-status-label-college" class="text-xs text-slate-400">Loading state...</p>
@@ -186,7 +190,7 @@
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer select-none">
                                 <input type="checkbox" id="toggle-voting-college" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                         </div>
                     </div>
@@ -196,14 +200,14 @@
 
                 <!-- Departmental Level Election Controls -->
                 <div class="flex flex-col gap-4">
-                    <h4 class="text-md font-bold text-purple-600 flex items-center gap-2">
-                        <span class="material-symbols-outlined">domain</span>
+                    <h4 class="text-md font-bold text-primary dark:text-emerald-400 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary">domain</span>
                         Departmental Level Elections (Departments Global Toggles)
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
                             <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg text-2xl">person_add</span>
+                                <span class="material-symbols-outlined p-2 bg-emerald-50 text-primary dark:bg-emerald-950/20 dark:text-emerald-400 rounded-lg text-2xl">person_add</span>
                                 <div>
                                     <p class="text-sm font-bold">Dept Candidate Registration</p>
                                     <p id="reg-status-label-department" class="text-xs text-slate-400">Loading state...</p>
@@ -211,12 +215,12 @@
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer select-none">
                                 <input type="checkbox" id="toggle-registration-department" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                         </div>
                         <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
                             <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined p-2 bg-purple-50 text-purple-600 dark:bg-purple-950/20 dark:text-purple-400 rounded-lg text-2xl">how_to_vote</span>
+                                <span class="material-symbols-outlined p-2 bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400 rounded-lg text-2xl">how_to_vote</span>
                                 <div>
                                     <p class="text-sm font-bold">Dept Voter Balloting</p>
                                     <p id="vote-status-label-department" class="text-xs text-slate-400">Loading state...</p>
@@ -224,7 +228,7 @@
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer select-none">
                                 <input type="checkbox" id="toggle-voting-department" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                         </div>
                     </div>
@@ -245,13 +249,13 @@
                         <input type="datetime-local" id="election-deadline-input" class="w-full py-2.5 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
                     </div>
                     <div class="flex gap-2">
-                        <button id="save-deadline-btn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-all shadow-sm">
+                        <button id="save-deadline-btn" class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-all shadow-sm">
                             Update Deadline
                         </button>
-                        <button id="quick-1hr-btn" class="border border-purple-600/20 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/20 font-semibold py-2.5 px-3 rounded-lg text-xs transition-all">
+                        <button id="quick-1hr-btn" class="border border-primary/20 text-primary dark:text-emerald-400 hover:bg-primary/5 dark:hover:bg-emerald-950/20 font-semibold py-2.5 px-3 rounded-lg text-xs transition-all">
                             +1 Hour
                         </button>
-                        <button id="quick-24hr-btn" class="border border-purple-600/20 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/20 font-semibold py-2.5 px-3 rounded-lg text-xs transition-all">
+                        <button id="quick-24hr-btn" class="border border-primary/20 text-primary dark:text-emerald-400 hover:bg-primary/5 dark:hover:bg-emerald-950/20 font-semibold py-2.5 px-3 rounded-lg text-xs transition-all">
                             +24 Hours
                         </button>
                     </div>
@@ -280,7 +284,7 @@
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer select-none">
                             <input type="checkbox" id="college-specific-registration" class="sr-only peer">
-                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                         </label>
                     </div>
                     <div class="flex items-center justify-between pl-2">
@@ -290,7 +294,7 @@
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer select-none">
                             <input type="checkbox" id="college-specific-voting" class="sr-only peer">
-                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                         </label>
                     </div>
                 </div>
@@ -334,7 +338,7 @@
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer select-none">
                             <input type="checkbox" id="dept-specific-registration" class="sr-only peer">
-                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                         </label>
                     </div>
                     <div class="flex items-center justify-between pl-2">
@@ -344,7 +348,7 @@
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer select-none">
                             <input type="checkbox" id="dept-specific-voting" class="sr-only peer">
-                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                            <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                         </label>
                     </div>
                 </div>
@@ -372,16 +376,8 @@
     <script>
         const API_URL = 'http://localhost:5005/api';
 
-        // Colleges and Departments Seed Mapping
-        const COLLEGES_MAP = [
-            { name: "Biological & Physical Sciences", depts: ["Computer Science", "Biochemistry", "Microbiology", "Mathematics"] },
-            { name: "Law", depts: ["Public Law", "Private Law", "International Law"] },
-            { name: "Engineering & Environmental Studies", depts: ["Mechanical Engineering", "Civil Engineering", "Architecture"] },
-            { name: "Business Administration", depts: ["Accounting", "Marketing", "Banking & Finance"] },
-            { name: "Humanities & Social Sciences", depts: ["History", "English", "Linguistics"] },
-            { name: "Education", depts: ["Educational Management", "Guidance & Counseling"] },
-            { name: "Medicine & Health Sciences", depts: ["Medicine & Surgery", "Nursing", "Medical Laboratory"] }
-        ];
+        // MOUAU Colleges and Departments Mapping from main.js
+        const COLLEGES_MAP = CONFIG.collegesMap;
 
         let globalSettings = {};
 

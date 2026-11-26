@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Voting Dashboard | University Election</title>
+    <title>Voting Dashboard | NACOME Election Portal • MOUAU</title>
+    <link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -13,9 +14,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": "#0b6623",
+                        "primary-dark": "#074a19",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend", "sans-serif"]
@@ -27,22 +30,21 @@
     <style>
         body { font-family: 'Lexend', sans-serif; }
         .candidate-card:has(input:checked) {
-            border-color: #135bec;
-            background-color: rgba(19, 91, 236, 0.05);
+            border-color: #0b6623;
+            background-color: rgba(11, 102, 35, 0.06);
         }
         .candidate-card:has(input:checked) .check-icon { opacity: 1; }
-        .candidate-card:has(input:checked) .radio-outer { border-color: #135bec; }
+        .candidate-card:has(input:checked) .radio-outer { border-color: #0b6623; }
         .candidate-card:has(input:checked) .radio-inner { opacity: 1; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-50 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+    <header class="sticky top-0 z-50 w-full bg-white dark:bg-slate-900 border-b-2 border-secondary/50 dark:border-emerald-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
-                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                    <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
-                    <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ABSU <span class="text-primary">Elections</span></h1>
+                <a href="index.html" class="flex items-center hover:opacity-80 transition-opacity">
+                    <img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-11 w-auto"/>
                 </a>
                 <nav class="hidden md:flex space-x-8">
                     <a class="text-primary font-semibold text-sm" href="dashboard.html">Dashboard</a>
@@ -73,14 +75,14 @@
         </div>
     </header>
 
-    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pb-32">
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-40 sm:pb-32">
         <!-- Hero Welcome -->
-        <div class="mb-10 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="mb-8 sm:mb-10 bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
                 <div>
-                    <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">Voting Dashboard</h2>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-2">NACOME Voting Dashboard</h2>
                     <p id="welcome-text" class="text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-                        Welcome, <span id="user-display-name" class="font-bold text-slate-900 dark:text-white">Student</span>. You are eligible to vote in the <span class="text-primary font-bold">SUG General Election</span>, the <span id="user-college-name" class="font-bold text-primary">College</span> election, and the <span id="user-dept-name" class="font-bold text-primary">Department</span> election.
+                        Welcome, <span id="user-display-name" class="font-bold text-slate-900 dark:text-white">Student</span>. You are eligible to vote in the <span class="text-primary font-bold">NACOME Departmental Election</span> (<span id="user-dept-name" class="font-bold text-primary">Computer Engineering</span>, <span id="user-college-name" class="font-bold text-primary">CEET</span> • MOUAU).
                     </p>
                 </div>
                 <div class="flex flex-col items-end">
@@ -88,41 +90,24 @@
                         <span class="material-symbols-outlined text-sm">lock</span>
                         Secure Session Active
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-2">Token: ABSU-2026-VOTE-SESS-8821</p>
+                    <p class="text-[10px] text-slate-400 mt-2">Token: MOUAU-2026-VOTE-SESS-8821</p>
                 </div>
             </div>
         </div>
 
         <div id="voting-ballot-area">
-        <!-- SUG Section -->
-        <div id="sug-container">
+        <!-- NACOME Departmental Section -->
+        <div id="sug-container" class="hidden"><div id="sug-positions"></div></div>
+        <div id="college-container" class="hidden"><div id="college-positions"></div></div>
+        <div id="department-container">
             <div class="flex items-center gap-4 mb-8">
                 <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
-                <h3 class="text-sm font-black uppercase tracking-[0.2em] text-slate-400">SUG Executive Positions</h3>
-                <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
-            </div>
-            <div id="sug-positions" class="space-y-12"></div>
-        </div>
-
-        <!-- College Section -->
-        <div id="college-container" class="mt-20">
-            <div class="flex items-center gap-4 mb-8">
-                <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
-                <h3 id="college-section-title" class="text-sm font-black uppercase tracking-[0.2em] text-primary">College Level Elections</h3>
-                <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
-            </div>
-            <div id="college-positions" class="space-y-12"></div>
-        </div>
-
-        <!-- Department Section -->
-        <div id="department-container" class="mt-20">
-            <div class="flex items-center gap-4 mb-8">
-                <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
-                <h3 id="dept-section-title" class="text-sm font-black uppercase tracking-[0.2em] text-primary">Department Level Elections</h3>
+                <h3 id="dept-section-title" class="text-sm font-black uppercase tracking-[0.2em] text-primary">NACOME Executive Positions • Computer Engineering</h3>
                 <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
             </div>
             <div id="department-positions" class="space-y-12"></div>
         </div>
+        <span id="college-section-title" class="hidden"></span>
         </div>
     </main>
 
@@ -138,8 +123,8 @@
                     <div id="progress-bar" class="h-full bg-primary transition-all duration-500 rounded-full" style="width: 0%;"></div>
                 </div>
             </div>
-            <div class="flex items-center gap-6 w-full md:w-auto justify-end">
-                <button id="submit-btn" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-primary/25 transition-all flex items-center gap-2 text-sm uppercase tracking-wide group disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <div class="flex items-center gap-4 w-full md:w-auto justify-end">
+                <button id="submit-btn" class="w-full md:w-auto justify-center bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-primary/25 transition-all flex items-center gap-2 text-sm uppercase tracking-wide group disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                     Review & Submit Vote
                     <span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
@@ -176,34 +161,18 @@
             
             const promises = [];
             
-            if (activeSettings.voting_active_sug !== false) {
-                const sugHtmlPromises = ELECTION_DATA.positions.SUG.map(pos => renderPosition(pos, 'SUG'));
-                promises.push(Promise.all(sugHtmlPromises).then(htmls => {
-                    sugRoot.innerHTML = htmls.join('');
-                }));
-            } else {
-                document.getElementById('sug-container').classList.add('hidden');
-            }
-            
-            const specificCollegeKey = 'voting_active_college_' + user.college;
-            const isCollegeActive = activeSettings.voting_active_college !== false && activeSettings[specificCollegeKey] !== false;
-            
-            if (isCollegeActive) {
-                const collegeHtmlPromises = ELECTION_DATA.positions.COLLEGE.map(pos => renderPosition(pos, 'COLLEGE'));
-                promises.push(Promise.all(collegeHtmlPromises).then(htmls => {
-                    collegeRoot.innerHTML = htmls.join('');
-                }));
-            } else {
-                document.getElementById('college-container').classList.add('hidden');
-            }
-            
-            const specificDeptKey = 'voting_active_dept_' + user.dept;
+            const specificDeptKey = 'voting_active_dept_' + (user.dept || 'Computer Engineering');
             const isDeptActive = activeSettings.voting_active_department !== false && activeSettings[specificDeptKey] !== false;
             
             if (isDeptActive) {
                 const deptHtmlPromises = ELECTION_DATA.positions.DEPARTMENT.map(pos => renderPosition(pos, 'DEPARTMENT'));
                 promises.push(Promise.all(deptHtmlPromises).then(htmls => {
-                    deptRoot.innerHTML = htmls.join('');
+                    const content = htmls.join('');
+                    deptRoot.innerHTML = content || `
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center text-slate-500">
+                            No candidates have registered for NACOME positions yet.
+                        </div>
+                    `;
                 }));
             } else {
                 document.getElementById('department-container').classList.add('hidden');
@@ -282,11 +251,11 @@
                 if (document.querySelector(`input[name="${name}"]:checked`)) selected++;
             });
             
-            const progress = (selected / totalRequired) * 100;
+            const progress = totalRequired > 0 ? (selected / totalRequired) * 100 : 0;
             document.getElementById('progress-bar').style.width = `${progress}%`;
             document.getElementById('progress-text').textContent = `${selected} of ${totalRequired} Selections Made`;
             
-            document.getElementById('submit-btn').disabled = (selected < totalRequired);
+            document.getElementById('submit-btn').disabled = (totalRequired === 0 || selected < totalRequired);
         }
 
         // Handle Submit

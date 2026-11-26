@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Admin Overview Dashboard - ABSU Election</title>
+<title>Admin Overview Dashboard - MOUAU Election</title>
+<link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -13,9 +14,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": "#0b6623",
+                        "primary-dark": "#074a19",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend"]
@@ -30,7 +33,7 @@
             font-family: 'Lexend', sans-serif;
         }
         .sidebar-active {
-            background-color: #135bec;
+            background-color: #0b6623;
             color: white;
         }
     </style>
@@ -41,9 +44,9 @@
 <div class="flex flex-col gap-8">
 <!-- Brand -->
 <div class="flex items-center gap-3 px-2">
-<img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+<img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-10 w-auto"/>
 <div>
-<h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
+<h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">MOUAU</h1>
 <p class="text-slate-500 text-xs font-medium">Admin Console</p>
 </div>
 </div>
@@ -156,54 +159,54 @@
 <div class="xl:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm">
 <div class="flex items-center justify-between mb-8">
 <div>
-<h3 class="text-lg font-bold">Voter Turnout by Faculty</h3>
-<p class="text-sm text-slate-500">Participation breakdown across departments</p>
+<h3 class="text-lg font-bold">Voter Turnout by College</h3>
+<p class="text-sm text-slate-500">Participation breakdown across MOUAU colleges</p>
 </div>
 <select class="text-xs font-bold border-slate-200 rounded-lg focus:ring-primary/20 cursor-pointer">
 <option>Real-time View</option>
 <option>Hourly History</option>
 </select>
 </div>
-<!-- Faculty Bar Chart Mockup -->
+<!-- College Bar Chart Mockup -->
 <div class="flex flex-col gap-4">
 <div class="grid grid-cols-7 items-end gap-4 h-64 px-4 border-b border-slate-100">
-<!-- Engineering -->
+<!-- CEET -->
 <div class="flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
 <div class="bg-primary/20 group-hover:bg-primary/30 w-full rounded-t-lg transition-all" style="height: 65%;"></div>
 </div>
-<!-- Arts -->
+<!-- CAFST -->
 <div class="flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
 <div class="bg-primary/20 group-hover:bg-primary/30 w-full rounded-t-lg transition-all" style="height: 30%;"></div>
 </div>
-<!-- Science -->
+<!-- COLPAS -->
 <div class="flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
 <div class="bg-primary w-full rounded-t-lg transition-all" style="height: 85%;"></div>
 </div>
-<!-- Business -->
+<!-- COLMAS -->
 <div class="flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
 <div class="bg-primary/20 group-hover:bg-primary/30 w-full rounded-t-lg transition-all" style="height: 92%;"></div>
 </div>
-<!-- Medicine -->
+<!-- CVM -->
 <div class="flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
 <div class="bg-primary/20 group-hover:bg-primary/30 w-full rounded-t-lg transition-all" style="height: 45%;"></div>
 </div>
-<!-- Law -->
+<!-- COLNAS -->
 <div class="flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
 <div class="bg-primary/20 group-hover:bg-primary/30 w-full rounded-t-lg transition-all" style="height: 70%;"></div>
 </div>
-<!-- Education -->
+<!-- COED -->
 <div class="flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
 <div class="bg-primary/20 group-hover:bg-primary/30 w-full rounded-t-lg transition-all" style="height: 55%;"></div>
 </div>
 </div>
 <div class="grid grid-cols-7 gap-4 px-4">
-<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">Eng</span>
-<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">Arts</span>
-<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">Sci</span>
-<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">Biz</span>
-<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">Med</span>
-<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">Law</span>
-<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">Edu</span>
+<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">CEET</span>
+<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">CAFST</span>
+<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">COLPAS</span>
+<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">COLMAS</span>
+<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">CVM</span>
+<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">COLNAS</span>
+<span class="text-[10px] font-bold text-slate-500 text-center uppercase truncate">COED</span>
 </div>
 </div>
 </div>
@@ -215,7 +218,7 @@
 <div class="w-2 h-2 rounded-full bg-green-500 shadow-lg shadow-green-500/30"></div>
 <div class="flex-1">
 <p class="text-xs font-bold truncate">New Vote Cast</p>
-<p class="text-[10px] text-slate-500">Faculty: Science</p>
+<p class="text-[10px] text-slate-500">College: COLPAS</p>
 </div>
 <span class="text-[10px] text-slate-400 font-medium">Just now</span>
 </div>
@@ -223,7 +226,7 @@
 <div class="w-2 h-2 rounded-full bg-green-500 shadow-lg shadow-green-500/30"></div>
 <div class="flex-1">
 <p class="text-xs font-bold truncate">New Vote Cast</p>
-<p class="text-[10px] text-slate-500">Faculty: Engineering</p>
+<p class="text-[10px] text-slate-500">College: CEET</p>
 </div>
 <span class="text-[10px] text-slate-400 font-medium">2m ago</span>
 </div>
@@ -231,7 +234,7 @@
 <div class="w-2 h-2 rounded-full bg-primary shadow-lg shadow-primary/30"></div>
 <div class="flex-1">
 <p class="text-xs font-bold truncate">Candidate Added</p>
-<p class="text-[10px] text-slate-500">Marcus Wright (Education)</p>
+<p class="text-[10px] text-slate-500">David Nduka (COED)</p>
 </div>
 <span class="text-[10px] text-slate-400 font-medium">15m ago</span>
 </div>
@@ -239,7 +242,7 @@
 <div class="w-2 h-2 rounded-full bg-green-500 shadow-lg shadow-green-500/30"></div>
 <div class="flex-1">
 <p class="text-xs font-bold truncate">New Vote Cast</p>
-<p class="text-[10px] text-slate-500">Faculty: Law</p>
+<p class="text-[10px] text-slate-500">College: COLMAS</p>
 </div>
 <span class="text-[10px] text-slate-400 font-medium">18m ago</span>
 </div>
@@ -256,11 +259,11 @@
 <div class="flex items-center gap-4">
 <div class="flex items-center gap-2">
 <span class="w-3 h-3 rounded-full bg-primary"></span>
-<span class="text-[11px] font-medium text-slate-500">Science Leader: 42%</span>
+<span class="text-[11px] font-medium text-slate-500">COLPAS Leader: 42%</span>
 </div>
 <div class="flex items-center gap-2">
 <span class="w-3 h-3 rounded-full bg-slate-300"></span>
-<span class="text-[11px] font-medium text-slate-500">Other Faculties: 58%</span>
+<span class="text-[11px] font-medium text-slate-500">Other Colleges: 58%</span>
 </div>
 </div>
 </div>
@@ -409,7 +412,7 @@ function renderVotersTable() {
 document.getElementById('export-btn').addEventListener('click', function() {
     const allVotes = getAllVotes();
     
-    let exportData = "ABSU 2026 SUG Election Results\n";
+    let exportData = "MOUAU 2026 SUG Election Results\n";
     exportData += "Generated: " + new Date().toLocaleString() + "\n";
     exportData += "=".repeat(50) + "\n\n";
     exportData += "Total Voters: " + allVotes.length + "\n";
@@ -427,7 +430,7 @@ document.getElementById('export-btn').addEventListener('click', function() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ABSU_Election_Results_2026.txt';
+    a.download = 'MOUAU_Election_Results_2026.txt';
     a.click();
     URL.revokeObjectURL(url);
 });

@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Candidate Details - ABSU Election</title>
+    <title>Candidate Details - MOUAU Election</title>
+    <link rel="icon" type="image/png" href="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -14,9 +15,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": isSuperAdmin ? "#9333ea" : "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
+                        "primary": isSuperAdmin ? "#064e1b" : "#0b6623",
+                        "primary-dark": "#053d15",
+                        "secondary": "#eab308",
+                        "background-light": "#f4f7f4",
+                        "background-dark": "#0a160e",
                     },
                     fontFamily: {
                         "display": ["Lexend"]
@@ -31,8 +34,9 @@
             font-family: 'Lexend', sans-serif;
         }
         .sidebar-active {
-            background-color: var(--color-primary, #9333ea);
+            background-color: var(--color-primary, #064e1b);
             color: white;
+            border-left: 3px solid #eab308;
         }
     </style>
 </head>
@@ -42,10 +46,10 @@
         <div class="flex flex-col gap-8">
             <!-- Brand -->
             <div class="flex items-center gap-3 px-2">
-                <img src="assets/images/absu-logo.png" alt="ABSU Logo" class="h-10 w-auto"/>
+                <img src="https://portal.mouau.edu.ng/images/logo/mou_logo_c.png" onerror="this.onerror=null;this.src='assets/images/mouau-logo.svg';" alt="MOUAU Logo" class="h-10 w-auto"/>
                 <div>
-                    <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">ABSU</h1>
-                    <p id="admin-role-text" class="text-slate-500 text-xs font-medium">Super Admin</p>
+                    <h1 class="text-slate-900 dark:text-white font-bold text-lg leading-tight">MOUAU</h1>
+                    <p id="admin-role-text" class="text-amber-600 dark:text-secondary text-xs font-semibold">Super Admin</p>
                 </div>
             </div>
             <!-- Nav Links -->
@@ -148,7 +152,7 @@
                 <!-- Academic & Registration card (left 2 cols) -->
                 <div class="md:col-span-2 flex flex-col gap-6">
                     <!-- Current Votes count KPI Card -->
-                    <div class="bg-gradient-to-br from-primary/10 to-indigo-500/10 border border-primary/10 p-6 rounded-2xl shadow-sm text-center">
+                    <div class="bg-gradient-to-br from-primary/10 to-secondary/15 border border-primary/15 p-6 rounded-2xl shadow-sm text-center">
                         <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Total Votes Received</p>
                         <h2 id="vote-count" class="text-5xl font-black text-slate-900 dark:text-white">0</h2>
                     </div>
@@ -242,7 +246,7 @@
             }
             
             // Adjust theme color and sidebar targets dynamically
-            document.documentElement.style.setProperty('--color-primary', isSuper ? '#9333ea' : '#135bec');
+            document.documentElement.style.setProperty('--color-primary', isSuper ? '#064e1b' : '#0b6623');
             const roleText = document.getElementById('admin-role-text');
             if (roleText) {
                 roleText.textContent = isSuper ? 'Super Admin' : 'Admin Console';

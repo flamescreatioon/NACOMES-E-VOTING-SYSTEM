@@ -1,7 +1,7 @@
 {
-  "name": "absu-election-portal",
+  "name": "mouau-election-portal",
   "version": "1.0.0",
-  "description": "ABSU Student Union Government Election Portal 2026",
+  "description": "MOUAU Student Union Government Election Portal 2026 (mouau.edu.ng)",
   "main": "index.html",
   "scripts": {
     "server": "node backend/index.js",
@@ -23,7 +23,7 @@
     "student-union",
     "portal"
   ],
-  "author": "University Election Commission",
+  "author": "S.P Technology ltd",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
@@ -33,7 +33,7 @@
   "devDependencies": {
     "browser-sync": "^3.0.0",
     "concurrently": "^8.2.2",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "shx": "^0.3.4"
   },
   "engines": {
