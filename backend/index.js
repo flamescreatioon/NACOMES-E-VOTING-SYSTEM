@@ -155,18 +155,29 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
 .map((s) => s.trim().replace(/\/$/, ''))
 .filter(Boolean);
 const isLocalhost = (origin) => /^(https?:\/\/(localhost|127\.0\.0\.1))(:\d+)?$/i.test(origin);
+const isSameOrigin = (req, origin) => {
+    try {
+        const originHost = new URL(origin).host.toLowerCase();
+        const rawHost = req.headers['x-forwarded-host'] || req.headers.host || '';
+        const requestHost = String(rawHost).split(',')[0].trim().toLowerCase();
+        return Boolean(requestHost && originHost === requestHost);
+    } catch {
+        return false;
+    }
+};
 
-app.use(cors({
-origin: (origin, callback) => {
-// Same-origin / non-browser client — allow.
-if (!origin) return callback(null, true);
-const normalized = origin.replace(/\/$/, '');
-if (isLocalhost(origin)) return callback(null, true);
-if (ALLOWED_ORIGINS.includes(normalized)) return callback(null, true);
-return callback(new Error(`CORS blocked for origin: ${origin}`), false);
-},
-methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-allowedHeaders: ['Content-Type', 'Authorization']
+app.use(cors((req, callback) => {
+    const origin = req.headers.origin;
+    const baseOpts = {
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization']
+    };
+    if (!origin) return callback(null, { ...baseOpts, origin: true });
+    const normalized = origin.replace(/\/$/, '');
+    if (isLocalhost(origin) || isSameOrigin(req, origin) || ALLOWED_ORIGINS.includes(normalized)) {
+        return callback(null, { ...baseOpts, origin: true });
+    }
+    return callback(new Error(`CORS blocked for origin: ${origin}`), { ...baseOpts, origin: false });
 }));
 app.use(express.json({ limit: '5mb' }));
 
