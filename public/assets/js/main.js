@@ -155,6 +155,7 @@ const UI = {
         if (!countdownElements.days) return;
 
         let deadlineStr = CONFIG.electionDeadline;
+        let startTimeStr = '';
         try {
             const res = await fetch(`${API_URL}/settings`);
             if (res.ok) {
@@ -162,15 +163,35 @@ const UI = {
                 if (settings.election_deadline) {
                     deadlineStr = settings.election_deadline;
                 }
+                if (settings.election_start_time) {
+                    startTimeStr = settings.election_start_time;
+                }
             }
         } catch (e) {
             console.error('Failed to load custom election deadline settings:', e);
         }
 
+        const labelEl = document.querySelector('[data-countdown-label]');
+
         const update = () => {
             const now = new Date().getTime();
+            const startMs = startTimeStr ? new Date(startTimeStr).getTime() : NaN;
             const deadline = new Date(deadlineStr).getTime();
-            const diff = deadline - now;
+
+            let target = deadline;
+            if (!Number.isNaN(startMs) && now < startMs) {
+                target = startMs;
+                if (labelEl) labelEl.textContent = 'Voting Starts In';
+            } else if (!Number.isNaN(deadline) && now <= deadline) {
+                target = deadline;
+                if (labelEl) labelEl.textContent = 'Voting Closes In';
+            } else {
+                if (labelEl) labelEl.textContent = 'Voting Closed';
+                Object.values(countdownElements).forEach(el => el.textContent = '00');
+                return;
+            }
+
+            const diff = target - now;
 
             if (diff <= 0) {
                 Object.values(countdownElements).forEach(el => el.textContent = '00');

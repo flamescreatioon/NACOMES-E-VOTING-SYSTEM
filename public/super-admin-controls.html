@@ -238,14 +238,29 @@
             <!-- Election Countdown Deadline Control -->
             <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-primary/5 shadow-lg flex flex-col gap-6">
                 <div>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Election Countdown Control</h3>
-                    <p class="text-xs text-slate-500 mt-1">Set the deadline when voting officially closes. This updates the countdown timer on the homepage in real-time.</p>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Election Schedule &amp; Countdown Control</h3>
+                    <p class="text-xs text-slate-500 mt-1">Set when voting officially starts and closes. This updates the homepage countdown and enforces the voting window in real-time.</p>
                 </div>
                 <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-slate-50 dark:bg-slate-800/30 p-6 rounded-xl border border-slate-150 dark:border-slate-800">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2">Close Date & Time</label>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2">Start Date &amp; Time (Optional)</label>
+                        <input type="datetime-local" id="election-start-input" class="w-full py-2.5 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="save-start-btn" class="flex-1 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-all shadow-sm">
+                            Set Start Time
+                        </button>
+                        <button id="clear-start-btn" class="border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold py-2.5 px-3 rounded-lg text-xs transition-all">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-slate-50 dark:bg-slate-800/30 p-6 rounded-xl border border-slate-150 dark:border-slate-800">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2">Close Date &amp; Time</label>
                         <input type="datetime-local" id="election-deadline-input" class="w-full py-2.5 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
                     </div>
                     <div class="flex gap-2">
@@ -490,7 +505,10 @@
                 syncDeptDetailToggles();
                 renderStatusTables();
 
-                // Update election deadline input from settings
+                // Update election start & deadline inputs from settings
+                if (globalSettings.election_start_time) {
+                    document.getElementById('election-start-input').value = globalSettings.election_start_time.slice(0, 16);
+                }
                 if (globalSettings.election_deadline) {
                     document.getElementById('election-deadline-input').value = globalSettings.election_deadline.slice(0, 16);
                 }
@@ -647,7 +665,21 @@
             updateSystemSetting('voting_active_dept_' + selectedDept, this.checked);
         });
 
-        // Event Listeners for Election Countdown Control
+        // Event Listeners for Election Start & Countdown Control
+        document.getElementById('save-start-btn').addEventListener('click', function() {
+            const startVal = document.getElementById('election-start-input').value;
+            if (!startVal) {
+                alert("Please select a valid start date and time.");
+                return;
+            }
+            updateSystemSetting('election_start_time', startVal);
+        });
+
+        document.getElementById('clear-start-btn').addEventListener('click', function() {
+            document.getElementById('election-start-input').value = '';
+            updateSystemSetting('election_start_time', '');
+        });
+
         document.getElementById('save-deadline-btn').addEventListener('click', function() {
             const deadlineVal = document.getElementById('election-deadline-input').value;
             if (!deadlineVal) {

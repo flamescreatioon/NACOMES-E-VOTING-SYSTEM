@@ -285,19 +285,31 @@
                 if (res.ok) {
                     activeSettings = await res.json();
                     
+                    const nowMs = Date.now();
+                    const startMs = activeSettings.election_start_time ? new Date(activeSettings.election_start_time).getTime() : NaN;
+                    const endMs = activeSettings.election_deadline ? new Date(activeSettings.election_deadline).getTime() : NaN;
+                    const notStartedYet = !Number.isNaN(startMs) && nowMs < startMs;
+                    const alreadyEnded = !Number.isNaN(endMs) && nowMs > endMs;
+
                     const anyActive = activeSettings.voting_active_sug !== false || 
                                       (activeSettings.voting_active_college !== false && activeSettings['voting_active_college_' + user.college] !== false) || 
                                       (activeSettings.voting_active_department !== false && activeSettings['voting_active_dept_' + user.dept] !== false);
                                       
-                    if (!anyActive) {
+                    if (!anyActive || notStartedYet || alreadyEnded) {
+                        const lockTitle = notStartedYet ? 'Voting Not Started Yet' : 'Voting System Closed';
+                        const lockMsg = notStartedYet
+                            ? `Voting is scheduled to start on ${new Date(startMs).toLocaleString()}. Please check back then.`
+                            : alreadyEnded
+                                ? 'The election deadline has passed and voting is now closed.'
+                                : 'The voting portal is currently locked or has not been opened yet by the Chief Electoral Officer. Please check the official timeline or contact administration if you think this is a mistake.';
                         // Hide ballot area and display locked notice
                         document.getElementById('voting-ballot-area').innerHTML = `
                             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center flex flex-col items-center justify-center gap-6 shadow-sm">
                                 <span class="material-symbols-outlined text-6xl text-rose-500 bg-rose-50 dark:bg-rose-950/20 p-4 rounded-full">lock</span>
                                 <div>
-                                    <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-2">Voting System Closed</h3>
+                                    <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-2">${lockTitle}</h3>
                                     <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-                                        The voting portal is currently locked or has not been opened yet by the Chief Electoral Officer. Please check the official timeline or contact administration if you think this is a mistake.
+                                        ${lockMsg}
                                     </p>
                                 </div>
                                 <a href="index.html" class="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-all">Back to Homepage</a>

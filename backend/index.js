@@ -268,7 +268,7 @@ function getCachedSettings(cb) {
         const settings = {};
         if (rows) {
             rows.forEach(r => {
-                if (r.key === 'election_deadline') {
+                if (r.key === 'election_deadline' || r.key === 'election_start_time') {
                     settings[r.key] = r.value;
                 } else {
                     settings[r.key] = r.value === 'true';
@@ -798,6 +798,20 @@ app.post('/api/vote', rateLimit(8), authenticate, (req, res) => {  // max 8 vote
     getCachedSettings((err, settings) => {
         if (err) return res.status(500).json({ error: err.message });
         
+        // Enforce scheduled election start & close times if configured
+        if (settings.election_start_time) {
+            const startMs = new Date(settings.election_start_time).getTime();
+            if (!Number.isNaN(startMs) && Date.now() < startMs) {
+                return res.status(400).json({ error: "Voting has not started yet. Please wait for the scheduled election start time." });
+            }
+        }
+        if (settings.election_deadline) {
+            const endMs = new Date(settings.election_deadline).getTime();
+            if (!Number.isNaN(endMs) && Date.now() > endMs) {
+                return res.status(400).json({ error: "Voting has closed. The election deadline has passed." });
+            }
+        }
+
         // Ensure student can only vote for themselves
         if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             if (!req.body.matricNo || req.user.matricNo.toUpperCase() !== req.body.matricNo.toUpperCase()) {
@@ -1238,7 +1252,7 @@ app.get('/api/settings', (req, res) => {
         const settings = {};
         if (rows) {
             rows.forEach(r => {
-                if (r.key === 'election_deadline') {
+                if (r.key === 'election_deadline' || r.key === 'election_start_time') {
                     settings[r.key] = r.value;
                 } else {
                     settings[r.key] = r.value === 'true';
