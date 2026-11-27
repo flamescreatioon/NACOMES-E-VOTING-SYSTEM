@@ -105,10 +105,10 @@
                 <h2 class="text-xl font-bold tracking-tight">Candidates Management</h2>
             </div>
             <div class="flex items-center gap-6">
-                <a href="candidate-register.html" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
-                    <span class="material-symbols-outlined text-lg">add_box</span>
-                    Register Candidate
-                </a>
+                <button type="button" disabled aria-disabled="true" title="Candidate registration is currently closed" class="bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 cursor-not-allowed opacity-75">
+                    <span class="material-symbols-outlined text-lg">lock</span>
+                    Registration Closed
+                </button>
             </div>
         </header>
 
@@ -332,12 +332,18 @@
                          <span class="material-symbols-outlined text-sm">check_circle</span> Re-instate
                        </button>`;
 
+                const rawImg = c.profileImageUrl || c.posterImageUrl || '';
+                const safeImg = /^\/api\/media\/[a-zA-Z0-9_-]+$/.test(rawImg) ? rawImg : '';
+                const avatarHtml = safeImg
+                    ? `<img src="${safeImg}" alt="${c.name.replace(/"/g, '&quot;')}" class="w-full h-full object-cover" onerror="this.outerHTML='<span class=\\'font-black text-xs\\'>${c.name.charAt(0)}</span>'"/>`
+                    : `${c.name.charAt(0)}`;
+
                 html += `
                     <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all">
                         <td class="py-4 text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-3">
                             <a href="admin-candidate-details.html?id=${c.id}" class="flex items-center gap-3 hover:text-primary transition-all group/name">
-                                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-xs group-hover/name:bg-primary group-hover/name:text-white transition-all">
-                                    ${c.name.charAt(0)}
+                                <div class="w-8 h-8 rounded-full overflow-hidden bg-primary/10 text-primary flex items-center justify-center font-black text-xs group-hover/name:bg-primary group-hover/name:text-white transition-all shrink-0">
+                                    ${avatarHtml}
                                 </div>
                                 <span>${c.name}</span>
                             </a>
