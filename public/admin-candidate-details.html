@@ -219,6 +219,17 @@
                                 -
                             </p>
                         </div>
+
+                        <!-- Campaign Poster -->
+                        <div id="poster-block" class="hidden flex-col gap-3">
+                            <h3 class="text-sm font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                                <span class="material-symbols-outlined text-primary text-lg">image</span>
+                                Campaign Poster
+                            </h3>
+                            <div class="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 max-w-md">
+                                <img id="poster-img" src="" alt="Campaign Poster" class="w-full h-auto object-contain"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -298,10 +309,24 @@
         function renderProfile(c) {
             document.getElementById('candidate-name').textContent = c.name;
             const avatarEl = document.getElementById('initials-avatar');
-            if (c.profileImageUrl) {
-                avatarEl.innerHTML = `<img src="${c.profileImageUrl}" alt="${c.name}" class="w-full h-full object-cover rounded-full" onerror="this.parentElement.textContent='${c.name.charAt(0)}'"/>`;
+            const avatarImg = c.profileImageUrl || c.posterImageUrl || '';
+            const safeAvatarImg = /^\/api\/media\/[a-zA-Z0-9_-]+$/.test(avatarImg) ? avatarImg : '';
+            if (safeAvatarImg) {
+                avatarEl.classList.add('overflow-hidden');
+                avatarEl.innerHTML = `<img src="${safeAvatarImg}" alt="${c.name.replace(/"/g, '&quot;')}" class="w-full h-full object-cover rounded-full" onerror="this.parentElement.textContent='${c.name.charAt(0)}'"/>`;
             } else {
                 avatarEl.textContent = c.name.charAt(0);
+            }
+            const posterBlock = document.getElementById('poster-block');
+            const posterImgEl = document.getElementById('poster-img');
+            const safePosterImg = c.posterImageUrl && /^\/api\/media\/[a-zA-Z0-9_-]+$/.test(c.posterImageUrl) ? c.posterImageUrl : '';
+            if (posterBlock && posterImgEl && safePosterImg) {
+                posterImgEl.src = safePosterImg;
+                posterBlock.classList.remove('hidden');
+                posterBlock.classList.add('flex');
+            } else if (posterBlock) {
+                posterBlock.classList.add('hidden');
+                posterBlock.classList.remove('flex');
             }
             document.getElementById('contested-position').textContent = c.position.replace('-', ' ');
             document.getElementById('college-tag').textContent = `${c.college || 'SUG Contender'} | ${c.dept || 'N/A'}`;

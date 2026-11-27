@@ -54,3 +54,6 @@ temp/
 
 # Legacy duplicate backend (superseded by backend/)
 server/
+
+.vercel
+.env*

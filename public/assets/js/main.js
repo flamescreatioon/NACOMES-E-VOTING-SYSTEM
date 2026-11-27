@@ -419,6 +419,8 @@ const Data = {
     },
     saveVote: async (user, votes) => {
         try {
+            const deviceId = DeviceControl.getDeviceId();
+            const deviceFingerprint = await DeviceControl.getDeviceFingerprint();
             const res = await fetch(`${API_URL}/vote`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -428,7 +430,9 @@ const Data = {
                     votes: votes,
                     manualEntry: false,
                     college: user.college,
-                    dept: user.dept
+                    dept: user.dept,
+                    deviceId,
+                    deviceFingerprint
                 })
             });
             const data = await res.json();
@@ -441,6 +445,69 @@ const Data = {
             console.error('Error submitting vote:', e);
             alert("Network error: Could not reach the server.");
             return false;
+        }
+    }
+};
+
+// Device & IP Control Helper
+const DeviceControl = {
+    STORAGE_KEY: 'mouau_device_id',
+
+    getDeviceId: () => {
+        try {
+            let id = localStorage.getItem(DeviceControl.STORAGE_KEY);
+            if (!id) {
+                id = (window.crypto && crypto.randomUUID)
+                    ? crypto.randomUUID()
+                    : 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+                localStorage.setItem(DeviceControl.STORAGE_KEY, id);
+            }
+            return id;
+        } catch (e) {
+            return 'dev-ephemeral';
+        }
+    },
+
+    getDeviceFingerprint: async () => {
+        try {
+            const tz = (Intl && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '';
+            const raw = [
+                navigator.userAgent || '',
+                navigator.language || '',
+                navigator.platform || '',
+                navigator.hardwareConcurrency || '',
+                `${screen.width || 0}x${screen.height || 0}x${screen.colorDepth || 0}`,
+                tz
+            ].join('|');
+
+            if (window.crypto && crypto.subtle && typeof TextEncoder !== 'undefined') {
+                const buf = new TextEncoder().encode(raw);
+                const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+                return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 48);
+            }
+
+            // Deterministic FNV-1a fallback for non-secure contexts
+            let h = 2166136261;
+            for (let i = 0; i < raw.length; i++) {
+                h ^= raw.charCodeAt(i);
+                h = Math.imul(h, 16777619);
+            }
+            return 'fp-' + (h >>> 0).toString(16);
+        } catch (e) {
+            return '';
+        }
+    },
+
+    checkDeviceStatus: async () => {
+        try {
+            const deviceId = DeviceControl.getDeviceId();
+            const deviceFingerprint = await DeviceControl.getDeviceFingerprint();
+            const params = new URLSearchParams({ deviceId, deviceFingerprint });
+            const res = await fetch(`${API_URL}/vote/device-status?${params.toString()}`, { cache: 'no-store' });
+            if (!res.ok) return { blocked: false };
+            return await res.json();
+        } catch (e) {
+            return { blocked: false };
         }
     }
 };

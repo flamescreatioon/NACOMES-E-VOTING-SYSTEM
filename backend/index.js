@@ -72,7 +72,9 @@ console.error('[warn] ADMIN_ACCOUNTS_JSON is not valid JSON:', e.message);
 }
 const accounts = [];
 const push = (username, password, name, role) => {
-if (username && password) accounts.push({ username: String(username).toLowerCase(), password: String(password), name, role });
+const cleanUser = String(username || '').replace(/^\uFEFF/, '').trim().toLowerCase();
+const cleanPass = String(password || '').replace(/^\uFEFF/, '').trim();
+if (cleanUser && cleanPass) accounts.push({ username: cleanUser, password: cleanPass, name, role });
 };
 push(process.env.SUPERADMIN_USERNAME, process.env.SUPERADMIN_PASSWORD, 'Chief Electoral Officer', 'superadmin');
 push(process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD, 'System Administrator', 'admin');
@@ -386,106 +388,7 @@ app.get('/api/media/:id', (req, res) => {
     });
 });
 
-// Upload candidate image (single-shot or chunked) up to 10 MB
-app.post('/api/uploads', rateLimit(40), (req, res) => {
-    const { dataBase64, mimeType, filename, kind, uploadId, chunkIndex, totalChunks } = req.body || {};
-
-    if (!mimeType || !ALLOWED_IMAGE_MIMES.has(String(mimeType).toLowerCase())) {
-        return res.status(400).json({ error: "Unsupported image format. Allowed: PNG, JPG, WEBP, GIF." });
-    }
-    if (!dataBase64 || typeof dataBase64 !== 'string') {
-        return res.status(400).json({ error: "Missing image data." });
-    }
-
-    const cleanB64 = dataBase64.replace(/^data:[^;]+;base64,/, '');
-    let chunkBuf;
-    try {
-        chunkBuf = Buffer.from(cleanB64, 'base64');
-    } catch {
-        return res.status(400).json({ error: "Invalid base64 image payload." });
-    }
-    if (!chunkBuf.length) {
-        return res.status(400).json({ error: "Uploaded image is empty." });
-    }
-    if (chunkBuf.length > MAX_CANDIDATE_UPLOAD_BYTES) {
-        return res.status(413).json({ error: "Image exceeds the 10 MB per-upload limit." });
-    }
-
-    const safeKind = kind === 'poster' ? 'poster' : 'profile';
-    const safeName = filename ? String(filename).slice(0, 120) : `${safeKind}.png`;
-    const uploadedBy = req.user && (req.user.matricNo || req.user.username) || 'unknown';
-
-    // Single-shot upload
-    if (!totalChunks || Number(totalChunks) <= 1) {
-        const id = crypto.randomBytes(12).toString('hex');
-        return db.run(
-            `INSERT INTO media_objects (id, kind, filename, mimeType, sizeBytes, data, uploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [id, safeKind, safeName, mimeType.toLowerCase(), chunkBuf.length, chunkBuf, uploadedBy],
-            function (err) {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json({
-                    id,
-                    url: `/api/media/${id}`,
-                    sizeBytes: chunkBuf.length,
-                    mimeType: mimeType.toLowerCase(),
-                    complete: true
-                });
-            }
-        );
-    }
-
-    // Chunked upload (supports up to 10 MB across Vercel's 4.5 MB request body limit)
-    const idx = Number(chunkIndex);
-    const total = Number(totalChunks);
-    if (!uploadId || !/^[a-zA-Z0-9_-]{8,64}$/.test(String(uploadId)) || !Number.isInteger(idx) || !Number.isInteger(total) || idx < 0 || idx >= total || total > 10) {
-        return res.status(400).json({ error: "Invalid chunk upload metadata." });
-    }
-
-    db.run(
-        `INSERT INTO upload_chunks (uploadId, chunkIndex, totalChunks, mimeType, filename, kind, uploadedBy, data)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT (uploadId, chunkIndex) DO UPDATE SET data = EXCLUDED.data`,
-        [uploadId, idx, total, mimeType.toLowerCase(), safeName, safeKind, uploadedBy, chunkBuf],
-        function (chunkErr) {
-            if (chunkErr) return res.status(500).json({ error: chunkErr.message });
-
-            db.all(
-                `SELECT chunkIndex, data FROM upload_chunks WHERE uploadId = ? ORDER BY chunkIndex ASC`,
-                [uploadId],
-                (listErr, rows) => {
-                    if (listErr) return res.status(500).json({ error: listErr.message });
-                    if (!rows || rows.length < total) {
-                        return res.json({ uploadId, chunkIndex: idx, complete: false });
-                    }
-
-                    const buffers = rows.map((r) => (Buffer.isBuffer(r.data) ? r.data : Buffer.from(r.data)));
-                    const fullBuf = Buffer.concat(buffers);
-                    db.run(`DELETE FROM upload_chunks WHERE uploadId = ?`, [uploadId], () => {});
-
-                    if (fullBuf.length > MAX_CANDIDATE_UPLOAD_BYTES) {
-                        return res.status(413).json({ error: "Image exceeds the 10 MB per-upload limit." });
-                    }
-
-                    const id = crypto.randomBytes(12).toString('hex');
-                    db.run(
-                        `INSERT INTO media_objects (id, kind, filename, mimeType, sizeBytes, data, uploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                        [id, safeKind, safeName, mimeType.toLowerCase(), fullBuf.length, fullBuf, uploadedBy],
-                        function (saveErr) {
-                            if (saveErr) return res.status(500).json({ error: saveErr.message });
-                            res.json({
-                                id,
-                                url: `/api/media/${id}`,
-                                sizeBytes: fullBuf.length,
-                                mimeType: mimeType.toLowerCase(),
-                                complete: true
-                            });
-                        }
-                    );
-                }
-            );
-        }
-    );
-});
+// Public candidate image upload endpoint removed while election is ongoing.
 
 // ==========================================
 // CANDIDATE ROUTES
@@ -497,49 +400,7 @@ app.get('/api/candidates', (req, res) => {
     });
 });
 
-app.post('/api/candidates', rateLimit(15), (req, res) => {
-    const { level, name, position, college, dept, matricNo, email, phone, slogan, manifesto, experience, profileImageUrl, posterImageUrl } = req.body || {};
-    if (!name || !position || !matricNo) {
-        return res.status(400).json({ error: "Full name, matriculation number, and position are required." });
-    }
-
-    const targetKey = level === 'COLLEGE' ? 'registration_active_college' : (level === 'DEPARTMENT' ? 'registration_active_department' : 'registration_active_sug');
-    
-    db.get("SELECT value FROM system_settings WHERE key = ?", [targetKey], (err, setting) => {
-        if (!err && setting && setting.value === 'false') {
-            return res.status(400).json({ error: "Candidate registration for this level is currently closed by the electoral commission." });
-        }
-        
-        const id = String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        if (!id) {
-            return res.status(400).json({ error: "Invalid candidate name." });
-        }
-        const cleanProfileUrl = normalizeMediaUrl(profileImageUrl);
-        const cleanPosterUrl = normalizeMediaUrl(posterImageUrl);
-        
-        db.run(
-            `INSERT INTO candidates (id, name, level, position, college, dept, votes, status, matricNo, email, phone, slogan, manifesto, experience, profileImageUrl, posterImageUrl) 
-             VALUES (?, ?, ?, ?, ?, ?, 0, 'active', ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, String(name).trim(), level || 'DEPARTMENT', position, college, dept, String(matricNo).trim().toUpperCase(), email || null, phone || null, slogan || null, manifesto || null, experience || null, cleanProfileUrl, cleanPosterUrl],
-            function(err) {
-                if (err) {
-                    if (err.message && err.message.includes('UNIQUE constraint failed')) {
-                        return res.status(400).json({ error: "A candidate with this name is already registered." });
-                    }
-                    return res.status(500).json({ error: err.message });
-                }
-                linkMediaToCandidate(cleanProfileUrl, id);
-                linkMediaToCandidate(cleanPosterUrl, id);
-                res.json({ 
-                    id, name: String(name).trim(), level: level || 'DEPARTMENT', position, college, dept, votes: 0, status: 'active',
-                    matricNo: String(matricNo).trim().toUpperCase(), email, phone, slogan, manifesto, experience,
-                    profileImageUrl: cleanProfileUrl,
-                    posterImageUrl: cleanPosterUrl
-                });
-            }
-        );
-    });
-});
+// Public candidate registration endpoint (POST /api/candidates) removed while election is ongoing.
 
 // Fetch a single candidate (studentDetails only returned to authenticated admins, never password)
 app.get('/api/candidates/:id', (req, res) => {
@@ -705,13 +566,20 @@ app.post('/api/login', rateLimit(20), (req, res) => {  // max 20 login attempts/
     );
 });
 
+function safeEqualSecret(a, b) {
+    const hashA = crypto.createHash('sha256').update(String(a || '')).digest();
+    const hashB = crypto.createHash('sha256').update(String(b || '')).digest();
+    return crypto.timingSafeEqual(hashA, hashB);
+}
+
 app.post('/api/admin/login', rateLimit(10), (req, res) => { // max 10 admin login attempts/min per IP
-    const { username, password } = req.body;
+    const { username, password } = req.body || {};
     if (!username || !password) {
         return res.status(400).json({ error: "Username and password are required." });
     }
     
-const match = ADMIN_ACCOUNTS_DB.find(a => a.username === username.toLowerCase() && a.password === password);
+    const normalizedUser = String(username).trim().toLowerCase();
+    const match = ADMIN_ACCOUNTS_DB.find(a => a.username === normalizedUser && safeEqualSecret(a.password, password));
     
     if (!match) {
         return res.status(401).json({ error: "Invalid admin credentials." });
@@ -733,17 +601,111 @@ const match = ADMIN_ACCOUNTS_DB.find(a => a.username === username.toLowerCase() 
 // VOTING ROUTES
 // ==========================================
 
-// Helper to process individual votes
-function processVote(voteData, res) {
-    const { name, matricNo, votes, manualEntry, enteredBy, isAutoGenerated, college } = voteData;
-    
+// ==========================================
+// DEVICE & IP CONTROL HELPERS
+// ==========================================
+
+function getClientIp(req) {
+    const xff = req.headers['x-forwarded-for'];
+    let ip = (typeof xff === 'string' && xff.length)
+        ? xff.split(',')[0].trim()
+        : (req.ip || req.socket?.remoteAddress || '');
+    if (ip.startsWith('::ffff:')) ip = ip.slice(7);
+    if (ip === '::1') ip = '127.0.0.1';
+    return ip ? ip.slice(0, 128) : null;
+}
+
+function sanitizeDeviceToken(val) {
+    if (typeof val !== 'string') return null;
+    const trimmed = val.trim();
+    return trimmed ? trimmed.slice(0, 128) : null;
+}
+
+function checkDeviceOrIpVoted({ ipAddress, deviceId, deviceFingerprint, settings }) {
+    const deviceControlEnabled = settings?.device_control_enabled !== false;
+    const ipControlEnabled = settings?.ip_control_enabled !== false;
+
+    const conditions = [];
+    const params = [];
+
+    if (ipControlEnabled && ipAddress) {
+        conditions.push('ipAddress = ?');
+        params.push(ipAddress);
+    }
+    if (deviceControlEnabled && deviceId) {
+        conditions.push('deviceId = ?');
+        params.push(deviceId);
+    }
+    if (deviceControlEnabled && deviceFingerprint) {
+        conditions.push('deviceFingerprint = ?');
+        params.push(deviceFingerprint);
+    }
+
+    if (conditions.length === 0) {
+        return Promise.resolve({ blocked: false, deviceControlEnabled, ipControlEnabled });
+    }
+
+    const boolFalse = (process.env.DATABASE_URL && process.env.DATABASE_URL.trim()) ? 'FALSE' : '0';
+    const sql = `
+        SELECT id, matricNo, ipAddress, deviceId, deviceFingerprint
+        FROM votes
+        WHERE (manualEntry IS NULL OR manualEntry = ${boolFalse})
+          AND (${conditions.join(' OR ')})
+        LIMIT 1
+    `;
+
+    return new Promise((resolve, reject) => {
+        db.get(sql, params, (err, row) => {
+            if (err) return reject(err);
+            if (!row) {
+                return resolve({ blocked: false, deviceControlEnabled, ipControlEnabled });
+            }
+            const matchedIp = ipControlEnabled && ipAddress && row.ipAddress === ipAddress;
+            const matchedDevice = deviceControlEnabled && (
+                (deviceId && row.deviceId === deviceId) ||
+                (deviceFingerprint && row.deviceFingerprint === deviceFingerprint)
+            );
+            let reason = 'Voting denied: This device or IP address has already been used to cast a vote.';
+            if (matchedDevice && !matchedIp) {
+                reason = 'Voting denied: This device has already been used to cast a vote.';
+            } else if (matchedIp && !matchedDevice) {
+                reason = 'Voting denied: A vote has already been cast from this IP address.';
+            }
+            resolve({
+                blocked: true,
+                reason,
+                matchedIp: Boolean(matchedIp),
+                matchedDevice: Boolean(matchedDevice),
+                deviceControlEnabled,
+                ipControlEnabled
+            });
+        });
+    });
+}
+
+// Helper to process individual votes — always validates matricNo against a live
+// approved_matrics entry in the database before recording any vote.
+async function processVote(voteData, res) {
+    const { name, matricNo, votes, manualEntry, enteredBy, isAutoGenerated, college, ipAddress, deviceId, deviceFingerprint } = voteData;
+    const normalizedMatric = normalizeMatric(matricNo);
+    if (!normalizedMatric) {
+        return res.status(400).json({ error: "A valid matriculation number is required to vote." });
+    }
+
+    const isLiveRegNo = await approvedMatrics.isMatricApprovedAnyLevel(db, normalizedMatric);
+    if (!isLiveRegNo) {
+        return res.status(403).json({
+            error: "Vote rejected: Matriculation number is not a live approved registration number in the database (e.g. MOUAU/CME/23/119396)."
+        });
+    }
+
     // Begin transaction
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
         
         db.run(
-            `INSERT INTO votes (name, matricNo, manualEntry, enteredBy, isAutoGenerated, college) VALUES (?, ?, ?, ?, ?, ?)`,
-            [name, matricNo, Boolean(manualEntry), enteredBy || null, Boolean(isAutoGenerated), college || 'SUG'],
+            `INSERT INTO votes (name, matricNo, manualEntry, enteredBy, isAutoGenerated, college, ipAddress, deviceId, deviceFingerprint) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [name, normalizedMatric, Boolean(manualEntry), enteredBy || null, Boolean(isAutoGenerated), college || 'SUG', ipAddress || null, deviceId || null, deviceFingerprint || null],
             function(err) {
                 if (err) {
                     db.run("ROLLBACK");
@@ -815,6 +777,22 @@ function processVote(voteData, res) {
     });
 }
 
+// Check whether the current device or IP has already voted
+app.get('/api/vote/device-status', (req, res) => {
+    getCachedSettings(async (err, settings) => {
+        if (err) return res.status(500).json({ error: err.message });
+        try {
+            const ipAddress = getClientIp(req);
+            const deviceId = sanitizeDeviceToken(req.query.deviceId);
+            const deviceFingerprint = sanitizeDeviceToken(req.query.deviceFingerprint);
+            const result = await checkDeviceOrIpVoted({ ipAddress, deviceId, deviceFingerprint, settings });
+            res.json(result);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+});
+
 // Standard Student Vote
 app.post('/api/vote', rateLimit(8), authenticate, (req, res) => {  // max 8 votes/min per IP
     getCachedSettings((err, settings) => {
@@ -856,9 +834,29 @@ app.post('/api/vote', rateLimit(8), authenticate, (req, res) => {  // max 8 vote
                 }
             }
         }
+
+        const ipAddress = getClientIp(req);
+        const deviceId = sanitizeDeviceToken(req.body.deviceId);
+        const deviceFingerprint = sanitizeDeviceToken(req.body.deviceFingerprint);
+
         // All checks passed — queue the write to avoid SQLite write contention
-        enqueueVote((done) => {
-            processVote(req.body, {
+        // and serialize device/IP check + vote insert so concurrent requests cannot race.
+        enqueueVote(async (done) => {
+            try {
+                const lockStatus = await checkDeviceOrIpVoted({ ipAddress, deviceId, deviceFingerprint, settings });
+                if (lockStatus.blocked) {
+                    done();
+                    return res.status(403).json({
+                        error: lockStatus.reason,
+                        code: 'DEVICE_OR_IP_ALREADY_VOTED'
+                    });
+                }
+            } catch (checkErr) {
+                done();
+                return res.status(500).json({ error: checkErr.message });
+            }
+
+            processVote({ ...req.body, ipAddress, deviceId, deviceFingerprint }, {
                 json: (data) => { invalidateStatsCache(); done(); res.json(data); },
                 status: (code) => ({
                     json: (data) => { done(); res.status(code).json(data); }
@@ -967,86 +965,10 @@ app.get('/api/votes/:matricNo', authenticate, authorize(['admin', 'superadmin'])
 	});
 });
 
-// Bulk Admin Vote
+// Bulk Admin Vote — disabled because all votes must be validated against a live reg no in the database
 app.post('/api/vote/bulk', authenticate, authorize(['admin', 'superadmin']), (req, res) => {
-    const { votes, voteCount, addedBy } = req.body;
-    
-    if (!votes || !voteCount) {
-        return res.status(400).json({ error: "Missing parameters" });
-    }
-
-    db.serialize(() => {
-        db.run("BEGIN TRANSACTION");
-
-        // Loop through all positions and update candidate votes in DB and log them
-        for (const [position, candidateName] of Object.entries(votes)) {
-            if (candidateName) {
-                let dbPos = position.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-                db.run("UPDATE candidates SET votes = votes + ? WHERE position = ? AND (name = ? OR id = ?)", [voteCount, dbPos, candidateName, candidateName]);
-                db.run("INSERT INTO bulk_vote_log (addedBy, position, candidate, votesAdded) VALUES (?, ?, ?, ?)", [addedBy, dbPos, candidateName, voteCount]);
-            }
-        }
-        
-        // Generate fake voters to match ledger
-        const fakeFirstNames = ["John", "Jane", "Michael", "Sarah", "David", "Grace", "Samuel", "Ngozi", "Emeka", "Amina", "Chinedu", "Fatima", "Yusuf", "Jennifer", "Ibrahim", "Daniel", "Joy", "Victor", "Blessing", "Emmanuel"];
-        const fakeLastNames = ["Okonkwo", "Eze", "Johnson", "Obi", "Nduka", "Okoli", "Ade", "Nwankwo", "Bello", "Peters", "Chukwu", "Abdullahi", "Olu", "Kalu", "Ojo", "Idris"];
-        
-        const mouauCollegesData = MOUAU_COLLEGES;
-
-        const stmtStudent = db.prepare("INSERT OR IGNORE INTO students (matricNo, name, level, dept, contactInfo, college, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        const stmtVote = db.prepare("INSERT INTO votes (name, matricNo, isAutoGenerated, enteredBy, college) VALUES (?, ?, TRUE, ?, ?)");
-        const stmtDetails = db.prepare("INSERT INTO vote_details (voteId, position, candidateName) VALUES (?, ?, ?)");
-        
-        const levelsList = ["100L", "200L", "300L", "400L", "500L"];
-        let pending = voteCount;
-        for (let i = 0; i < voteCount; i++) {
-            const firstName = fakeFirstNames[Math.floor(Math.random() * fakeFirstNames.length)];
-            const lastName = fakeLastNames[Math.floor(Math.random() * fakeLastNames.length)];
-            const year = 2021 + Math.floor(Math.random() * 4);
-            const idStr = Math.floor(100000 + Math.random() * 900000);
-            const matric = `U${year}/${idStr}`;
-            const studentName = `${firstName} ${lastName}`;
-            
-            const randomCollegeObj = mouauCollegesData[Math.floor(Math.random() * mouauCollegesData.length)];
-            const randomCollege = randomCollegeObj.name;
-            const randomDept = randomCollegeObj.depts[Math.floor(Math.random() * randomCollegeObj.depts.length)];
-            const randomLevel = levelsList[Math.floor(Math.random() * levelsList.length)];
-            const randomEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mouau.edu.ng`;
-            
-            const hashedPass = hashPassword("student2026", matric);
-            stmtStudent.run(matric, studentName, randomLevel, randomDept, randomEmail, randomCollege, hashedPass, (err) => {
-                if (!err) {
-                    stmtVote.run(studentName, matric, addedBy, randomCollege, function(voteErr) {
-                        if (!voteErr) {
-                            const voteId = this.lastID;
-                            for (const [position, candidateName] of Object.entries(votes)) {
-                                if (candidateName) {
-                                    let dbPos = position.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-                                    stmtDetails.run(voteId, dbPos, candidateName);
-                                }
-                            }
-                        }
-                        pending--;
-                        if (pending === 0) {
-                            stmtStudent.finalize();
-                            stmtVote.finalize();
-                            stmtDetails.finalize();
-                            db.run("COMMIT");
-                            res.json({ success: true, message: `Successfully added ${voteCount} votes across selected candidates!` });
-                        }
-                    });
-                } else {
-                    pending--;
-                    if (pending === 0) {
-                        stmtStudent.finalize();
-                        stmtVote.finalize();
-                        stmtDetails.finalize();
-                        db.run("COMMIT");
-                        res.json({ success: true, message: `Successfully added ${voteCount} votes across selected candidates!` });
-                    }
-                }
-            });
-        }
+    return res.status(403).json({
+        error: "Bulk synthetic voting is disabled. All votes must be validated against a live registration number in the database."
     });
 });
 
@@ -1320,6 +1242,62 @@ app.post('/api/settings', authenticate, authorize(['admin', 'superadmin']), (req
             res.json({ success: true, key, value });
         }
     );
+});
+
+// One-click Start / Stop Election endpoint
+app.post('/api/election/toggle', authenticate, authorize(['admin', 'superadmin']), (req, res) => {
+    const action = req.body && req.body.action;
+    if (action !== 'start' && action !== 'stop') {
+        return res.status(400).json({ error: "Invalid action. Use 'start' or 'stop'." });
+    }
+
+    getCachedSettings((err, current) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const nowIso = new Date().toISOString();
+        const updates = [];
+
+        if (action === 'start') {
+            updates.push(['voting_active', 'true']);
+            updates.push(['voting_active_department', 'true']);
+            updates.push(['voting_active_college', 'true']);
+            updates.push(['voting_active_sug', 'true']);
+            updates.push(['election_start_time', nowIso]);
+
+            const existingEnd = current.election_deadline ? new Date(current.election_deadline).getTime() : NaN;
+            if (Number.isNaN(existingEnd) || existingEnd <= Date.now()) {
+                const defaultEndIso = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+                updates.push(['election_deadline', defaultEndIso]);
+            }
+        } else {
+            updates.push(['voting_active', 'false']);
+            updates.push(['voting_active_department', 'false']);
+            updates.push(['voting_active_college', 'false']);
+            updates.push(['voting_active_sug', 'false']);
+        }
+
+        let idx = 0;
+        function next() {
+            if (idx >= updates.length) {
+                invalidateSettingsCache();
+                return res.json({
+                    success: true,
+                    active: action === 'start',
+                    action
+                });
+            }
+            const [k, v] = updates[idx++];
+            db.run(
+                "INSERT OR REPLACE INTO system_settings (key, value) VALUES (?, ?)",
+                [k, v],
+                (saveErr) => {
+                    if (saveErr) return res.status(500).json({ error: saveErr.message });
+                    next();
+                }
+            );
+        }
+        next();
+    });
 });
 
 // ── Login: rate limited ───────────────────────────────────────────────────────

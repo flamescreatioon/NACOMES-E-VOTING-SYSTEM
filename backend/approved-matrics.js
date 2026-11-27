@@ -115,6 +115,34 @@ function isMatricApproved(db, levelKey, normalizedMatric) {
   });
 }
 
+function isMatricApprovedAnyLevel(db, rawMatric) {
+  const normalized = normalizeMatric(rawMatric);
+  if (!normalized) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    if (!db || typeof db.get !== 'function') {
+      if (!txtLoaded) loadTxtWhitelists();
+      for (const set of Object.values(txtWhitelists)) {
+        if (set.has(normalized)) return resolve(true);
+      }
+      return resolve(false);
+    }
+    db.get(
+      'SELECT 1 AS ok FROM approved_matrics WHERE UPPER(matricNo) = ? LIMIT 1',
+      [normalized],
+      (err, row) => {
+        if (err) {
+          if (!txtLoaded) loadTxtWhitelists();
+          for (const set of Object.values(txtWhitelists)) {
+            if (set.has(normalized)) return resolve(true);
+          }
+          return resolve(false);
+        }
+        resolve(Boolean(row));
+      }
+    );
+  });
+}
+
 /** Count of approved matrics in DB per level — for health checks / admin. */
 function countApprovedByLevel(db) {
   return new Promise((resolve, reject) => {
@@ -133,5 +161,6 @@ module.exports = {
   getTxtSet,
   readAllTxtBackup,
   isMatricApproved,
+  isMatricApprovedAnyLevel,
   countApprovedByLevel,
 };

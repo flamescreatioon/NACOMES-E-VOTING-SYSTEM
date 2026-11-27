@@ -113,6 +113,66 @@
 
         <!-- Body -->
         <div class="p-8 flex flex-col gap-8 max-w-4xl mx-auto w-full">
+            <!-- One-Click Start / Stop Election Banner -->
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-primary/10 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Master Election Switch</h3>
+                        <span id="master-election-badge" class="text-[11px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Checking...</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Start opens all voting tiers immediately (and extends an expired deadline by 24h); Stop locks all voting immediately.</p>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <button id="master-start-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md transition-all">
+                        <span class="material-symbols-outlined text-lg">play_circle</span>
+                        Start Election
+                    </button>
+                    <button id="master-stop-btn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md transition-all">
+                        <span class="material-symbols-outlined text-lg">stop_circle</span>
+                        Stop Election
+                    </button>
+                </div>
+            </div>
+
+            <!-- Device & IP Voting Control -->
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-primary/5 shadow-lg flex flex-col gap-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">devices</span>
+                        Device &amp; IP Voting Control
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Prevent multiple votes from the same browser/device or IP address. Admin-assisted manual votes are exempt.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined p-2 bg-emerald-50 text-primary dark:bg-emerald-950/20 dark:text-emerald-400 rounded-lg text-2xl">smartphone</span>
+                            <div>
+                                <p class="text-sm font-bold">Device Lock (1 Vote Per Device)</p>
+                                <p id="device-control-status-label" class="text-xs text-slate-400">Loading state...</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="toggle-device-control" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-150 dark:border-slate-850">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined p-2 bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400 rounded-lg text-2xl">lan</span>
+                            <div>
+                                <p class="text-sm font-bold">IP Lock (1 Vote Per IP)</p>
+                                <p id="ip-control-status-label" class="text-xs text-slate-400">Loading state...</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="toggle-ip-control" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tier Toggles -->
             <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-primary/5 shadow-lg flex flex-col gap-8">
                 <div>
@@ -515,6 +575,10 @@
                 updateToggleUI('toggle-registration-department', 'reg-status-label-department', globalSettings.registration_active_department, "Form open", "Form closed");
                 updateToggleUI('toggle-voting-department', 'vote-status-label-department', globalSettings.voting_active_department, "Elections ongoing", "Ballots closed");
 
+                // Device & IP Control Toggles
+                updateToggleUI('toggle-device-control', 'device-control-status-label', globalSettings.device_control_enabled, "1 vote per device", "Disabled");
+                updateToggleUI('toggle-ip-control', 'ip-control-status-label', globalSettings.ip_control_enabled, "1 vote per IP", "Disabled");
+
                 // Sync Specific Selects and Tables
                 syncCollegeDetailToggles();
                 syncDeptDetailToggles();
@@ -666,6 +730,14 @@
             updateSystemSetting('voting_active_department', this.checked);
         });
 
+        // Event Listeners for Device & IP Control
+        document.getElementById('toggle-device-control').addEventListener('change', function() {
+            updateSystemSetting('device_control_enabled', this.checked);
+        });
+        document.getElementById('toggle-ip-control').addEventListener('change', function() {
+            updateSystemSetting('ip_control_enabled', this.checked);
+        });
+
         // Event Listeners for Specific College Control selects
         document.getElementById('college-specific-registration').addEventListener('change', function() {
             const selectedCollege = document.getElementById('college-select').value;
@@ -729,10 +801,50 @@
             window.location.href = 'super-admin-login.html';
         });
 
+        // Master Start / Stop Election buttons
+        async function syncMasterElectionBadge() {
+            const badge = document.getElementById('master-election-badge');
+            if (!badge) return;
+            try {
+                const res = await fetch(`${API_URL}/settings`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const s = await res.json();
+                const now = Date.now();
+                const startMs = s.election_start_time ? new Date(s.election_start_time).getTime() : NaN;
+                const endMs = s.election_deadline ? new Date(s.election_deadline).getTime() : NaN;
+                const withinWindow = (Number.isNaN(startMs) || now >= startMs) && (Number.isNaN(endMs) || now <= endMs);
+                const live = s.voting_active !== false && s.voting_active_department !== false && withinWindow;
+                badge.textContent = live ? 'LIVE / OPEN' : 'STOPPED / CLOSED';
+                badge.className = `text-[11px] font-bold uppercase px-2.5 py-0.5 rounded-full ${live ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`;
+            } catch (e) {}
+        }
+
+        async function toggleMasterElection(action) {
+            if (action === 'stop' && !confirm('Stop the election now? All voters will be locked out.')) return;
+            try {
+                const res = await fetch(`${API_URL}/election/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to update election status');
+                await loadSystemSettings();
+                await syncMasterElectionBadge();
+                showToast(action === 'start' ? 'Election is now LIVE!' : 'Election has been STOPPED.');
+            } catch (e) {
+                showToast(e.message || 'Failed to update election status', 'error');
+            }
+        }
+
+        document.getElementById('master-start-btn')?.addEventListener('click', () => toggleMasterElection('start'));
+        document.getElementById('master-stop-btn')?.addEventListener('click', () => toggleMasterElection('stop'));
+
         // Initialize page
         if (checkAdminAuth()) {
             initSelectors();
             loadSystemSettings();
+            syncMasterElectionBadge();
         }
     </script>
 </body>
