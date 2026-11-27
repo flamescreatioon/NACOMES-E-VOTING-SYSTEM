@@ -83,13 +83,6 @@
 </div>
 
 <!-- Registration Form -->
-<div id="auth-warning-banner" class="hidden mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-    <div class="flex items-center gap-3 text-amber-800 dark:text-amber-300 text-sm font-medium">
-        <span class="material-symbols-outlined">info</span>
-        <span>You must be signed in with your student account to upload photos and submit a candidacy application.</span>
-    </div>
-    <a href="login.html" class="px-4 py-2 rounded-lg bg-primary text-white text-xs font-bold whitespace-nowrap hover:bg-primary/90">Sign In Now</a>
-</div>
 <div id="registration-card" class="bg-white dark:bg-slate-900 rounded-xl shadow-xl shadow-primary/5 border border-slate-200 dark:border-slate-800 overflow-hidden">
 <div class="p-5 sm:p-8">
 <form id="candidate-form" class="space-y-8">
@@ -455,14 +448,9 @@
         initCollegesAndDepts();
         initElectionLevels();
 
-        // Pre-populate if logged in, or show sign-in banner
+        // Pre-populate if a user happens to be logged in (optional — login is not required)
         if (typeof Auth !== 'undefined') {
             const user = Auth.getUser();
-            const token = Auth.getToken();
-            if (!token) {
-                const banner = document.getElementById('auth-warning-banner');
-                if (banner) banner.classList.remove('hidden');
-            }
             if (user) {
                 const nameInput = document.getElementById('full-name');
                 const matricInput = document.getElementById('matric-no');
@@ -598,14 +586,8 @@
 
     document.getElementById('candidate-form').addEventListener('submit', async function(e) {
         e.preventDefault();
-        
-        const token = typeof Auth !== 'undefined' ? Auth.getToken() : null;
-        if (!token) {
-            alert('Please sign in first before submitting your candidacy application.');
-            window.location.href = 'login.html';
-            return;
-        }
 
+        const token = typeof Auth !== 'undefined' ? Auth.getToken() : null;
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Submitting...';
@@ -646,12 +628,12 @@
                 posterImageUrl
             };
 
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
             const res = await fetch(API_URL + '/candidates', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers,
                 body: JSON.stringify(candidateData)
             });
             

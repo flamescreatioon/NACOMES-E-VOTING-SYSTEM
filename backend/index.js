@@ -387,7 +387,7 @@ app.get('/api/media/:id', (req, res) => {
 });
 
 // Upload candidate image (single-shot or chunked) up to 10 MB
-app.post('/api/uploads', rateLimit(40), authenticate, (req, res) => {
+app.post('/api/uploads', rateLimit(40), (req, res) => {
     const { dataBase64, mimeType, filename, kind, uploadId, chunkIndex, totalChunks } = req.body || {};
 
     if (!mimeType || !ALLOWED_IMAGE_MIMES.has(String(mimeType).toLowerCase())) {
@@ -497,15 +497,12 @@ app.get('/api/candidates', (req, res) => {
     });
 });
 
-app.post('/api/candidates', authenticate, (req, res) => {
-    // If student, ensure they can only register themselves as candidate
-    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
-        if (!req.body.matricNo || req.user.matricNo.toUpperCase() !== req.body.matricNo.toUpperCase()) {
-            return res.status(403).json({ error: "Access denied. You can only register yourself as a candidate." });
-        }
+app.post('/api/candidates', rateLimit(15), (req, res) => {
+    const { level, name, position, college, dept, matricNo, email, phone, slogan, manifesto, experience, profileImageUrl, posterImageUrl } = req.body || {};
+    if (!name || !position || !matricNo) {
+        return res.status(400).json({ error: "Full name, matriculation number, and position are required." });
     }
 
-    const { level } = req.body;
     const targetKey = level === 'COLLEGE' ? 'registration_active_college' : (level === 'DEPARTMENT' ? 'registration_active_department' : 'registration_active_sug');
     
     db.get("SELECT value FROM system_settings WHERE key = ?", [targetKey], (err, setting) => {
@@ -513,22 +510,29 @@ app.post('/api/candidates', authenticate, (req, res) => {
             return res.status(400).json({ error: "Candidate registration for this level is currently closed by the electoral commission." });
         }
         
-        const { name, position, college, dept, matricNo, email, phone, slogan, manifesto, experience, profileImageUrl, posterImageUrl } = req.body;
-        const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const id = String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        if (!id) {
+            return res.status(400).json({ error: "Invalid candidate name." });
+        }
         const cleanProfileUrl = normalizeMediaUrl(profileImageUrl);
         const cleanPosterUrl = normalizeMediaUrl(posterImageUrl);
         
         db.run(
             `INSERT INTO candidates (id, name, level, position, college, dept, votes, status, matricNo, email, phone, slogan, manifesto, experience, profileImageUrl, posterImageUrl) 
              VALUES (?, ?, ?, ?, ?, ?, 0, 'active', ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, name, level || 'SUG', position, college, dept, matricNo || null, email || null, phone || null, slogan || null, manifesto || null, experience || null, cleanProfileUrl, cleanPosterUrl],
+            [id, String(name).trim(), level || 'DEPARTMENT', position, college, dept, String(matricNo).trim().toUpperCase(), email || null, phone || null, slogan || null, manifesto || null, experience || null, cleanProfileUrl, cleanPosterUrl],
             function(err) {
-                if (err) return res.status(500).json({ error: err.message });
+                if (err) {
+                    if (err.message && err.message.includes('UNIQUE constraint failed')) {
+                        return res.status(400).json({ error: "A candidate with this name is already registered." });
+                    }
+                    return res.status(500).json({ error: err.message });
+                }
                 linkMediaToCandidate(cleanProfileUrl, id);
                 linkMediaToCandidate(cleanPosterUrl, id);
                 res.json({ 
-                    id, name, level, position, college, dept, votes: 0, status: 'active',
-                    matricNo, email, phone, slogan, manifesto, experience,
+                    id, name: String(name).trim(), level: level || 'DEPARTMENT', position, college, dept, votes: 0, status: 'active',
+                    matricNo: String(matricNo).trim().toUpperCase(), email, phone, slogan, manifesto, experience,
                     profileImageUrl: cleanProfileUrl,
                     posterImageUrl: cleanPosterUrl
                 });
