@@ -631,11 +631,24 @@ function initDashboard() {
 // Run on load
 document.addEventListener('DOMContentLoaded', initDashboard);
 
-// Auto-refresh every 30 seconds
+// Dynamic auto-refresh every 5 seconds while tab is visible
+let isRefreshingAdmin = false;
+async function refreshAdminDashboard(force = false) {
+    if (isRefreshingAdmin) return;
+    if (!force && document.visibilityState === 'hidden') return;
+    isRefreshingAdmin = true;
+    try {
+        await Promise.all([updateStats(), renderVotersTable()]);
+    } finally {
+        isRefreshingAdmin = false;
+    }
+}
 setInterval(function() {
-    updateStats();
-    renderVotersTable();
-}, 30000);
+    refreshAdminDashboard(false);
+}, 5000);
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') refreshAdminDashboard(true);
+});
 </script>
 </body>
 </html>

@@ -61,8 +61,12 @@
         <!-- Hero Section -->
         <div class="text-center mb-12">
             <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                <span class="material-symbols-outlined text-lg">leaderboard</span>
-                Live Results
+                <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span>Live Results</span>
+                <span id="live-updated-at" class="text-xs font-normal opacity-80">• Updating...</span>
             </div>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-3">NACOME Election Results 2026</h2>
             <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-6 sm:mb-8">
@@ -198,17 +202,23 @@
             const results = await calculateResults(level, college, dept);
             
             let totalVoters = 0;
+            let totalRegisteredVotes = 0;
+            let totalCandidates = 0;
             try {
-                const statRes = await fetch(API_URL + '/stats');
+                const statRes = await fetch(API_URL + '/stats', { cache: 'no-store' });
                 if (statRes.ok) {
                     const statData = await statRes.json();
-                    totalVoters = statData.totalVoters || 0;
+                    totalVoters = Number(statData.totalVoters || 0);
+                    totalRegisteredVotes = Number(statData.totalRegisteredVotes || 0);
+                    totalCandidates = Number(statData.totalCandidates || 0);
                 }
             } catch(e) {}
             
             // Update Stats
             document.getElementById('total-voters').textContent = totalVoters;
-            document.getElementById('total-votes').textContent = totalVoters * (level === 'SUG' ? 5 : 2);
+            document.getElementById('total-votes').textContent = totalRegisteredVotes;
+            const candEl = document.getElementById('total-candidates');
+            if (candEl) candEl.textContent = totalCandidates;
             document.getElementById('total-positions').textContent = Object.keys(results).length;
             
             let html = '';
@@ -246,19 +256,27 @@
             const isWinner = rank === 1 && c.votes > 0;
             const rankSuffix = ['st', 'nd', 'rd'][rank-1] || 'th';
             const podiumClass = ['podium-1', 'podium-2', 'podium-3'][rank-1] || 'bg-slate-100 dark:bg-slate-800';
+            const initials = (c.name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+            const rawImg = c.profileImageUrl || c.posterImageUrl || '';
+            const safeImg = /^\/api\/media\/[a-zA-Z0-9_-]+$/.test(rawImg) ? rawImg : '';
 
             return `
                 <div class="bg-white dark:bg-slate-900 rounded-xl border-2 ${isWinner ? 'border-primary shadow-lg' : 'border-slate-100 dark:border-slate-800'} p-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full ${podiumClass} flex items-center justify-center font-bold text-sm ${rank <= 3 ? 'text-white' : 'text-slate-400'}">
+                        <div class="w-12 h-12 rounded-full ${podiumClass} flex items-center justify-center font-bold text-sm ${rank <= 3 ? 'text-white' : 'text-slate-400'} shrink-0">
                             ${rank}${rankSuffix}
                         </div>
-                        <div class="flex-1">
+                        <div class="w-12 h-12 rounded-full overflow-hidden bg-primary/10 text-primary flex items-center justify-center font-black text-sm shrink-0">
+                            ${safeImg
+                                ? `<img src="${safeImg}" alt="${(c.name || '').replace(/"/g, '&quot;')}" class="w-full h-full object-cover" onerror="this.outerHTML='<span class=\\'font-black text-sm uppercase\\'>${initials}</span>'"/>`
+                                : `<span>${initials}</span>`}
+                        </div>
+                        <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
-                                <h4 class="font-bold text-slate-900 dark:text-white">${c.name}</h4>
+                                <h4 class="font-bold text-slate-900 dark:text-white truncate">${c.name}</h4>
                                 ${isWinner ? '<span class="material-symbols-outlined text-amber-500 text-sm">workspace_premium</span>' : ''}
                             </div>
-                            <p class="text-xs text-slate-500">${c.dept}</p>
+                            <p class="text-xs text-slate-500 truncate">${c.dept || ''}</p>
                         </div>
                         <div class="text-right">
                             <p class="text-lg font-bold text-slate-900 dark:text-white">${c.votes}</p>
@@ -336,17 +354,32 @@
             }
         }
 
-        filterEl.addEventListener('change', renderResults);
-        
+        filterEl.addEventListener('change', () => refreshLiveResults(true));
+
+        let isRefreshingResults = false;
+        async function refreshLiveResults(force = false) {
+            if (isRefreshingResults) return;
+            if (!force && document.visibilityState === 'hidden') return;
+            isRefreshingResults = true;
+            try {
+                await Promise.all([renderResults(), renderCollegeTurnout()]);
+                const updatedEl = document.getElementById('live-updated-at');
+                if (updatedEl) {
+                    updatedEl.textContent = `• Updated ${new Date().toLocaleTimeString()}`;
+                }
+            } finally {
+                isRefreshingResults = false;
+            }
+        }
+
         // Initial execution
-        renderResults();
-        renderCollegeTurnout();
-        
-        // Auto-refresh every 10 seconds
-        setInterval(() => {
-            renderResults();
-            renderCollegeTurnout();
-        }, 10000);
+        refreshLiveResults(true);
+
+        // Dynamic auto-refresh every 3 seconds while tab is visible
+        setInterval(() => refreshLiveResults(false), 3000);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') refreshLiveResults(true);
+        });
     </script>
 </body>
 </html>

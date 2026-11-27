@@ -1064,10 +1064,24 @@ function initDashboard() {
 // Run on load
 document.addEventListener('DOMContentLoaded', initDashboard);
 
-// Auto-refresh every 30 seconds
+// Dynamic auto-refresh every 5 seconds while tab is visible
+let isRefreshingSuperAdmin = false;
+async function refreshSuperAdminDashboard(force = false) {
+    if (isRefreshingSuperAdmin) return;
+    if (!force && document.visibilityState === 'hidden') return;
+    isRefreshingSuperAdmin = true;
+    try {
+        await updateDashboardData();
+    } finally {
+        isRefreshingSuperAdmin = false;
+    }
+}
 setInterval(function() {
-    updateDashboardData();
-}, 30000);
+    refreshSuperAdminDashboard(false);
+}, 5000);
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') refreshSuperAdminDashboard(true);
+});
 </script>
 </body>
 </html>
