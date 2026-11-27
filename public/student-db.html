@@ -247,9 +247,13 @@
         function checkAuth() {
             const isSuper = sessionStorage.getItem('superAdminLoggedIn') === 'true';
             const isAdmin = sessionStorage.getItem('adminLoggedIn') === 'true';
+            const token = sessionStorage.getItem('authToken');
             
-            if (!isSuper && !isAdmin) {
-                window.location.href = 'admin-login.html';
+            if ((!isSuper && !isAdmin) || !token) {
+                sessionStorage.removeItem('superAdminLoggedIn');
+                sessionStorage.removeItem('adminLoggedIn');
+                sessionStorage.removeItem('authToken');
+                window.location.href = isSuper ? 'super-admin-login.html' : 'admin-login.html';
                 return false;
             }
             
@@ -281,10 +285,24 @@
             return true;
         }
 
+        function handleAuthError(res) {
+            if (res.status === 401 || res.status === 403) {
+                const isSuper = sessionStorage.getItem('superAdminLoggedIn') === 'true';
+                sessionStorage.removeItem('superAdminLoggedIn');
+                sessionStorage.removeItem('adminLoggedIn');
+                sessionStorage.removeItem('authToken');
+                sessionStorage.removeItem('adminUser');
+                window.location.href = isSuper ? 'super-admin-login.html' : 'admin-login.html';
+                return true;
+            }
+            return false;
+        }
+
         // Fetch statistics metrics
         async function loadStats() {
             try {
                 const res = await fetch(`${API_URL}/students/stats`);
+                if (handleAuthError(res)) return;
                 if (!res.ok) throw new Error('Failed to load stats');
                 const data = await res.json();
 
@@ -642,6 +660,7 @@ showToast(err.message, 'error');
         document.getElementById('logout-btn').addEventListener('click', () => {
             sessionStorage.removeItem('superAdminLoggedIn');
             sessionStorage.removeItem('adminLoggedIn');
+            sessionStorage.removeItem('authToken');
             sessionStorage.removeItem('adminUser');
             window.location.href = 'admin-login.html';
         });
