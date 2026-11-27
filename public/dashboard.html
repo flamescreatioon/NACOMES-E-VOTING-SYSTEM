@@ -265,16 +265,27 @@
             
             const progress = totalRequired > 0 ? (selected / totalRequired) * 100 : 0;
             document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('progress-text').textContent = `${selected} of ${totalRequired} Selections Made`;
+            document.getElementById('progress-text').textContent = totalRequired === 0
+                ? 'No candidates available on ballot yet'
+                : `${selected} of ${totalRequired} Selections Made`;
             
-            document.getElementById('submit-btn').disabled = (totalRequired === 0 || selected < totalRequired);
+            document.getElementById('submit-btn').disabled = (totalRequired === 0 || selected === 0);
         }
 
         // Handle Submit
         document.getElementById('submit-btn').addEventListener('click', async () => {
-            if (confirm('Review your selections. Once submitted, your vote is final.')) {
+            const allRadios = document.querySelectorAll('input[type="radio"]');
+            const totalRequired = new Set([...allRadios].map(r => r.name)).size;
+            const checked = document.querySelectorAll('input[type="radio"]:checked');
+            if (checked.length === 0) return;
+
+            const promptMsg = checked.length < totalRequired
+                ? `You have selected ${checked.length} of ${totalRequired} positions. Submit your ballot anyway? Once submitted, your vote is final.`
+                : 'Review your selections. Once submitted, your vote is final.';
+
+            if (confirm(promptMsg)) {
                 const votes = {};
-                document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
+                checked.forEach(r => {
                     votes[r.name] = r.value;
                 });
                 
