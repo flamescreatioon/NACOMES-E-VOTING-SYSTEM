@@ -112,10 +112,24 @@
 <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
 </button>
 
-<button id="export-btn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
+<div class="relative">
+<button id="export-btn" type="button" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
 <span class="material-symbols-outlined text-lg">download</span>
                         Export Results
+                        <span class="material-symbols-outlined text-base">expand_more</span>
                     </button>
+<div id="export-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 z-50">
+<button type="button" data-export-format="pdf" class="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-primary/10 hover:text-primary flex items-center gap-2.5">
+<span class="material-symbols-outlined text-lg text-rose-600">picture_as_pdf</span> Export as PDF
+                        </button>
+<button type="button" data-export-format="csv" class="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-primary/10 hover:text-primary flex items-center gap-2.5">
+<span class="material-symbols-outlined text-lg text-emerald-600">table_view</span> Export as CSV
+                        </button>
+<button type="button" data-export-format="txt" class="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-primary/10 hover:text-primary flex items-center gap-2.5">
+<span class="material-symbols-outlined text-lg text-slate-500">description</span> Export as TXT
+                        </button>
+</div>
+</div>
 </div>
 </div>
 </header>
@@ -178,10 +192,20 @@
 <h3 class="text-lg font-bold text-slate-900 dark:text-white">Voting Timing &amp; Schedule Control</h3>
 <p class="text-xs text-slate-500">Set when voting opens and closes, or lock/unlock voting immediately.</p>
 </div>
-<label class="inline-flex items-center gap-2 cursor-pointer">
+<div class="flex flex-wrap items-center gap-3">
+<button id="admin-start-election-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3.5 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition-all">
+<span class="material-symbols-outlined text-base">play_circle</span>
+Start Election
+</button>
+<button id="admin-stop-election-btn" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 px-3.5 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition-all">
+<span class="material-symbols-outlined text-base">stop_circle</span>
+Stop Election
+</button>
+<label class="inline-flex items-center gap-2 cursor-pointer ml-2">
 <input type="checkbox" id="admin-voting-toggle" class="rounded border-slate-300 text-primary focus:ring-primary"/>
 <span id="admin-voting-status" class="text-xs font-bold uppercase text-emerald-600">Voting Open</span>
 </label>
+</div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 <div class="flex flex-col sm:flex-row gap-2 items-end bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl">
@@ -362,7 +386,7 @@
 </div>
 </main>
 
-<script src="assets/js/api-config.js"></script><script src="assets/js/main.js"></script>
+<script src="assets/js/api-config.js"></script><script src="assets/js/main.js"></script><script src="assets/js/export-results.js"></script>
 <script>
 // Check admin login
 function checkAdminAuth() {
@@ -486,32 +510,7 @@ function renderVotersTable() {
     tbody.innerHTML = html;
 }
 
-// Export results
-document.getElementById('export-btn').addEventListener('click', function() {
-    const allVotes = getAllVotes();
-    
-    let exportData = "MOUAU 2026 SUG Election Results\n";
-    exportData += "Generated: " + new Date().toLocaleString() + "\n";
-    exportData += "=".repeat(50) + "\n\n";
-    exportData += "Total Voters: " + allVotes.length + "\n";
-    exportData += "Total Votes Cast: " + (allVotes.length * 5) + "\n\n";
-    
-    if (allVotes.length > 0) {
-        exportData += "VOTER LIST:\n";
-        exportData += "-".repeat(30) + "\n";
-        allVotes.forEach((voter, i) => {
-            exportData += `${i + 1}. ${voter.name} (${voter.matricNo}) - ${new Date(voter.votedAt).toLocaleString()}\n`;
-        });
-    }
-
-    const blob = new Blob([exportData], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'MOUAU_Election_Results_2026.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-});
+// Export results handled by assets/js/export-results.js
 
 // Logout
 document.getElementById('logout-btn').addEventListener('click', function() {
@@ -575,6 +574,26 @@ async function saveAdminSetting(key, value, msg) {
 document.getElementById('admin-voting-toggle')?.addEventListener('change', function () {
     saveAdminSetting('voting_active_department', this.checked, this.checked ? 'Voting opened!' : 'Voting locked.');
 });
+async function toggleAdminElection(action) {
+    if (action === 'stop' && !confirm('Stop the election now? Voters will be locked out.')) return;
+    try {
+        const res = await fetch(`${API_URL}/election/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update election status');
+        await loadAdminTimingSettings();
+        if (typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast(action === 'start' ? 'Election is now LIVE!' : 'Election has been STOPPED.', 'success');
+        }
+    } catch (e) {
+        alert(e.message);
+    }
+}
+document.getElementById('admin-start-election-btn')?.addEventListener('click', () => toggleAdminElection('start'));
+document.getElementById('admin-stop-election-btn')?.addEventListener('click', () => toggleAdminElection('stop'));
 document.getElementById('admin-save-start-btn')?.addEventListener('click', function () {
     const val = document.getElementById('admin-start-input').value;
     if (!val) return alert('Select a start date and time.');
