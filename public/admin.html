@@ -404,6 +404,14 @@ function getAllVotes() {
 async function updateStats() {
     try {
         const res = await fetch(`${API_URL}/stats`, { cache: 'no-store' });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            console.error('Stats API failed:', res.status, err);
+            if (typeof UI !== 'undefined' && UI.showToast) {
+                UI.showToast(err.error || `Failed to load stats (${res.status})`, 'error');
+            }
+            return;
+        }
         if (res.ok) {
             const data = await res.json();
             const totalVoters = Number(data.totalVoters || 0);

@@ -170,25 +170,68 @@ function dupError(e) {
 }
 
 module.exports = function createPostgresDb(connectionString) {
- const client = new Client({
- connectionString,
- ssl: { rejectUnauthorized: false },
- });
+ function makeClient() {
+  const c = new Client({
+   connectionString,
+   ssl: { rejectUnauthorized: false },
+  });
+  c.on('error', (e) => {
+   console.error('Neon Postgres client error:', e.message);
+   connected = false;
+  });
+  c.on('end', () => {
+   connected = false;
+  });
+  return c;
+ }
+
+ let client = makeClient();
+ let connected = false;
+
+ async function ensureConnected() {
+  if (connected && !client._ending && !client._ended) return client;
+  if (client._ending || client._ended) {
+   client = makeClient();
+  }
+  try {
+   await client.connect();
+   connected = true;
+  } catch (e) {
+   connected = false;
+   client = makeClient();
+   await client.connect();
+   connected = true;
+  }
+  return client;
+ }
 
  let resolveReady;
  const ready = new Promise((resolve) => { resolveReady = resolve; });
 
  // Strict FIFO queue over the single connection (mirrors SQLite serialization).
- let tail = Promise.resolve();
+ // Starts chained onto `ready` so no query runs before connect + schema finish.
+ let tail = ready;
  function enqueue(work) {
- const p = tail.then(work);
- tail = p.catch(() => {});
- return p;
+  const p = tail.then(work);
+  tail = p.catch(() => {});
+  return p;
  }
 
  function exec(sql, params) {
- const { text, params: p } = toPg(rewriteUpsert(sql), params);
- return enqueue(() => client.query(text, p));
+  const { text, params: p } = toPg(rewriteUpsert(sql), params);
+  return enqueue(async () => {
+   const cli = await ensureConnected();
+   try {
+    return await cli.query(text, p);
+   } catch (err) {
+    if (err && /Connection terminated|Client has already been|not queryable/i.test(err.message || '')) {
+     connected = false;
+     const fresh = await ensureConnected();
+     return await fresh.query(text, p);
+    }
+    throw err;
+   }
+  });
  }
 
  const db = {
@@ -314,7 +357,9 @@ async function seedStudents() {
 
  // Connect, init schema, seed — then resolve ready (non-blocking like sqlite).
  client.connect().then(
- () => client.query(SCHEMA).then(
+ () => {
+ connected = true;
+ return client.query(SCHEMA).then(
  () => {
  console.log('Connected to Neon Postgres.');
  return seedApprovedMatrics(client).catch(()=>{}).then(() => resolveReady()).catch((e) => {
@@ -326,14 +371,14 @@ async function seedStudents() {
  console.error('Neon Postgres init error:', e.message);
  resolveReady();
  },
- ),
+ );
+ },
  (e) => {
+ connected = false;
  console.error('Neon Postgres connect error:', e.message);
  resolveReady();
  },
  );
-
- client.on('error', (e) => console.error('Neon Postgres client error:', e.message));
 
  return db;
 };
