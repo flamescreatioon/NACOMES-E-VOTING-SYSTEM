@@ -265,7 +265,7 @@ const cache = {
 
 function getCachedSettings(cb) {
     const now = Date.now();
-    if (cache.settings.data && now < cache.settings.expiresAt) {
+    if (!process.env.VERCEL && cache.settings.data && now < cache.settings.expiresAt) {
         return cb(null, cache.settings.data);
     }
     db.all("SELECT * FROM system_settings", [], (err, rows) => {

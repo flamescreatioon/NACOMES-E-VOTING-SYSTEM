@@ -293,7 +293,7 @@
         // Check if voting system is active
         async function checkVotingActive() {
             try {
-                const res = await fetch(`${API_URL}/settings`);
+                const res = await fetch(`${API_URL}/settings`, { cache: 'no-store' });
                 if (res.ok) {
                     activeSettings = await res.json();
                     

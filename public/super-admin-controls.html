@@ -397,7 +397,8 @@
 
         // Check if admin is authorized
         function checkAdminAuth() {
-            if (sessionStorage.getItem('superAdminLoggedIn') !== 'true') {
+            const token = sessionStorage.getItem('authToken');
+            if (sessionStorage.getItem('superAdminLoggedIn') !== 'true' || !token) {
                 window.location.href = 'super-admin-login.html';
                 return false;
             }
@@ -406,6 +407,20 @@
                 document.getElementById('admin-name').textContent = adminUser.name;
             }
             return true;
+        }
+
+        function toLocalInputValue(val) {
+            if (!val) return '';
+            const d = new Date(val);
+            if (Number.isNaN(d.getTime())) return String(val).slice(0, 16);
+            const tzoffset = d.getTimezoneOffset() * 60000;
+            return (new Date(d.getTime() - tzoffset)).toISOString().slice(0, 16);
+        }
+
+        function toUtcIso(localVal) {
+            if (!localVal) return '';
+            const d = new Date(localVal);
+            return Number.isNaN(d.getTime()) ? localVal : d.toISOString();
         }
 
         // Initialize selectors
@@ -484,7 +499,7 @@
         // Fetch settings from API
         async function loadSystemSettings() {
             try {
-                const res = await fetch(`${API_URL}/settings`);
+                const res = await fetch(`${API_URL}/settings`, { cache: 'no-store' });
                 if (!res.ok) throw new Error("Could not load system settings");
                 globalSettings = await res.json();
 
@@ -505,12 +520,12 @@
                 syncDeptDetailToggles();
                 renderStatusTables();
 
-                // Update election start & deadline inputs from settings
+                // Update election start & deadline inputs from settings (converted to admin local time)
                 if (globalSettings.election_start_time) {
-                    document.getElementById('election-start-input').value = globalSettings.election_start_time.slice(0, 16);
+                    document.getElementById('election-start-input').value = toLocalInputValue(globalSettings.election_start_time);
                 }
                 if (globalSettings.election_deadline) {
-                    document.getElementById('election-deadline-input').value = globalSettings.election_deadline.slice(0, 16);
+                    document.getElementById('election-deadline-input').value = toLocalInputValue(globalSettings.election_deadline);
                 }
 
             } catch (e) {
@@ -678,7 +693,7 @@
                 alert("Please select a valid start date and time.");
                 return;
             }
-            updateSystemSetting('election_start_time', startVal, 'Election start time updated!');
+            updateSystemSetting('election_start_time', toUtcIso(startVal), 'Election start time updated!');
         });
 
         document.getElementById('clear-start-btn').addEventListener('click', function() {
@@ -692,25 +707,19 @@
                 alert("Please select a valid date and time.");
                 return;
             }
-            updateSystemSetting('election_deadline', deadlineVal, 'Election close deadline updated!');
+            updateSystemSetting('election_deadline', toUtcIso(deadlineVal), 'Election close deadline updated!');
         });
 
         document.getElementById('quick-1hr-btn').addEventListener('click', function() {
-            const now = new Date();
-            now.setHours(now.getHours() + 1);
-            const tzoffset = now.getTimezoneOffset() * 60000;
-            const localISOTime = (new Date(now.getTime() - tzoffset)).toISOString().slice(0, 16);
-            document.getElementById('election-deadline-input').value = localISOTime;
-            updateSystemSetting('election_deadline', localISOTime);
+            const target = new Date(Date.now() + 60 * 60 * 1000);
+            document.getElementById('election-deadline-input').value = toLocalInputValue(target.toISOString());
+            updateSystemSetting('election_deadline', target.toISOString(), 'Deadline extended by +1 hour!');
         });
 
         document.getElementById('quick-24hr-btn').addEventListener('click', function() {
-            const now = new Date();
-            now.setDate(now.getDate() + 1);
-            const tzoffset = now.getTimezoneOffset() * 60000;
-            const localISOTime = (new Date(now.getTime() - tzoffset)).toISOString().slice(0, 16);
-            document.getElementById('election-deadline-input').value = localISOTime;
-            updateSystemSetting('election_deadline', localISOTime);
+            const target = new Date(Date.now() + 24 * 60 * 60 * 1000);
+            document.getElementById('election-deadline-input').value = toLocalInputValue(target.toISOString());
+            updateSystemSetting('election_deadline', target.toISOString(), 'Deadline extended by +24 hours!');
         });
 
         // Logout
