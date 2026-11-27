@@ -1,3 +1,16 @@
+// Vercel Web Analytics (active on Vercel deployments; skipped on localhost)
+(function () {
+    if (typeof window === 'undefined') return;
+    if (/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) return;
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    if (!document.querySelector('script[src="/_vercel/insights/script.js"]')) {
+        const s = document.createElement('script');
+        s.defer = true;
+        s.src = '/_vercel/insights/script.js';
+        document.head.appendChild(s);
+    }
+})();
+
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
