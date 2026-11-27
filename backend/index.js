@@ -1356,7 +1356,7 @@ app.get('/api/health', (req, res) => {
 // Returns only three numbers — safe at any dataset size.
 app.get('/api/turnout', (req, res) => {
     const now = Date.now();
-    if (cache.stats.data && now < cache.stats.expiresAt) {
+    if (!process.env.VERCEL && cache.stats.data && now < cache.stats.expiresAt) {
         return res.json(cache.stats.data);
     }
     db.get("SELECT COUNT(*) as totalStudents FROM students", [], (err, sRow) => {

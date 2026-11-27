@@ -533,7 +533,7 @@ async function getAllVotes() {
 // Update stats with real data
 async function updateDashboardData() {
     try {
-        const res = await fetch(`${API_URL}/stats`);
+        const res = await fetch(`${API_URL}/stats`, { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         
@@ -576,28 +576,27 @@ async function updateDashboardData() {
         const tbody = document.getElementById('voters-table');
         if (recentVoters.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-sm text-slate-500">No voters recorded yet.</td></tr>';
-            return;
-        }
+        } else {
+            let html = '';
+            recentVoters.forEach(voter => {
+                const votedAt = new Date(voter.votedAt);
+                const timeStr = votedAt.toLocaleString('en-NG', { 
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                });
 
-        let html = '';
-        recentVoters.forEach(voter => {
-            const votedAt = new Date(voter.votedAt);
-            const timeStr = votedAt.toLocaleString('en-NG', { 
-                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                html += `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
+                        <td class="py-3 text-sm font-medium">${escapeHtml(voter.name)}</td>
+                        <td class="py-3 text-sm text-slate-600">${escapeHtml(voter.matricNo)}</td>
+                        <td class="py-3 text-xs text-slate-500">${escapeHtml(timeStr)}</td>
+                        <td class="py-3">
+                            <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Verified</span>
+                        </td>
+                    </tr>
+                `;
             });
-
-            html += `
-                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
-                    <td class="py-3 text-sm font-medium">${escapeHtml(voter.name)}</td>
-                    <td class="py-3 text-sm text-slate-600">${escapeHtml(voter.matricNo)}</td>
-                    <td class="py-3 text-xs text-slate-500">${escapeHtml(timeStr)}</td>
-                    <td class="py-3">
-                        <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Verified</span>
-                    </td>
-                </tr>
-            `;
-        });
-        tbody.innerHTML = html;
+            tbody.innerHTML = html;
+        }
         
         // Render Candidates Table
         await updateCandidatesTable();
