@@ -347,6 +347,142 @@ function seedCandidates(database) {
 runStartupSetup();
 
 // ==========================================
+// CANDIDATE MEDIA UPLOAD & OBJECT STORAGE (NeonDB / SQLite)
+// ==========================================
+const MAX_CANDIDATE_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB per upload per candidate
+const ALLOWED_IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
+function normalizeMediaUrl(url) {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    return /^\/api\/media\/[a-zA-Z0-9_-]+$/.test(trimmed) ? trimmed : null;
+}
+
+function linkMediaToCandidate(mediaUrl, candidateId) {
+    const clean = normalizeMediaUrl(mediaUrl);
+    if (!clean) return;
+    const mediaId = clean.split('/').pop();
+    db.run("UPDATE media_objects SET candidateId = ? WHERE id = ?", [candidateId, mediaId], () => {});
+}
+
+// Serve stored image objects from NeonDB
+app.get('/api/media/:id', (req, res) => {
+    const { id } = req.params;
+    if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+        return res.status(400).json({ error: "Invalid media ID" });
+    }
+    db.get("SELECT mimeType, data FROM media_objects WHERE id = ?", [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row || !row.data) return res.status(404).json({ error: "Image not found" });
+        const buf = Buffer.isBuffer(row.data) ? row.data : Buffer.from(row.data);
+        res.setHeader('Content-Type', row.mimeType || 'application/octet-stream');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        res.send(buf);
+    });
+});
+
+// Upload candidate image (single-shot or chunked) up to 10 MB
+app.post('/api/uploads', rateLimit(40), authenticate, (req, res) => {
+    const { dataBase64, mimeType, filename, kind, uploadId, chunkIndex, totalChunks } = req.body || {};
+
+    if (!mimeType || !ALLOWED_IMAGE_MIMES.has(String(mimeType).toLowerCase())) {
+        return res.status(400).json({ error: "Unsupported image format. Allowed: PNG, JPG, WEBP, GIF." });
+    }
+    if (!dataBase64 || typeof dataBase64 !== 'string') {
+        return res.status(400).json({ error: "Missing image data." });
+    }
+
+    const cleanB64 = dataBase64.replace(/^data:[^;]+;base64,/, '');
+    let chunkBuf;
+    try {
+        chunkBuf = Buffer.from(cleanB64, 'base64');
+    } catch {
+        return res.status(400).json({ error: "Invalid base64 image payload." });
+    }
+    if (!chunkBuf.length) {
+        return res.status(400).json({ error: "Uploaded image is empty." });
+    }
+    if (chunkBuf.length > MAX_CANDIDATE_UPLOAD_BYTES) {
+        return res.status(413).json({ error: "Image exceeds the 10 MB per-upload limit." });
+    }
+
+    const safeKind = kind === 'poster' ? 'poster' : 'profile';
+    const safeName = filename ? String(filename).slice(0, 120) : `${safeKind}.png`;
+    const uploadedBy = req.user && (req.user.matricNo || req.user.username) || 'unknown';
+
+    // Single-shot upload
+    if (!totalChunks || Number(totalChunks) <= 1) {
+        const id = crypto.randomBytes(12).toString('hex');
+        return db.run(
+            `INSERT INTO media_objects (id, kind, filename, mimeType, sizeBytes, data, uploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [id, safeKind, safeName, mimeType.toLowerCase(), chunkBuf.length, chunkBuf, uploadedBy],
+            function (err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({
+                    id,
+                    url: `/api/media/${id}`,
+                    sizeBytes: chunkBuf.length,
+                    mimeType: mimeType.toLowerCase(),
+                    complete: true
+                });
+            }
+        );
+    }
+
+    // Chunked upload (supports up to 10 MB across Vercel's 4.5 MB request body limit)
+    const idx = Number(chunkIndex);
+    const total = Number(totalChunks);
+    if (!uploadId || !/^[a-zA-Z0-9_-]{8,64}$/.test(String(uploadId)) || !Number.isInteger(idx) || !Number.isInteger(total) || idx < 0 || idx >= total || total > 10) {
+        return res.status(400).json({ error: "Invalid chunk upload metadata." });
+    }
+
+    db.run(
+        `INSERT INTO upload_chunks (uploadId, chunkIndex, totalChunks, mimeType, filename, kind, uploadedBy, data)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT (uploadId, chunkIndex) DO UPDATE SET data = EXCLUDED.data`,
+        [uploadId, idx, total, mimeType.toLowerCase(), safeName, safeKind, uploadedBy, chunkBuf],
+        function (chunkErr) {
+            if (chunkErr) return res.status(500).json({ error: chunkErr.message });
+
+            db.all(
+                `SELECT chunkIndex, data FROM upload_chunks WHERE uploadId = ? ORDER BY chunkIndex ASC`,
+                [uploadId],
+                (listErr, rows) => {
+                    if (listErr) return res.status(500).json({ error: listErr.message });
+                    if (!rows || rows.length < total) {
+                        return res.json({ uploadId, chunkIndex: idx, complete: false });
+                    }
+
+                    const buffers = rows.map((r) => (Buffer.isBuffer(r.data) ? r.data : Buffer.from(r.data)));
+                    const fullBuf = Buffer.concat(buffers);
+                    db.run(`DELETE FROM upload_chunks WHERE uploadId = ?`, [uploadId], () => {});
+
+                    if (fullBuf.length > MAX_CANDIDATE_UPLOAD_BYTES) {
+                        return res.status(413).json({ error: "Image exceeds the 10 MB per-upload limit." });
+                    }
+
+                    const id = crypto.randomBytes(12).toString('hex');
+                    db.run(
+                        `INSERT INTO media_objects (id, kind, filename, mimeType, sizeBytes, data, uploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        [id, safeKind, safeName, mimeType.toLowerCase(), fullBuf.length, fullBuf, uploadedBy],
+                        function (saveErr) {
+                            if (saveErr) return res.status(500).json({ error: saveErr.message });
+                            res.json({
+                                id,
+                                url: `/api/media/${id}`,
+                                sizeBytes: fullBuf.length,
+                                mimeType: mimeType.toLowerCase(),
+                                complete: true
+                            });
+                        }
+                    );
+                }
+            );
+        }
+    );
+});
+
+// ==========================================
 // CANDIDATE ROUTES
 // ==========================================
 app.get('/api/candidates', (req, res) => {
@@ -372,18 +508,24 @@ app.post('/api/candidates', authenticate, (req, res) => {
             return res.status(400).json({ error: "Candidate registration for this level is currently closed by the electoral commission." });
         }
         
-        const { name, position, college, dept, matricNo, email, phone, slogan, manifesto, experience } = req.body;
+        const { name, position, college, dept, matricNo, email, phone, slogan, manifesto, experience, profileImageUrl, posterImageUrl } = req.body;
         const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const cleanProfileUrl = normalizeMediaUrl(profileImageUrl);
+        const cleanPosterUrl = normalizeMediaUrl(posterImageUrl);
         
         db.run(
-            `INSERT INTO candidates (id, name, level, position, college, dept, votes, status, matricNo, email, phone, slogan, manifesto, experience) 
-             VALUES (?, ?, ?, ?, ?, ?, 0, 'active', ?, ?, ?, ?, ?, ?)`,
-            [id, name, level || 'SUG', position, college, dept, matricNo || null, email || null, phone || null, slogan || null, manifesto || null, experience || null],
+            `INSERT INTO candidates (id, name, level, position, college, dept, votes, status, matricNo, email, phone, slogan, manifesto, experience, profileImageUrl, posterImageUrl) 
+             VALUES (?, ?, ?, ?, ?, ?, 0, 'active', ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, name, level || 'SUG', position, college, dept, matricNo || null, email || null, phone || null, slogan || null, manifesto || null, experience || null, cleanProfileUrl, cleanPosterUrl],
             function(err) {
                 if (err) return res.status(500).json({ error: err.message });
+                linkMediaToCandidate(cleanProfileUrl, id);
+                linkMediaToCandidate(cleanPosterUrl, id);
                 res.json({ 
                     id, name, level, position, college, dept, votes: 0, status: 'active',
-                    matricNo, email, phone, slogan, manifesto, experience 
+                    matricNo, email, phone, slogan, manifesto, experience,
+                    profileImageUrl: cleanProfileUrl,
+                    posterImageUrl: cleanPosterUrl
                 });
             }
         );

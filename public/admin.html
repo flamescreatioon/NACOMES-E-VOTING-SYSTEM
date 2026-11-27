@@ -355,7 +355,7 @@ function updateStats() {
     const allVotes = getAllVotes();
     const totalVoters = allVotes.length;
 
-    // Update total votes (real data if available, otherwise demo)
+    // Update total votes from recorded ballots
     if (totalVoters > 0) {
         document.getElementById('total-votes').textContent = (totalVoters * 5).toLocaleString();
         document.getElementById('votes-new').textContent = `+${totalVoters} total`;
@@ -376,7 +376,7 @@ function renderVotersTable() {
     const tbody = document.getElementById('voters-table');
 
     if (allVotes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-sm text-slate-500">No voters yet - demo data shown above</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-sm text-slate-500">No voters recorded yet.</td></tr>';
         return;
     }
 

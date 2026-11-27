@@ -82,12 +82,14 @@ function initializeDatabase() {
                 phone TEXT,
                 slogan TEXT,
                 manifesto TEXT,
-                experience TEXT
+                experience TEXT,
+                profileImageUrl TEXT,
+                posterImageUrl TEXT
             )
         `, (err) => {
             if (!err) {
                 // Safely alter table to add columns if they don't exist
-                const columns = ['status', 'matricNo', 'email', 'phone', 'slogan', 'manifesto', 'experience'];
+                const columns = ['status', 'matricNo', 'email', 'phone', 'slogan', 'manifesto', 'experience', 'profileImageUrl', 'posterImageUrl'];
                 columns.forEach(col => {
                     db.run(`ALTER TABLE candidates ADD COLUMN ${col} TEXT DEFAULT NULL`, (alterErr) => {
                         // Suppress error if column already exists
@@ -95,6 +97,35 @@ function initializeDatabase() {
                 });
             }
         });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS media_objects (
+                id TEXT PRIMARY KEY,
+                candidateId TEXT,
+                kind TEXT NOT NULL DEFAULT 'profile',
+                filename TEXT,
+                mimeType TEXT NOT NULL,
+                sizeBytes INTEGER NOT NULL,
+                data BLOB NOT NULL,
+                uploadedBy TEXT,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS upload_chunks (
+                uploadId TEXT NOT NULL,
+                chunkIndex INTEGER NOT NULL,
+                totalChunks INTEGER NOT NULL,
+                mimeType TEXT NOT NULL,
+                filename TEXT,
+                kind TEXT NOT NULL DEFAULT 'profile',
+                uploadedBy TEXT,
+                data BLOB NOT NULL,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (uploadId, chunkIndex)
+            )
+        `);
 
         // Create Votes table (Main voter ledger)
         db.run(`

@@ -149,9 +149,11 @@
                 return `
                     <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group overflow-hidden">
                         <div class="h-48 bg-slate-150 dark:bg-slate-850 relative flex items-center justify-center overflow-hidden">
-                            <div class="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase select-none">
-                                ${c.name.split(' ').map(n => n[0]).join('')}
-                            </div>
+                            ${(c.profileImageUrl || c.posterImageUrl)
+                                ? `<img src="${c.profileImageUrl || c.posterImageUrl}" alt="${c.name}" class="w-full h-full object-cover" onerror="this.outerHTML='<div class=\\'w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase select-none\\'>${c.name.split(' ').map(n => n[0]).join('')}</div>'"/>`
+                                : `<div class="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase select-none">
+                                    ${c.name.split(' ').map(n => n[0]).join('')}
+                                   </div>`}
                             <div class="absolute top-4 right-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
                                 ${c.position.replace(/_|-/g, ' ')}
                             </div>

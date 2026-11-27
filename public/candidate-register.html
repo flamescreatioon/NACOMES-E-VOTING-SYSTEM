@@ -97,15 +97,15 @@
 <div class="md:col-span-2">
 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Profile Picture</label>
 <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-<div class="size-24 sm:size-28 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-4 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
+<div id="profile-preview" class="size-24 sm:size-28 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-4 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
 <span class="material-symbols-outlined text-slate-400 text-4xl">person</span>
 </div>
 <div class="w-full sm:flex-1">
 <label for="profile-picture" class="upload-area cursor-pointer flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl transition-all">
 <span class="material-symbols-outlined text-slate-400 text-3xl mb-2">cloud_upload</span>
-<span class="text-sm font-medium text-slate-600 dark:text-slate-400">Click to upload your photo</span>
-<span class="text-xs text-slate-400 mt-1">PNG, JPG (min 400x400px, max 2MB)</span>
-<input type="file" id="profile-picture" name="profile-picture" accept="image/*" class="hidden"/>
+<span id="profile-file-label" class="text-sm font-medium text-slate-600 dark:text-slate-400">Click to upload your photo</span>
+<span class="text-xs text-slate-400 mt-1">PNG, JPG, WEBP (min 400x400px, max 10MB)</span>
+<input type="file" id="profile-picture" name="profile-picture" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden"/>
 </label>
 </div>
 </div>
@@ -246,11 +246,11 @@
 <!-- Campaign Poster Upload -->
 <div>
 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Campaign Poster (Optional)</label>
-<label for="campaign-poster" class="upload-area cursor-pointer flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl transition-all">
+<label for="campaign-poster" id="poster-preview" class="upload-area cursor-pointer flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl transition-all overflow-hidden">
 <span class="material-symbols-outlined text-slate-400 text-4xl mb-2">image</span>
-<span class="text-sm font-medium text-slate-600 dark:text-slate-400">Click to upload campaign poster</span>
-<span class="text-xs text-slate-400 mt-1">PNG, JPG (max 5MB, recommended 1080x1350px)</span>
-<input type="file" id="campaign-poster" name="campaign-poster" accept="image/*" class="hidden"/>
+<span id="poster-file-label" class="text-sm font-medium text-slate-600 dark:text-slate-400">Click to upload campaign poster</span>
+<span class="text-xs text-slate-400 mt-1">PNG, JPG, WEBP (max 10MB, recommended 1080x1350px)</span>
+<input type="file" id="campaign-poster" name="campaign-poster" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden"/>
 </label>
 </div>
 </div>
@@ -521,9 +521,106 @@
         }
     });
 
+    const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB per upload per candidate
+    const CHUNK_BYTES = 2 * 1024 * 1024; // 2 MB chunks (stays well under Vercel 4.5 MB limit)
+
+    function arrayBufferToBase64(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        const step = 0x8000;
+        for (let i = 0; i < bytes.length; i += step) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + step));
+        }
+        return btoa(binary);
+    }
+
+    function bindImagePreview(inputId, previewId, labelId, isCircle) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('change', function () {
+            const file = this.files && this.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file (PNG, JPG, WEBP, GIF).');
+                this.value = '';
+                return;
+            }
+            if (file.size > MAX_UPLOAD_BYTES) {
+                alert(`Image "${file.name}" is ${(file.size / (1024 * 1024)).toFixed(2)} MB. Maximum allowed is 10 MB per upload.`);
+                this.value = '';
+                return;
+            }
+            const label = document.getElementById(labelId);
+            if (label) label.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const box = document.getElementById(previewId);
+                if (!box) return;
+                if (isCircle) {
+                    box.innerHTML = `<img src="${ev.target.result}" alt="Preview" class="w-full h-full object-cover" />`;
+                } else {
+                    const existing = box.querySelector('img.preview-thumb');
+                    if (existing) existing.remove();
+                    const img = document.createElement('img');
+                    img.src = ev.target.result;
+                    img.alt = 'Poster Preview';
+                    img.className = 'preview-thumb max-h-48 rounded-lg mb-3 object-contain shadow';
+                    box.prepend(img);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    bindImagePreview('profile-picture', 'profile-preview', 'profile-file-label', true);
+    bindImagePreview('campaign-poster', 'poster-preview', 'poster-file-label', false);
+
+    async function uploadCandidateImage(file, kind, token) {
+        if (!file) return null;
+        if (file.size > MAX_UPLOAD_BYTES) {
+            throw new Error(`Image "${file.name}" exceeds the 10 MB per-upload limit.`);
+        }
+        const buffer = await file.arrayBuffer();
+        const totalChunks = Math.max(1, Math.ceil(buffer.byteLength / CHUNK_BYTES));
+        const uploadId = `up_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        let finalResult = null;
+        for (let i = 0; i < totalChunks; i++) {
+            const slice = buffer.slice(i * CHUNK_BYTES, (i + 1) * CHUNK_BYTES);
+            const res = await fetch(API_URL + '/uploads', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    uploadId,
+                    chunkIndex: i,
+                    totalChunks,
+                    dataBase64: arrayBufferToBase64(slice),
+                    mimeType: file.type || 'image/png',
+                    filename: file.name,
+                    kind
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to upload image.');
+            }
+            finalResult = data;
+        }
+        return finalResult ? finalResult.url : null;
+    }
+
     document.getElementById('candidate-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        const token = typeof Auth !== 'undefined' ? Auth.getToken() : null;
+        if (!token) {
+            alert('Please sign in first before submitting your candidacy application.');
+            window.location.href = 'login.html';
+            return;
+        }
+
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Submitting...';
@@ -531,24 +628,45 @@
 
         // Get form data
         const formData = new FormData(this);
-        
-        // Map form fields to the API schema
-        const candidateData = {
-            name: formData.get('full-name'),
-            level: formData.get('election-level'), // SUG, COLLEGE or DEPARTMENT
-            position: formData.get('position'),
-            college: formData.get('college'),
-            dept: formData.get('department'),
-            matricNo: formData.get('matric-no'),
-            email: formData.get('email'),
- phone: formData.get('phone'),
- slogan: formData.get('slogan')
-};
-        
+        const profileFile = document.getElementById('profile-picture')?.files?.[0] || null;
+        const posterFile = document.getElementById('campaign-poster')?.files?.[0] || null;
+
         try {
+            let profileImageUrl = null;
+            let posterImageUrl = null;
+
+            if (profileFile) {
+                submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Uploading photo...';
+                profileImageUrl = await uploadCandidateImage(profileFile, 'profile', token);
+            }
+            if (posterFile) {
+                submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Uploading poster...';
+                posterImageUrl = await uploadCandidateImage(posterFile, 'poster', token);
+            }
+
+            submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Submitting...';
+
+            // Map form fields to the API schema
+            const candidateData = {
+                name: formData.get('full-name'),
+                level: formData.get('election-level'), // SUG, COLLEGE or DEPARTMENT
+                position: formData.get('position'),
+                college: formData.get('college'),
+                dept: formData.get('department'),
+                matricNo: formData.get('matric-no'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                slogan: formData.get('slogan'),
+                profileImageUrl,
+                posterImageUrl
+            };
+
             const res = await fetch(API_URL + '/candidates', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(candidateData)
             });
             
@@ -563,7 +681,7 @@
             }
         } catch (error) {
             console.error('Submission error:', error);
-            alert('Network error. Could not connect to the server.');
+            alert(error.message || 'Network error. Could not connect to the server.');
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         }

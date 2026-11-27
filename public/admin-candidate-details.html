@@ -297,7 +297,12 @@
         // Render page elements
         function renderProfile(c) {
             document.getElementById('candidate-name').textContent = c.name;
-            document.getElementById('initials-avatar').textContent = c.name.charAt(0);
+            const avatarEl = document.getElementById('initials-avatar');
+            if (c.profileImageUrl) {
+                avatarEl.innerHTML = `<img src="${c.profileImageUrl}" alt="${c.name}" class="w-full h-full object-cover rounded-full" onerror="this.parentElement.textContent='${c.name.charAt(0)}'"/>`;
+            } else {
+                avatarEl.textContent = c.name.charAt(0);
+            }
             document.getElementById('contested-position').textContent = c.position.replace('-', ' ');
             document.getElementById('college-tag').textContent = `${c.college || 'SUG Contender'} | ${c.dept || 'N/A'}`;
             document.getElementById('vote-count').textContent = c.votes;
