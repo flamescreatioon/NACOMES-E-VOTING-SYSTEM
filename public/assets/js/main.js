@@ -31,7 +31,11 @@ window.escapeHtml = escapeHtml;
 (function () {
     const originalFetch = window.fetch;
     window.fetch = async function (input, init) {
-        const url = typeof input === 'string' ? input : (input instanceof Request ? input.url : '');
+        const url = typeof input === 'string'
+            ? input
+            : (typeof URL !== 'undefined' && input instanceof URL
+                ? input.href
+                : (input instanceof Request ? input.url : ''));
 
         // Intercept calls going to our backend API
         if (url.includes('/api/') || url.includes(':5005')) {
@@ -394,7 +398,7 @@ const Auth = {
 const Data = {
     getAllCandidates: async () => {
         try {
-            const res = await fetch(`${API_URL}/candidates`);
+            const res = await fetch(`${API_URL}/candidates`, { cache: 'no-store' });
             if (!res.ok) throw new Error('Failed to fetch candidates');
             return await res.json();
         } catch (e) {

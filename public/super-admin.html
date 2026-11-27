@@ -609,7 +609,7 @@ async function updateDashboardData() {
 // Fetch and render candidates table
 async function updateCandidatesTable() {
     try {
-        const res = await fetch(`${API_URL}/candidates`);
+        const res = await fetch(`${API_URL}/candidates`, { cache: 'no-store' });
         if (!res.ok) return;
         const candidates = await res.json();
         
@@ -706,7 +706,7 @@ modal.addEventListener('click', function(e) {
 async function loadCandidatesIntoSelects() {
     let candidates = [];
     try {
-        const res = await fetch(`${API_URL}/candidates`);
+        const res = await fetch(`${API_URL}/candidates`, { cache: 'no-store' });
         if (res.ok) candidates = await res.json();
     } catch(e) {}
     
@@ -842,7 +842,7 @@ bulkModal.addEventListener('click', function(e) {
 async function loadCandidatesIntoBulkSelects() {
     let candidates = [];
     try {
-        const res = await fetch(`${API_URL}/candidates`);
+        const res = await fetch(`${API_URL}/candidates`, { cache: 'no-store' });
         if (res.ok) candidates = await res.json();
     } catch(e) {}
     

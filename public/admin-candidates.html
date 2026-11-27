@@ -252,7 +252,7 @@
         // Fetch & load candidates
         async function loadCandidates() {
             try {
-                const res = await fetch(`${API_URL}/candidates`);
+                const res = await fetch(`${API_URL}/candidates`, { cache: 'no-store' });
                 if (!res.ok) throw new Error('Could not fetch candidates');
                 const candidates = await res.json();
                 renderTable(candidates);

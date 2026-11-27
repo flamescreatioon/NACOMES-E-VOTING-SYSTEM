@@ -403,7 +403,7 @@ function getAllVotes() {
 // Update stats with real data
 async function updateStats() {
     try {
-        const res = await fetch(`${API_URL}/stats`);
+        const res = await fetch(`${API_URL}/stats`, { cache: 'no-store' });
         if (res.ok) {
             const data = await res.json();
             const totalVoters = Number(data.totalVoters || 0);
