@@ -605,16 +605,22 @@
         };
 
         // Sync settings change to backend
-        async function updateSystemSetting(key, value) {
+        async function updateSystemSetting(key, value, successMsg) {
             try {
                 const res = await fetch(`${API_URL}/settings`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ key, value })
                 });
-                if (!res.ok) throw new Error("Failed to sync setting to server");
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || "Failed to sync setting to server");
+                }
                 
                 await loadSystemSettings();
+                if (successMsg && typeof UI !== 'undefined' && UI.showToast) {
+                    UI.showToast(successMsg, 'success');
+                }
             } catch (e) {
                 alert(e.message);
                 loadSystemSettings();
@@ -672,12 +678,12 @@
                 alert("Please select a valid start date and time.");
                 return;
             }
-            updateSystemSetting('election_start_time', startVal);
+            updateSystemSetting('election_start_time', startVal, 'Election start time updated!');
         });
 
         document.getElementById('clear-start-btn').addEventListener('click', function() {
             document.getElementById('election-start-input').value = '';
-            updateSystemSetting('election_start_time', '');
+            updateSystemSetting('election_start_time', '', 'Election start time cleared.');
         });
 
         document.getElementById('save-deadline-btn').addEventListener('click', function() {
@@ -686,7 +692,7 @@
                 alert("Please select a valid date and time.");
                 return;
             }
-            updateSystemSetting('election_deadline', deadlineVal);
+            updateSystemSetting('election_deadline', deadlineVal, 'Election close deadline updated!');
         });
 
         document.getElementById('quick-1hr-btn').addEventListener('click', function() {

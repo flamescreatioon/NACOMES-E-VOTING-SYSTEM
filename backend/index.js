@@ -1070,9 +1070,13 @@ app.get('/api/stats', (req, res) => {
                 db.get("SELECT COUNT(*) as regNoCount FROM approved_matrics", [], (regErr, rowRegNos) => {
                     const totalRegNos = (!regErr && rowRegNos) ? Number(rowRegNos.regNoCount || 0) : 0;
 
-                    db.all("SELECT name, matricNo, votedAt FROM votes ORDER BY votedAt DESC LIMIT 10", [], (err, voters) => {
-                         if (err) return res.status(500).json({ error: err.message });
-                         res.json({ totalVoters, totalRegisteredVotes, totalStudents, totalRegNos, recentVoters: voters });
+                    db.get("SELECT COUNT(*) as candidateCount FROM candidates", [], (candErr, rowCands) => {
+                        const totalCandidates = (!candErr && rowCands) ? Number(rowCands.candidateCount || 0) : 0;
+
+                        db.all("SELECT name, matricNo, votedAt FROM votes ORDER BY votedAt DESC LIMIT 10", [], (err, voters) => {
+                             if (err) return res.status(500).json({ error: err.message });
+                             res.json({ totalVoters, totalRegisteredVotes, totalStudents, totalRegNos, totalCandidates, recentVoters: voters });
+                        });
                     });
                 });
             });

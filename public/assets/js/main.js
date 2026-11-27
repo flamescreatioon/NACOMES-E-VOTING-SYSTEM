@@ -156,20 +156,22 @@ const UI = {
 
         let deadlineStr = CONFIG.electionDeadline;
         let startTimeStr = '';
-        try {
-            const res = await fetch(`${API_URL}/settings`);
-            if (res.ok) {
-                const settings = await res.json();
-                if (settings.election_deadline) {
-                    deadlineStr = settings.election_deadline;
+        const loadSettings = async () => {
+            try {
+                const res = await fetch(`${API_URL}/settings`, { cache: 'no-store' });
+                if (res.ok) {
+                    const settings = await res.json();
+                    if (settings.election_deadline) {
+                        deadlineStr = settings.election_deadline;
+                    }
+                    startTimeStr = settings.election_start_time || '';
                 }
-                if (settings.election_start_time) {
-                    startTimeStr = settings.election_start_time;
-                }
+            } catch (e) {
+                console.error('Failed to load custom election deadline settings:', e);
             }
-        } catch (e) {
-            console.error('Failed to load custom election deadline settings:', e);
-        }
+        };
+        await loadSettings();
+        setInterval(loadSettings, 15000);
 
         const labelEl = document.querySelector('[data-countdown-label]');
 

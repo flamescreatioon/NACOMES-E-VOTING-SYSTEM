@@ -122,7 +122,7 @@
 <!-- Dashboard Body -->
 <div class="p-8 flex flex-col gap-8 max-w-7xl mx-auto w-full">
 <!-- KPI Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
 <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
 <div class="flex justify-between items-start">
 <span class="material-symbols-outlined p-2 bg-emerald-50 text-emerald-600 rounded-lg">badge</span>
@@ -140,6 +140,15 @@
 <p class="text-slate-500 text-sm font-medium mt-2">Registered Users</p>
 <h3 id="total-students" class="text-3xl font-bold text-slate-900 dark:text-white">0</h3>
 <p class="text-[11px] text-slate-400">Verified student accounts</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-2 bg-teal-50 text-teal-600 rounded-lg">groups</span>
+<span class="text-xs font-bold text-slate-400">Ballot</span>
+</div>
+<p class="text-slate-500 text-sm font-medium mt-2">Registered Candidates</p>
+<h3 id="total-candidates" class="text-3xl font-bold text-slate-900 dark:text-white">0</h3>
+<p class="text-[11px] text-slate-400">Contesting candidates</p>
 </div>
 <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
 <div class="flex justify-between items-start">
@@ -368,10 +377,13 @@ async function updateStats() {
             const totalVoters = Number(data.totalVoters || 0);
             const totalStudents = Number(data.totalStudents || 0);
             const totalRegNos = Number(data.totalRegNos || 0);
+            const totalCandidates = Number(data.totalCandidates || 0);
             const turnoutPct = totalStudents > 0 ? ((totalVoters / totalStudents) * 100).toFixed(1) : '0.0';
 
             const regNosEl = document.getElementById('total-reg-nos');
             if (regNosEl) regNosEl.textContent = totalRegNos.toLocaleString();
+            const candsEl = document.getElementById('total-candidates');
+            if (candsEl) candsEl.textContent = totalCandidates.toLocaleString();
             document.getElementById('total-students').textContent = totalStudents.toLocaleString();
             document.getElementById('students-trend').textContent = `${turnoutPct}% turnout`;
             document.getElementById('turnout-percentage').textContent = `${turnoutPct}%`;
