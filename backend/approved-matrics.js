@@ -104,7 +104,7 @@ function isMatricApproved(db, levelKey, normalizedMatric) {
         // But if the DB table is completely empty (fresh boot before seed),
         // consult txt so we fail open only in that narrow case.
         db.get('SELECT COUNT(*) AS c FROM approved_matrics', [], (cErr, cRow) => {
-          if (!cErr && cRow && cRow.c === 0) {
+          if (!cErr && cRow && Number(cRow.c) === 0) {
             resolve(getTxtSet(levelKey).has(normalizedMatric));
           } else {
             resolve(false);

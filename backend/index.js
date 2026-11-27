@@ -1065,11 +1065,15 @@ app.get('/api/stats', (req, res) => {
             const totalRegisteredVotes = rowVotes.sumVotes || 0;
             
             db.get("SELECT COUNT(*) as studentCount FROM students", [], (err, rowStudents) => {
-                const totalStudents = (!err && rowStudents) ? rowStudents.studentCount : 15000;
-                
-                db.all("SELECT name, matricNo, votedAt FROM votes ORDER BY votedAt DESC LIMIT 10", [], (err, voters) => {
-                     if (err) return res.status(500).json({ error: err.message });
-                     res.json({ totalVoters, totalRegisteredVotes, totalStudents, recentVoters: voters });
+                const totalStudents = (!err && rowStudents) ? Number(rowStudents.studentCount || 0) : 0;
+
+                db.get("SELECT COUNT(*) as regNoCount FROM approved_matrics", [], (regErr, rowRegNos) => {
+                    const totalRegNos = (!regErr && rowRegNos) ? Number(rowRegNos.regNoCount || 0) : 0;
+
+                    db.all("SELECT name, matricNo, votedAt FROM votes ORDER BY votedAt DESC LIMIT 10", [], (err, voters) => {
+                         if (err) return res.status(500).json({ error: err.message });
+                         res.json({ totalVoters, totalRegisteredVotes, totalStudents, totalRegNos, recentVoters: voters });
+                    });
                 });
             });
         });

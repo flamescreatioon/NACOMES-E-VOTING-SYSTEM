@@ -126,34 +126,44 @@
 <!-- Dashboard Body -->
 <div class="p-8 flex flex-col gap-8 max-w-7xl mx-auto w-full">
 <!-- KPI Cards -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined p-2 bg-emerald-50 text-emerald-600 rounded-lg">badge</span>
+<span class="text-xs font-bold text-slate-400">Whitelist</span>
+</div>
+<p class="text-slate-500 text-sm font-medium mt-2">Total Reg Nos</p>
+<h3 id="total-reg-nos" class="text-3xl font-bold text-slate-900 dark:text-white">0</h3>
+<p class="text-[11px] text-slate-400">Eligible matric numbers in system</p>
+</div>
 <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
 <div class="flex justify-between items-start">
 <span class="material-symbols-outlined p-2 bg-blue-50 text-blue-600 rounded-lg">how_to_reg</span>
-<span id="students-trend" class="text-xs font-bold text-green-600 flex items-center">+2.1%</span>
+<span id="students-trend" class="text-xs font-bold text-green-600 flex items-center">0% turnout</span>
 </div>
-<p class="text-slate-500 text-sm font-medium mt-2">Registered Students</p>
-<h3 id="total-students" class="text-3xl font-bold text-slate-900 dark:text-white">15,400</h3>
-<p class="text-[11px] text-slate-400">Target enrollment: 16,000</p>
+<p class="text-slate-500 text-sm font-medium mt-2">Registered Users</p>
+<h3 id="total-students" class="text-3xl font-bold text-slate-900 dark:text-white">0</h3>
+<p class="text-[11px] text-slate-400">Verified student accounts</p>
 </div>
 <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
 <div class="flex justify-between items-start">
 <span class="material-symbols-outlined p-2 bg-purple-50 text-purple-600 rounded-lg">ballot</span>
-<span id="votes-new" class="text-xs font-bold text-green-600 flex items-center">+120 new</span>
+<span id="votes-new" class="text-xs font-bold text-green-600 flex items-center">0 total</span>
 </div>
 <p class="text-slate-500 text-sm font-medium mt-2">Total Votes Cast</p>
-<h3 id="total-votes" class="text-3xl font-bold text-slate-900 dark:text-white">8,250</h3>
-<p id="last-vote-time" class="text-[11px] text-slate-400">Last vote: 2 mins ago</p>
+<h3 id="total-votes" class="text-3xl font-bold text-slate-900 dark:text-white">0</h3>
+<p id="last-vote-time" class="text-[11px] text-slate-400">No votes yet</p>
 </div>
 <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/5 shadow-sm flex flex-col gap-2">
 <div class="flex justify-between items-start">
 <span class="material-symbols-outlined p-2 bg-amber-50 text-amber-600 rounded-lg">trending_up</span>
-<span id="turnout-trend" class="text-xs font-bold text-green-600 flex items-center">+5.2%</span>
+<span id="turnout-trend" class="text-xs font-bold text-green-600 flex items-center">Live</span>
 </div>
 <p class="text-slate-500 text-sm font-medium mt-2">Voter Turnout</p>
-<h3 id="turnout-percentage" class="text-3xl font-bold text-slate-900 dark:text-white">53.5%</h3>
+<h3 id="turnout-percentage" class="text-3xl font-bold text-slate-900 dark:text-white">0%</h3>
 <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1">
-<div id="turnout-bar" class="bg-amber-500 h-full w-[53.5%] rounded-full transition-all duration-500"></div>
+<div id="turnout-bar" class="bg-amber-500 h-full w-0 rounded-full transition-all duration-500"></div>
+</div>
 </div>
 </div>
             <!-- Registered Candidates List -->
@@ -518,14 +528,21 @@ async function updateDashboardData() {
         if (!res.ok) return;
         const data = await res.json();
         
-        const totalVoters = data.totalVoters || 0;
-        const totalStudents = data.totalStudents || 15000;
+        const totalVoters = Number(data.totalVoters || 0);
+        const totalStudents = Number(data.totalStudents || 0);
+        const totalRegNos = Number(data.totalRegNos || 0);
         const recentVoters = data.recentVoters || [];
 
-        // Update registered students card
+        // Update total reg nos & registered users cards
+        const regNosEl = document.getElementById('total-reg-nos');
+        if (regNosEl) regNosEl.textContent = totalRegNos.toLocaleString();
         document.getElementById('total-students').textContent = totalStudents.toLocaleString();
-        const turnoutPercentage = totalStudents > 0 ? ((totalVoters / totalStudents) * 100).toFixed(1) : 0;
+        const turnoutPercentage = totalStudents > 0 ? ((totalVoters / totalStudents) * 100).toFixed(1) : '0.0';
         document.getElementById('students-trend').textContent = `${turnoutPercentage}% turnout`;
+        const turnoutPctEl = document.getElementById('turnout-percentage');
+        if (turnoutPctEl) turnoutPctEl.textContent = `${turnoutPercentage}%`;
+        const turnoutBarEl = document.getElementById('turnout-bar');
+        if (turnoutBarEl) turnoutBarEl.style.width = `${Math.min(100, Number(turnoutPercentage))}%`;
 
         // Update total votes
         if (totalVoters > 0) {

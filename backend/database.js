@@ -234,57 +234,7 @@ CREATE TABLE IF NOT EXISTS students (
         `, (err) => {
             if (!err) {
                 db.run("ALTER TABLE students ADD COLUMN nacomeReceipt TEXT", () => {});
-                // Seed students only if empty
-                db.get("SELECT COUNT(*) as count FROM students", (countErr, row) => {
-                    if (!countErr && row && row.count === 0) {
-                        console.log("Seeding 15,000 registered student accounts...");
-                        db.serialize(() => {
-                            db.run("BEGIN TRANSACTION");
-                            
-                            const fakeFirstNames = ["John", "Jane", "Michael", "Sarah", "David", "Grace", "Samuel", "Ngozi", "Emeka", "Amina", "Chinedu", "Fatima", "Yusuf", "Jennifer", "Ibrahim", "Daniel", "Joy", "Victor", "Blessing", "Emmanuel", "Patience", "Chidi", "Chioma", "Kelechi", "Ugochi", "Tunde", "Olumide", "Yetunde", "Bose", "Kunle"];
-                            const fakeLastNames = ["Okonkwo", "Eze", "Johnson", "Obi", "Nduka", "Okoli", "Ade", "Nwankwo", "Bello", "Peters", "Chukwu", "Abdullahi", "Olu", "Kalu", "Ojo", "Idris", "Anyanwu", "Ihejirika", "Opara", "Nwachukwu", "Okafor", "Okeke", "Uzoh"];
-                            
-                            const mouauColleges = MOUAU_COLLEGES;
-                            
-                            const levels = ["100L", "200L", "300L", "400L", "500L"];
-                            
-                            const stmt = db.prepare("INSERT OR IGNORE INTO students (matricNo, name, level, dept, contactInfo, college, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                            
-                            // Seed specific test accounts for NACOME (Computer Engineering, CEET, MOUAU)
-                            stmt.run("U2024/1234567", "John Doe", "400L", "Computer Engineering", "john.doe@mouau.edu.ng", "College of Engineering and Engineering Technology (CEET)", hashPassword("test123", "U2024/1234567"));
-                            stmt.run("U2023/7654321", "Jane Smith", "300L", "Computer Engineering", "jane.smith@mouau.edu.ng", "College of Engineering and Engineering Technology (CEET)", hashPassword("student", "U2023/7654321"));
-
-                            // Generate 15,000 students
-                            for (let i = 0; i < 15000; i++) {
-                                const firstName = fakeFirstNames[Math.floor(Math.random() * fakeFirstNames.length)];
-                                const lastName = fakeLastNames[Math.floor(Math.random() * fakeLastNames.length)];
-                                const year = 2021 + Math.floor(Math.random() * 4);
-                                const idNum = 100000 + i; // Guaranteed unique matric suffix
-                                const matric = `U${year}/${idNum}`;
-                                
-                                const collegeObj = mouauColleges[Math.floor(Math.random() * mouauColleges.length)];
-                                const dept = collegeObj.depts[Math.floor(Math.random() * collegeObj.depts.length)];
-                                const level = levels[Math.floor(Math.random() * levels.length)];
-                                const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mouau.edu.ng`;
-                                
-                                stmt.run(matric, `${firstName} ${lastName}`, level, dept, email, collegeObj.name, hashPassword("student2026", matric));
-                            }
-                            
-                            stmt.finalize(() => {
-                                db.run("COMMIT", (commitErr) => {
-                                    if (commitErr) {
-                                        console.error("Error committing students seed:", commitErr.message);
-                                    } else {
-                                        console.log("Successfully seeded 15,000 registered student accounts.");
-                                    }
-                                    if (resolveStudentsReady) resolveStudentsReady();
-                                });
-                            });
-                        });
-                    } else {
-                        if (resolveStudentsReady) resolveStudentsReady();
-                    }
-                });
+                if (resolveStudentsReady) resolveStudentsReady();
             } else {
                 if (resolveStudentsReady) resolveStudentsReady();
             }

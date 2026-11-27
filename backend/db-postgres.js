@@ -308,47 +308,16 @@ async function seedApprovedMatrics(cli) {
   console.log('Approved matric numbers synced from txt backups (Neon total: ' + (c.rows[0] ? c.rows[0].total : '?') + ')');
 }
 
-async function seedStudents(cli) {
- const r = await cli.query('SELECT COUNT(*)::int AS count FROM students');
- if (r.rows[0] && r.rows[0].count === 0) {
- console.log('Seeding 15,000 registered student accounts (Neon)...');
- const { MOUAU_COLLEGES } = require('./mouau-colleges');
- const first = ['John','Jane','Michael','Sarah','David','Grace','Samuel','Ngozi','Emeka','Amina','Chinedu','Fatima','Yusuf','Jennifer','Ibrahim','Daniel','Joy','Victor','Blessing','Emmanuel','Patience','Chidi','Chioma','Kelechi','Ugochi','Tunde','Olumide','Yetunde','Bose','Kunle'];
- const last = ['Okonkwo','Eze','Johnson','Obi','Nduka','Okoli','Ade','Nwankwo','Bello','Peters','Chukwu','Abdullahi','Olu','Kalu','Ojo','Idris','Anyanwu','Ihejirika','Opara','Nwachukwu','Okafor','Okeke','Uzoh'];
- const levels = ['100L','200L','300L','400L','500L'];
- const rows = [];
- rows.push(['U2024/1234567','John Doe','400L','Computer Engineering','john.doe@mouau.edu.ng','College of Engineering and Engineering Technology (CEET)',hashPassword('test123','U2024/1234567')]);
- rows.push(['U2023/7654321','Jane Smith','300L','Computer Engineering','jane.smith@mouau.edu.ng','College of Engineering and Engineering Technology (CEET)',hashPassword('student','U2023/7654321')]);
- for (let i = 0; i < 15000; i++) {
- const fn = first[Math.floor(Math.random()*first.length)];
- const ln = last[Math.floor(Math.random()*last.length)];
- const year = 2021 + Math.floor(Math.random()*4);
- const matric = `U${year}/${100000+i}`;
- const c = MOUAU_COLLEGES[Math.floor(Math.random()*MOUAU_COLLEGES.length)];
- const dept = c.depts[Math.floor(Math.random()*c.depts.length)];
- rows.push([matric, `${fn} ${ln}`, levels[Math.floor(Math.random()*levels.length)], dept, `${fn.toLowerCase()}.${ln.toLowerCase()}@mouau.edu.ng`, c.name, hashPassword('student2026', matric)]);
- }
- for (let i = 0; i < rows.length; i += 1000) {
- const chunk = rows.slice(i, i + 1000);
- const parts = [];
- const flat = [];
- chunk.forEach((row) => {
- const a = flat.length + 1;
- parts.push("($"+a+",$"+(a+1)+",$"+(a+2)+",$"+(a+3)+",$"+(a+4)+",$"+(a+5)+",$"+(a+6)+")");
- flat.push(...row);
- });
- await cli.query(`INSERT INTO students (matricNo,name,level,dept,contactInfo,college,password) VALUES ${parts.join(',')} ON CONFLICT DO NOTHING`, flat);
- }
- console.log('Seeded 15,000 registered student accounts (Neon).');
- }
- }
+async function seedStudents() {
+ // Disabled: do not seed fake student accounts.
+}
 
  // Connect, init schema, seed — then resolve ready (non-blocking like sqlite).
  client.connect().then(
  () => client.query(SCHEMA).then(
  () => {
  console.log('Connected to Neon Postgres.');
- return seedStudents(client).then(() => seedApprovedMatrics(client).catch(()=>{})).then(() => resolveReady()).catch((e) => {
+ return seedApprovedMatrics(client).catch(()=>{}).then(() => resolveReady()).catch((e) => {
  console.error('Neon seed error:', e.message);
  resolveReady();
  });
