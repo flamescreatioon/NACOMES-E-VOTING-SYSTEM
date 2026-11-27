@@ -53,9 +53,12 @@ function runStartupSetup() {
 
 // Secrets come from env (Vercel dashboard / local .env). Never commit real values.
 // JWT_SECRET and admin credentials MUST be set in production — fail closed.
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-fallback-secret-change-me';
+const JWT_SECRET = process.env.JWT_SECRET || ((process.env.VERCEL || process.env.NODE_ENV === 'production') ? '' : 'dev-only-fallback-secret-change-me');
 if (!process.env.JWT_SECRET) {
-console.warn('[warn] JWT_SECRET not set — using insecure dev fallback. Set JWT_SECRET env var.');
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        throw new Error('FATAL: JWT_SECRET environment variable must be set in production.');
+    }
+    console.warn('[warn] JWT_SECRET not set — using insecure dev fallback. Set JWT_SECRET env var.');
 }
 
 function loadAdminAccounts() {
@@ -112,7 +115,9 @@ function verifyToken(token) {
         const dataToSign = payloadStr + '.' + expiryStr;
         const expectedSignature = crypto.createHmac('sha256', JWT_SECRET).update(dataToSign).digest('hex');
         
-        if (signature === expectedSignature) {
+        const sigBuf = Buffer.from(signature, 'utf8');
+        const expBuf = Buffer.from(expectedSignature, 'utf8');
+        if (sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf)) {
             return payload;
         }
     } catch (e) {
@@ -532,26 +537,39 @@ app.post('/api/candidates', authenticate, (req, res) => {
     });
 });
 
-// Fetch a single candidate with unified student profile if matching
+// Fetch a single candidate (studentDetails only returned to authenticated admins, never password)
 app.get('/api/candidates/:id', (req, res) => {
     const { id } = req.params;
     db.get("SELECT * FROM candidates WHERE id = ?", [id], (err, candidate) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!candidate) return res.status(404).json({ error: "Candidate not found" });
 
+        const authHeader = req.headers['authorization'] || '';
+        const token = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
+        const caller = token ? verifyToken(token) : null;
+        const isAdminCaller = caller && (caller.role === 'admin' || caller.role === 'superadmin');
+
+        if (!isAdminCaller) {
+            const { email, phone, ...publicCandidate } = candidate;
+            return res.json(publicCandidate);
+        }
+
         if (candidate.matricNo) {
-            db.get("SELECT * FROM students WHERE UPPER(matricNo) = ?", [candidate.matricNo.toUpperCase()], (studentErr, student) => {
-                if (!studentErr && student) {
-                    return res.json({
-                        ...candidate,
-                        // Ensure we return the most relevant contact info/data
-                        email: candidate.email || student.contactInfo,
-                        phone: candidate.phone || student.contactInfo, // fallback
-                        studentDetails: student
-                    });
+            db.get(
+                "SELECT matricNo, name, level, dept, contactInfo, college, registeredAt FROM students WHERE UPPER(matricNo) = ?",
+                [candidate.matricNo.toUpperCase()],
+                (studentErr, student) => {
+                    if (!studentErr && student) {
+                        return res.json({
+                            ...candidate,
+                            email: candidate.email || student.contactInfo,
+                            phone: candidate.phone || student.contactInfo,
+                            studentDetails: student
+                        });
+                    }
+                    return res.json(candidate);
                 }
-                return res.json(candidate);
-            });
+            );
         } else {
             res.json(candidate);
         }
@@ -603,7 +621,7 @@ const approvedMatrics = require('./approved-matrics');
 const { normalizeMatric, LEVEL_LABELS } = approvedMatrics;
 approvedMatrics.loadTxtWhitelists();
 
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', rateLimit(15), async (req, res) => {
     const { name, matricNo, level, dept, college, contactInfo, password } = req.body;
     if (!name || !matricNo || !level || !dept || !contactInfo || !password) {
         return res.status(400).json({ error: "All registration fields are required." });
@@ -1073,6 +1091,15 @@ app.get('/api/stats', (req, res) => {
                     db.get("SELECT COUNT(*) as candidateCount FROM candidates", [], (candErr, rowCands) => {
                         const totalCandidates = (!candErr && rowCands) ? Number(rowCands.candidateCount || 0) : 0;
 
+                        const authHeader = req.headers['authorization'] || '';
+                        const token = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
+                        const caller = token ? verifyToken(token) : null;
+                        const isAdminCaller = caller && (caller.role === 'admin' || caller.role === 'superadmin');
+
+                        if (!isAdminCaller) {
+                            return res.json({ totalVoters, totalRegisteredVotes, totalStudents, totalRegNos, totalCandidates });
+                        }
+
                         db.all("SELECT name, matricNo, votedAt FROM votes ORDER BY votedAt DESC LIMIT 10", [], (err, voters) => {
                              if (err) return res.status(500).json({ error: err.message });
                              res.json({ totalVoters, totalRegisteredVotes, totalStudents, totalRegNos, totalCandidates, recentVoters: voters });
@@ -1084,7 +1111,7 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-app.get('/api/stats/all-voters', (req, res) => {
+app.get('/api/stats/all-voters', authenticate, authorize(['admin', 'superadmin']), (req, res) => {
     db.all("SELECT name, matricNo, votedAt FROM votes ORDER BY votedAt DESC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
@@ -1189,14 +1216,17 @@ query += " AND s.college = ?";
 params.push(college);
 }
 
+const boolTrue = (process.env.DATABASE_URL && process.env.DATABASE_URL.trim()) ? 'TRUE' : '1';
+const boolFalse = (process.env.DATABASE_URL && process.env.DATABASE_URL.trim()) ? 'FALSE' : '0';
+
 if (status === 'voted') {
 query += " AND v.matricNo IS NOT NULL";
 } else if (status === 'not_voted') {
 query += " AND v.matricNo IS NULL";
 } else if (status === 'assisted') {
-query += " AND v.manualEntry = 1";
+query += ` AND v.manualEntry = ${boolTrue}`;
 } else if (status === 'self') {
-query += " AND v.matricNo IS NOT NULL AND (v.manualEntry IS NULL OR v.manualEntry = 0)";
+query += ` AND v.matricNo IS NOT NULL AND (v.manualEntry IS NULL OR v.manualEntry = ${boolFalse})`;
 }
 
     let countQuery = `

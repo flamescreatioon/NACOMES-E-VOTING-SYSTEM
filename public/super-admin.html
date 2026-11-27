@@ -588,9 +588,9 @@ async function updateDashboardData() {
 
             html += `
                 <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
-                    <td class="py-3 text-sm font-medium">${voter.name}</td>
-                    <td class="py-3 text-sm text-slate-600">${voter.matricNo}</td>
-                    <td class="py-3 text-xs text-slate-500">${timeStr}</td>
+                    <td class="py-3 text-sm font-medium">${escapeHtml(voter.name)}</td>
+                    <td class="py-3 text-sm text-slate-600">${escapeHtml(voter.matricNo)}</td>
+                    <td class="py-3 text-xs text-slate-500">${escapeHtml(timeStr)}</td>
                     <td class="py-3">
                         <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Verified</span>
                     </td>

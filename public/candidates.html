@@ -145,23 +145,30 @@
             emptyState.classList.add('hidden');
             grid.innerHTML = filtered.map(c => {
                 const scopeLabel = 'NACOME • Computer Engineering';
+                const safeName = escapeHtml(c.name);
+                const safeDept = escapeHtml(c.dept);
+                const safeCollege = escapeHtml(c.college);
+                const safePos = escapeHtml((c.position || '').replace(/_|-/g, ' '));
+                const initials = escapeHtml((c.name || '').split(' ').map(n => n[0]).join(''));
+                const rawImg = c.profileImageUrl || c.posterImageUrl || '';
+                const safeImg = /^\/api\/media\/[a-zA-Z0-9_-]+$/.test(rawImg) ? rawImg : '';
 
                 return `
                     <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group overflow-hidden">
                         <div class="h-48 bg-slate-150 dark:bg-slate-850 relative flex items-center justify-center overflow-hidden">
-                            ${(c.profileImageUrl || c.posterImageUrl)
-                                ? `<img src="${c.profileImageUrl || c.posterImageUrl}" alt="${c.name}" class="w-full h-full object-cover" onerror="this.outerHTML='<div class=\\'w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase select-none\\'>${c.name.split(' ').map(n => n[0]).join('')}</div>'"/>`
+                            ${safeImg
+                                ? `<img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover" onerror="this.outerHTML='<div class=\\'w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase select-none\\'>${initials}</div>'"/>`
                                 : `<div class="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase select-none">
-                                    ${c.name.split(' ').map(n => n[0]).join('')}
+                                    ${initials}
                                    </div>`}
                             <div class="absolute top-4 right-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
-                                ${c.position.replace(/_|-/g, ' ')}
+                                ${safePos}
                             </div>
                         </div>
                         <div class="p-6">
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1 truncate">${c.name}</h3>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1 truncate">${safeName}</h3>
                             <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">${scopeLabel}</p>
-                            <p class="text-[11px] text-slate-400 font-medium mb-4 truncate">${c.dept} • ${c.college}</p>
+                            <p class="text-[11px] text-slate-400 font-medium mb-4 truncate">${safeDept} • ${safeCollege}</p>
                             <div class="flex gap-2">
                                 <a href="login.html" class="flex-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition-all text-center block">View Profile</a>
                             </div>
