@@ -151,48 +151,10 @@
 
             </div>
 
-            <!-- Demo Credentials (Profiles) -->
+            <!-- Access: credentials are issued by the Electoral Commission -->
             <div class="mt-6 p-4 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Demo Profiles</p>
-                <div class="space-y-4">
-                    <!-- Super Admin -->
-                    <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Super Admin Profile</span>
-                            <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-semibold ml-auto">Full Access</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p class="text-xs text-slate-400">Username</p>
-                                <p class="font-mono font-bold text-slate-700 dark:text-slate-300">superadmin</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400">Password</p>
-                                <p class="font-mono font-bold text-slate-700 dark:text-slate-300">super2026</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Standard Admin -->
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="w-2 h-2 rounded-full bg-primary"></span>
-                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Standard Admin Profile</span>
-                            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold ml-auto">View Only</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p class="text-xs text-slate-400">Username</p>
-                                <p class="font-mono font-bold text-slate-700 dark:text-slate-300">admin</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400">Password</p>
-                                <p class="font-mono font-bold text-slate-700 dark:text-slate-300">admin123</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Need access?</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Contact the MOUAU Electoral Commission for your administrator credentials. Do not share login details.</p>
             </div>
         </div>
     </main>
@@ -202,6 +164,7 @@
         <p class="text-xs text-slate-400">&copy; 2026 MOUAU Electoral Commission • mouau.edu.ng. Administrator access only.</p>
     </footer>
 
+    <script src="assets/js/api-config.js"></script>
     <script>
         console.log('Admin login script loaded');
         console.log('Current URL:', window.location.href);
@@ -212,13 +175,7 @@
             alert('Please access this page via http://localhost:3000/admin-login.html for login to work correctly.');
         }
         
-        // Admin credentials (in production, this would be server-side)
-        const ADMIN_ACCOUNTS = [
-            { username: 'superadmin', password: 'super2026', name: 'Chief Electoral Officer', role: 'Super Admin', route: 'super-admin.html' },
-            { username: 'admin', password: 'admin123', name: 'System Administrator', role: 'Regular Admin', route: 'admin.html' },
-            { username: 'registrar', password: 'reg2026', name: 'Dr. Sarah Jenkins', role: 'Head Registrar', route: 'admin.html' },
-            { username: 'officer', password: 'officer123', name: 'Election Officer', role: 'Election Officer', route: 'admin.html' }
-        ];
+// Auth is server-side only (POST /api/admin/login) — no credentials live here.
 
         // Toggle password visibility
         document.getElementById('toggle-password').addEventListener('click', function() {
@@ -248,7 +205,7 @@
             console.log('Sending credentials check to server for:', username);
             
             try {
-                const res = await fetch('http://localhost:5005/api/admin/login', {
+                const res = await fetch(API_URL + '/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })

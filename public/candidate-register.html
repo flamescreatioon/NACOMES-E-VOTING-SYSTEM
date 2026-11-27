@@ -187,32 +187,12 @@
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">stairs</span>
 <select class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all" id="level" name="level" required>
-<option value="" disabled selected>Select your level</option>
+<option value="" disabled selected>Select your current level</option>
 <option value="100">100 Level</option>
 <option value="200">200 Level</option>
 <option value="300">300 Level</option>
 <option value="400">400 Level</option>
 <option value="500">500 Level</option>
-</select>
-</div>
-</div>
-
-<!-- Session -->
-<div>
-<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="session">Academic Session (Entry Year)</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">calendar_month</span>
-<select class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all" id="session" name="session" required>
-<option value="" disabled selected>Select your session</option>
-<option value="2017/2018">2017/2018</option>
-<option value="2018/2019">2018/2019</option>
-<option value="2019/2020">2019/2020</option>
-<option value="2020/2021">2020/2021</option>
-<option value="2021/2022">2021/2022</option>
-<option value="2022/2023">2022/2023</option>
-<option value="2023/2024">2023/2024</option>
-<option value="2024/2025">2024/2025</option>
-<option value="2025/2026">2025/2026</option>
 </select>
 </div>
 </div>
@@ -261,19 +241,6 @@
 <input class="w-full pl-11 pr-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all placeholder:text-slate-400" id="slogan" name="slogan" placeholder="e.g. Progress Through Unity" type="text" maxlength="100" required/>
 </div>
 <p class="mt-1 text-xs text-slate-500">Max 100 characters</p>
-</div>
-
-<!-- Manifesto / About -->
-<div>
-<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="manifesto">Manifesto / Campaign Message</label>
-<textarea class="w-full px-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all placeholder:text-slate-400 min-h-[150px]" id="manifesto" name="manifesto" placeholder="Share your vision, goals, and what you plan to achieve if elected..." required></textarea>
-<p class="mt-1 text-xs text-slate-500">Minimum 200 characters. Be clear and specific about your goals.</p>
-</div>
-
-<!-- Experience -->
-<div>
-<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="experience">Leadership Experience</label>
-<textarea class="w-full px-4 py-3 bg-background-light dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition-all placeholder:text-slate-400 min-h-[100px]" id="experience" name="experience" placeholder="List your previous leadership roles, achievements, and relevant experience..."></textarea>
 </div>
 
 <!-- Campaign Poster Upload -->
@@ -365,7 +332,7 @@
 </div>
 </div>
 </footer>
-<script src="assets/js/main.js"></script>
+<script src="assets/js/api-config.js"></script><script src="assets/js/main.js"></script>
 <script>
     // Colleges and Departments Mapping (MOUAU official structure from main.js)
     const COLLEGES_MAP = CONFIG.collegesMap;
@@ -452,7 +419,7 @@
     // Check if candidate registration is active
     async function checkRegistrationActive() {
         try {
-            const res = await fetch('http://localhost:5005/api/settings');
+            const res = await fetch(API_URL + '/settings');
             if (res.ok) {
                 systemSettings = await res.json();
                 verifyRegistrationStatus();
@@ -574,14 +541,12 @@
             dept: formData.get('department'),
             matricNo: formData.get('matric-no'),
             email: formData.get('email'),
-            phone: formData.get('phone'),
-            slogan: formData.get('slogan'),
-            manifesto: formData.get('manifesto'),
-            experience: formData.get('experience')
-        };
+ phone: formData.get('phone'),
+ slogan: formData.get('slogan')
+};
         
         try {
-            const res = await fetch('http://localhost:5005/api/candidates', {
+            const res = await fetch(API_URL + '/candidates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(candidateData)

@@ -307,7 +307,7 @@
             </div>
         </div>
     </footer>
-    <script src="assets/js/main.js"></script>
+    <script src="assets/js/api-config.js"></script><script src="assets/js/main.js"></script>
     <script>
             // Populate MOUAU Colleges & Departments from shared CONFIG.collegesMap
             (function populateDepartments() {
@@ -358,7 +358,7 @@
             }
 
             try {
-                const res = await fetch('http://localhost:5005/api/register', {
+                const res = await fetch(API_URL + '/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, matricNo, level, dept, contactInfo, password })

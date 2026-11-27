@@ -89,8 +89,9 @@ const ELECTION_DATA = {
     }
 };
 
-// Base API URL
-const API_URL = 'http://localhost:5005/api';
+// Base API URL — provided by assets/js/api-config.js (same-origin '/api').
+// `var` (not const): api-config.js already declares it; var re-declaring is legal.
+var API_URL = (typeof window !== 'undefined' && window.API_URL) || '/api';
 
 const UI = {
     /**

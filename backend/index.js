@@ -51,7 +51,36 @@ function runStartupSetup() {
     });
 }
 
-const JWT_SECRET = 'mouau-election-super-secret-key-2026';
+// Secrets come from env (Vercel dashboard / local .env). Never commit real values.
+// JWT_SECRET and admin credentials MUST be set in production — fail closed.
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-fallback-secret-change-me';
+if (!process.env.JWT_SECRET) {
+console.warn('[warn] JWT_SECRET not set — using insecure dev fallback. Set JWT_SECRET env var.');
+}
+
+function loadAdminAccounts() {
+if (process.env.ADMIN_ACCOUNTS_JSON) {
+try {
+const parsed = JSON.parse(process.env.ADMIN_ACCOUNTS_JSON);
+if (Array.isArray(parsed) && parsed.length) return parsed;
+} catch (e) {
+console.error('[warn] ADMIN_ACCOUNTS_JSON is not valid JSON:', e.message);
+}
+}
+const accounts = [];
+const push = (username, password, name, role) => {
+if (username && password) accounts.push({ username: String(username).toLowerCase(), password: String(password), name, role });
+};
+push(process.env.SUPERADMIN_USERNAME, process.env.SUPERADMIN_PASSWORD, 'Chief Electoral Officer', 'superadmin');
+push(process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD, 'System Administrator', 'admin');
+push(process.env.REGISTRAR_USERNAME, process.env.REGISTRAR_PASSWORD, 'Registrar', 'admin');
+push(process.env.OFFICER_USERNAME, process.env.OFFICER_PASSWORD, 'Election Officer', 'admin');
+if (!accounts.length) {
+console.warn('[warn] No admin accounts configured via env — admin login disabled (fail closed).');
+}
+return accounts;
+}
+const ADMIN_ACCOUNTS_DB = loadAdminAccounts();
 
 function hashPassword(password, salt) {
     return crypto.createHmac('sha256', salt.toUpperCase()).update(password).digest('hex');
@@ -95,6 +124,10 @@ function verifyToken(token) {
 const app = express();
 const PORT = process.env.PORT || 5005;
 
+// Behind Vercel (or any reverse proxy) req.ip is the proxy's IP unless
+// trusted — without this every visitor shares one rate-limit bucket.
+app.set('trust proxy', 1);
+
 // ── Middleware ────────────────────────────────────────────────────────────────
 
 // Security headers (without requiring helmet package)
@@ -113,21 +146,26 @@ try {
     app.use(compression());
 } catch(e) { /* compression not installed, skip */ }
 
+// CORS: same-origin needs no CORS headers; cross-origin (admin panels,
+// previews) is gated by ALLOWED_ORIGINS. Localhost always allowed for dev.
+// Set ALLOWED_ORIGINS in production, e.g.
+// "https://mouau-election.vercel.app,https://admin.yourdomain.com"
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
+.split(',')
+.map((s) => s.trim().replace(/\/$/, ''))
+.filter(Boolean);
+const isLocalhost = (origin) => /^(https?:\/\/(localhost|127\.0\.0\.1))(:\d+)?$/i.test(origin);
+
 app.use(cors({
 origin: (origin, callback) => {
-// Allow same-origin / non-browser clients (no Origin header) and any
-// localhost / 127.0.0.1 port (Live Server :5500, browser-sync :3000, etc.).
-// In production, set ALLOWED_ORIGINS env var to a comma-separated list.
+// Same-origin / non-browser client — allow.
 if (!origin) return callback(null, true);
-const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-try {
-const u = new URL(origin);
-const isLocal = (u.hostname === 'localhost' || u.hostname === '127.0.0.1');
-if (isLocal || allowed.includes(origin)) return callback(null, true);
-} catch (e) { /* fall through to deny */ }
-return callback(null, false);
+const normalized = origin.replace(/\/$/, '');
+if (isLocalhost(origin)) return callback(null, true);
+if (ALLOWED_ORIGINS.includes(normalized)) return callback(null, true);
+return callback(new Error(`CORS blocked for origin: ${origin}`), false);
 },
-methods: ['GET', 'POST', 'PUT', 'DELETE'],
+methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '5mb' }));
@@ -498,15 +536,7 @@ app.post('/api/admin/login', rateLimit(10), (req, res) => { // max 10 admin logi
         return res.status(400).json({ error: "Username and password are required." });
     }
     
-    const ADMIN_ACCOUNTS_DB = [
-        { username: 'superadmin', password: 'super2026', name: 'Chief Electoral Officer', role: 'superadmin' },
-        { username: 'admin', password: 'admin123', name: 'System Administrator', role: 'admin' },
-        { username: 'registrar', password: 'reg2026', name: 'Dr. Sarah Jenkins', role: 'admin' },
-        { username: 'officer', password: 'officer123', name: 'Election Officer', role: 'admin' },
- { username: 'ugochukwu.achor@mouau.edu.ng', password: 'Ugo20022@', name: 'Ugochukwu Achor', role: 'superadmin' }
-    ];
-
-    const match = ADMIN_ACCOUNTS_DB.find(a => a.username === username.toLowerCase() && a.password === password);
+const match = ADMIN_ACCOUNTS_DB.find(a => a.username === username.toLowerCase() && a.password === password);
     
     if (!match) {
         return res.status(401).json({ error: "Invalid admin credentials." });
@@ -1135,17 +1165,33 @@ app.get('/api/turnout', (req, res) => {
     });
 });
 
-const server = app.listen(PORT, () => {
-    console.log(`Election API Server running on port ${PORT}`);
-    console.log(`Health check: http://localhost:${PORT}/api/health`);
+// ── Static Frontend (local dev) ─────────────────────────────────────────────
+// Serves public/ same-origin so one `node backend/index.js` runs the whole app
+// locally. On Vercel, public/ is served by the CDN and /api/* routes to the
+// serverless function — this line is harmless there.
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// Vercel serverless: do NOT listen — export the app and let the platform invoke
+// it. Local dev (`node backend/index.js`) still listens normally.
+let server;
+if (require.main === module) {
+server = app.listen(PORT, () => {
+console.log(`Election API Server running on port ${PORT}`);
+console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
+}
 
 // ── Graceful Shutdown ─────────────────────────────────────────────────────────
 // On SIGTERM/SIGINT: stop accepting new connections, finish in-flight requests,
 // flush the vote queue, then close the DB cleanly.
 function gracefulShutdown(signal) {
-    console.log(`\n[${signal}] Graceful shutdown initiated...`);
-    server.close(() => {
+console.log(`\n[${signal}] Graceful shutdown initiated...`);
+// Serverless: no listener exists (see listen guard) — just close the DB.
+if (!server) {
+db.close(() => process.exit(0));
+return;
+}
+server.close(() => {
         console.log('HTTP server closed. Draining vote queue...');
         // Wait for queue to drain (max 10s)
         let waited = 0;
@@ -1170,3 +1216,7 @@ function gracefulShutdown(signal) {
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+
+// Serverless entry-point (Vercel): api/index.js requires this file and gets
+// the Express app. `server` is only set when run directly (see listen guard).
+module.exports = app;

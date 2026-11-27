@@ -476,7 +476,7 @@ Cancel
 </div>
 </div>
 
-<script src="assets/js/main.js"></script>
+<script src="assets/js/api-config.js"></script><script src="assets/js/main.js"></script>
 <script>
 // Check admin login
 function checkAdminAuth() {
@@ -499,7 +499,6 @@ function checkAdminAuth() {
 }
 
 // Base API URL
-const API_URL = 'http://localhost:5005/api';
 
 // Fetch all votes for export
 async function getAllVotes() {
@@ -939,7 +938,7 @@ document.getElementById('system-reset-btn').addEventListener('click', async func
         btn.disabled = true;
         btn.innerHTML = `<span class="inline-block animate-spin material-symbols-outlined text-lg">refresh</span> Resetting...`;
         
-        const res = await fetch('http://localhost:5005/api/admin/reset-database', {
+        const res = await fetch(API_URL + '/admin/reset-database', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

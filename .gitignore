@@ -45,3 +45,12 @@ temp/
 # Lock files (keep one based on preference)
 # package-lock.json
 # yarn.lock
+
+# SQLite databases (local dev only — production uses Neon Postgres)
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+
+# Legacy duplicate backend (superseded by backend/)
+server/
